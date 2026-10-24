@@ -1,0 +1,516 @@
+<title>The Callective</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="The Callective: a community prank call show. Live every Saturday at 7pm Eastern from the World of Prank Calls Discord.">
+<link rel="icon" href="img/mark.webp" type="image/webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Monoton&family=Share+Tech+Mono&family=VT323&display=swap">
+<link rel="stylesheet" href="css/site.css">
+
+<div class="bg" aria-hidden="true"><div class="sun"></div><canvas class="rain" id="rain"></canvas><div class="floor"></div></div>
+<div class="scan" aria-hidden="true"></div>
+<canvas id="trail" aria-hidden="true"></canvas>
+<div class="boot" id="boot" hidden></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="The Callective, home"><img src="img/mark.webp" alt=""><b id="brandname">THE CALLECTIVE</b></a>
+    <nav class="sections" aria-label="Pages" id="nav">
+      <a href="#home">Home</a><a href="#listen" class="nav-listen">Listen<i aria-hidden="true"></i></a><a href="#archive">Archive</a><a href="#lab">Clip lab</a><a href="#clips">Clips</a><a href="#bingo">Bingo</a><a href="#downloads">Downloads</a><a href="#lore">Lore</a>
+    </nav>
+    <a class="lamp" id="lamp" href="#listen"><i aria-hidden="true"></i><span id="lamptxt">Off the hook</span></a>
+  </div>
+  <div class="ticker" aria-hidden="true"><div id="tickertxt"></div></div>
+  <a class="livebar" id="livebar" href="#listen" hidden><i aria-hidden="true"></i><span>The Callective is live right now. Tap to tune in.</span></a>
+</header>
+
+<main>
+<div class="page" id="page-home" data-page="home">
+<section class="hero" id="dial">
+  <div class="wrap">
+    <div class="hero-copy">
+      <p class="kicker">Community prank calls · Saturdays 7pm ET</p>
+      <h1 class="glitch" data-text="We dial to make you smile.">We dial to make you <em>smile.</em></h1>
+      <p class="lede">The Callective is a prank call show where <b>anybody can take a turn on the phone</b>. A different caller hosts every week, live from the World of Prank Calls Discord and broadcast on Prankcast.</p>
+      <div class="next" id="next" aria-live="polite">
+        <div><small id="next-label">Next show in</small><strong id="next-time">–</strong></div>
+        <div><small>Your time</small><strong id="next-local">Saturday</strong></div>
+      </div>
+      <a class="nowcard" href="#listen" id="nowcard"><span class="onair" id="nc-badge"><i aria-hidden="true"></i><span>Radio</span></span><span class="nc-txt"><small id="nc-label">Callective Radio is playing</small><b id="nc-title">The archive, around the clock</b></span><span class="nc-go" aria-hidden="true">▶</span></a>
+      <div class="hero-actions">
+        <a class="btn red solid" href="https://discord.gg/NCHd2Mp5km" target="_blank" rel="noopener">Jack in: WOPC Discord</a>
+        <a class="btn" href="#listen">Tune in 24/7</a>
+      </div>
+    </div>
+
+    <div class="phone">
+      <div class="dialbox" id="dialbox"></div>
+      <div class="readout"><output id="readout" aria-live="polite">DIAL A NUMBER</output><button class="btn sm red hang" type="button" id="hangup">Hang up</button></div>
+      <form class="dial-type" id="dialform" autocomplete="off">
+        <label class="sr" for="dialtype">Type a number or a word to dial</label>
+        <input id="dialtype" type="text" inputmode="text" maxlength="12" placeholder="OR TYPE IT: RULES">
+        <button class="btn sm" type="submit">Dial</button>
+      </form>
+      <div class="directory-card hud">
+        <h3>Callective directory</h3>
+        <ul id="dirlist"></ul>
+        <p>Spin the dial or tap a hole. Letters dial like an old phone. Some numbers aren't listed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="band" id="line">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">How you get on the phone</p>
+      <h2 class="glitch" data-text="The line">The line</h2>
+      <p class="lede">Calls happen in the voice channel. When the show is on, this is the real queue from the Discord, straight from the queue bot.</p>
+    </div>
+    <div class="line-grid">
+      <ol class="how">
+        <li class="hud"><span class="n">1</span><div><h3>Jack into the WOPC Discord</h3><p>Hop in the voice channel called <b>The Callective (Saturdays at 7pm EST)</b>. There's no separate Callective server.</p></div></li>
+        <li class="hud"><span class="n">2</span><div><h3>Drop a PLA bell</h3><p>Put the PLA bell emoji in the voice channel's text chat, or type <code>/join</code>. You're on the line.</p></div></li>
+        <li class="hud"><span class="n">3</span><div><h3>Wait for your ticket</h3><p>The host runs <code>!next</code> and the bot pings whoever's up.</p></div></li>
+        <li class="hud"><span class="n">4</span><div><h3>Make the call</h3><p>The host dials, you do the bit. On an <b>All Call</b>, the whole room piles onto one line.</p></div></li>
+      </ol>
+      <div class="rail hud">
+        <div class="rail-top"><h3>Now waiting</h3><span class="status-pill" id="qstatus"><i aria-hidden="true"></i><span>Practice line</span></span></div>
+        <ol class="tickets" id="tickets"></ol>
+        <div class="rail-ctl" id="qctl">
+          <label class="sr" for="qname">Your name</label>
+          <input id="qname" type="text" value="You" maxlength="24" autocomplete="off">
+          <button class="btn sm" type="button" id="q-join">Drop a PLA bell</button>
+          <button class="btn sm mustard" type="button" id="q-next">!next</button>
+          <button class="btn sm red" type="button" id="q-all">All Call</button>
+        </div>
+        <p class="rail-log" id="qlog" aria-live="polite">No show on right now, so this is a practice line loaded with the real queue from 6/20/26. Get in line.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="band" id="switchboard">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Patch somebody through</p>
+      <h2 class="glitch" data-text="Patch bay">Patch bay</h2>
+      <p class="lede">Every jack is a real moment from the show. Patch a few at once for a conference call. Anything you like goes straight into the clip lab.</p>
+    </div>
+    <div class="board hud" id="board">
+      <div class="panel" id="panel">
+        <div class="strips" id="strips"></div>
+        <svg class="cords" id="cords" aria-hidden="true"></svg>
+      </div>
+      <div class="console">
+        <div class="now"><small id="sb-who">Operator</small><b id="sb-line">Number please?</b><span id="sb-sub">Tap a jack to patch it through.</span></div>
+        <div class="acts">
+          <button class="btn sm" type="button" id="sb-random">Random patch</button>
+          <button class="btn sm mustard" type="button" id="sb-conf">Conference call</button>
+          <button class="btn sm red" type="button" id="sb-lab" disabled>Edit in clip lab</button>
+          <button class="btn sm ghost" type="button" id="sb-clear">Pull the cords</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+<div class="page" id="page-listen" data-page="listen">
+<section class="band" id="listen">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker" id="ls-kicker">Callective Radio · 24/7</p>
+      <h2 class="glitch" data-text="Listen">Listen</h2>
+      <p class="lede" id="ls-lede">Callective Radio plays the whole archive around the clock, shuffled, and everybody hears the same moment together. When the show goes live on Saturday, the radio steps aside and the live show takes over. When the show signs off, the radio picks right back up. Hear something good? Clip it.</p>
+    </div>
+    <div class="stage">
+      <div class="screen hud" id="screen">
+        <div class="scr-top">
+          <span class="onair" id="ls-badge"><i aria-hidden="true"></i><span>Radio</span></span>
+          <span class="scr-clock" id="ls-clock">--:--</span>
+        </div>
+        <div class="scr-tv" id="ls-tv">
+          <video id="livevid" playsinline preload="none" hidden></video>
+          <div class="scr-art" id="ls-art">
+            <canvas id="ls-osc" aria-hidden="true"></canvas>
+            <img src="img/stage.webp" alt="" loading="lazy">
+          </div>
+          <button class="scr-tap" type="button" id="ls-tap" hidden>Tap to watch the live show</button>
+        </div>
+        <div class="scr-now">
+          <small id="ls-label">Now playing</small>
+          <b id="ls-title">Tuning…</b>
+          <span id="ls-meta"></span>
+          <div class="scr-prog" aria-hidden="true"><i id="ls-prog"></i></div>
+          <div class="scr-times"><span id="ls-pos">0:00:00</span><span id="ls-left"></span></div>
+        </div>
+        <div class="scr-ctl">
+          <button class="bigplay" type="button" id="ls-play" aria-label="Tune in"><span class="tri" aria-hidden="true"></span></button>
+          <div class="scr-btns">
+            <button class="btn sm red solid" type="button" id="ls-clip" title="Shortcut: C">Clip it (last 30s)</button>
+            <button class="btn sm" type="button" id="ls-clip60">Last 60s</button>
+            <button class="btn sm ghost" type="button" id="ls-full" hidden>Full screen</button>
+            <a class="btn sm ghost" id="ls-replay" href="#archive">Replay from the start</a>
+          </div>
+        </div>
+        <p class="note" id="ls-note"></p>
+        <audio id="radioaud" preload="none"></audio>
+      </div>
+      <div class="side">
+      <div class="hud upnext">
+        <h3>Up next on Callective Radio</h3>
+        <ol id="ls-next"></ol>
+      </div>
+      <div class="hud upnext golive">
+        <h3>Next live show</h3>
+        <p class="big" id="ls-countdown">–</p>
+        <p class="ext">Saturdays at 7pm Eastern, from the World of Prank Calls Discord. Keep this page open and the live show starts playing on its own.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm mustard" href="#bingo">Play Callective Bingo</a><a class="btn sm" href="#line">See the queue</a></div>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+
+</div>
+<div class="page" id="page-archive" data-page="archive">
+<section class="band" id="replay">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Party line replay</p>
+      <h2 class="glitch" data-text="Replay terminal">Replay terminal</h2>
+      <p class="lede">Play any show with the Prankcast chat scrolling along, right where people typed it. Hear something good? Clip it: grab the last 30 seconds, or mark in and out, then edit it and send it to the Callective.</p>
+    </div>
+    <div class="booth">
+      <div class="deck hud">
+        <div><label class="l" for="ep-select">Episode</label><select id="ep-select"></select></div>
+        <div class="ttl" id="ep-title">–</div>
+        <div class="meta" id="ep-meta"></div>
+        <div class="transport">
+          <button class="bigplay" type="button" id="rp-play" aria-label="Play episode"><span class="tri" aria-hidden="true"></span></button>
+          <span class="tc"><span id="rp-now">0:00:00</span> / <span id="rp-dur">–</span></span>
+          <button class="btn sm" type="button" id="rp-back">−30s</button>
+          <button class="btn sm" type="button" id="rp-fwd">+30s</button>
+          <button class="btn sm" type="button" id="rp-speed">1×</button>
+          <button class="btn sm mustard" type="button" id="rp-peak">Jump to the chaos</button>
+        </div>
+        <div class="heat" id="heat" role="slider" aria-label="Position in episode" aria-valuemin="0" tabindex="0"><canvas id="heatc"></canvas><div class="ph" id="heat-ph"></div></div>
+        <div class="heat-legend"><span>Start</span><span id="heat-mid">Chat messages per minute</span><span id="heat-end">End</span></div>
+        <div class="transport" id="clipbar">
+          <button class="btn sm red solid" type="button" id="cl-quick" title="Shortcut: C">Clip it (last 30s)</button>
+          <button class="btn sm" type="button" id="cl-in">Mark in</button>
+          <button class="btn sm" type="button" id="cl-out">Mark out</button>
+          <span class="tc" style="font-size:20px" id="cl-range">no marks</span>
+        </div>
+        <p class="note" id="rp-note"></p>
+        <audio id="rp-audio" preload="none"></audio>
+      </div>
+      <div class="feed">
+        <div class="feed-top"><b>&gt; chat.log</b><span id="feed-count"></span></div>
+        <ol class="msgs" id="msgs"></ol>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="band" id="directory">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Every show since 2024</p>
+      <h2 class="glitch" data-text="The archive">The archive</h2>
+      <p class="lede">Every Callective on Prankcast. Hit play and it opens in the replay terminal with the chat scrolling along, or open it on Prankcast.</p>
+    </div>
+    <div class="yp hud">
+      <div class="yp-head"><h3>Night City Directory</h3><p>Every show · every host · since 2024</p></div>
+      <div class="ads" id="ads"></div>
+      <div class="yp-ctl">
+        <label class="sr" for="yp-q">Search the directory</label>
+        <input id="yp-q" type="search" placeholder="> pizza, hotel, Tom Servo">
+        <div class="yp-chips" id="yp-chips" role="group" aria-label="Filter by host"></div>
+      </div>
+      <div class="listings" id="listings"></div>
+      <div class="yp-foot"><span id="yp-count"></span><button type="button" id="yp-more">Show every listing</button></div>
+    </div>
+  </div>
+</section>
+</div>
+<div class="page" id="page-lab" data-page="lab">
+<section class="band" id="lab">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Cut the tape</p>
+      <h2 class="glitch" data-text="Clip lab">Clip lab</h2>
+      <p class="lede">Clips from the radio, the live show and the replay terminal land here. You can also load a patch bay clip, a song, or your own audio. Drag to select, trim it, run it through the phone, then download it or send it to the Callective.</p>
+    </div>
+    <div class="lab hud" id="labbox">
+      <div class="lab-top">
+        <h3>Clip lab</h3>
+        <div class="lab-src">
+          <label class="sr" for="lab-pick">Load a clip</label>
+          <select id="lab-pick"></select>
+          <label class="btn sm file" for="lab-file">Upload audio<input id="lab-file" type="file" accept="audio/*"></label>
+        </div>
+      </div>
+      <div class="wave" id="wave" tabindex="0" aria-label="Waveform. Drag to select part of the clip.">
+        <canvas id="wavec"></canvas><div class="sel" id="wsel" hidden></div><div class="ph" id="wph"></div>
+        <div class="empty" id="wempty">&gt; NO SIGNAL. Hit Clip on anything that's playing, pick a clip above, or drop a file here.</div>
+        <div class="drop">DROP IT LIKE IT'S RINGING</div>
+      </div>
+      <div class="lab-info"><span>Length <b id="li-len">0.00s</b></span><span>Selection <b id="li-sel">none</b></span><span id="li-src"></span><span>Space plays · Delete cuts · Ctrl+Z undoes</span></div>
+      <div class="lab-rows">
+        <div class="lab-box">
+          <h4>Play</h4>
+          <div class="row">
+            <button class="btn sm red" type="button" id="lab-play"><span class="tri" aria-hidden="true"></span>Play</button>
+            <button class="btn sm" type="button" id="lab-loop" aria-pressed="false">Loop</button>
+            <button class="btn sm ghost" type="button" id="lab-selall">Select all</button>
+          </div>
+          <h4>Cut it up</h4>
+          <div class="row">
+            <button class="btn sm" type="button" id="op-keep">Keep selection</button>
+            <button class="btn sm" type="button" id="op-del">Delete selection</button>
+            <button class="btn sm" type="button" id="op-rev">Reverse</button>
+            <button class="btn sm" type="button" id="op-stut">Bad connection</button>
+            <button class="btn sm" type="button" id="op-norm">Make it loud</button>
+            <button class="btn sm ghost" type="button" id="op-undo">Undo</button>
+          </div>
+        </div>
+        <div class="lab-box">
+          <h4>Run it through</h4>
+          <div class="row" id="fxrow">
+            <button class="fx" type="button" data-fx="phone" aria-pressed="false">Phone line</button>
+            <button class="fx" type="button" data-fx="robot" aria-pressed="false">Tom Servo</button>
+            <button class="fx" type="button" data-fx="echo" aria-pressed="false">Long distance</button>
+            <button class="fx" type="button" data-fx="stall" aria-pressed="false">Bathroom stall</button>
+          </div>
+          <div class="knob"><label for="k-speed">Speed + pitch</label><input id="k-speed" type="range" min="0.5" max="2" step="0.05" value="1"><output id="o-speed">1.00×</output></div>
+          <div class="knob"><label for="k-vol">Volume</label><input id="k-vol" type="range" min="0" max="2" step="0.05" value="1"><output id="o-vol">100%</output></div>
+          <h4>Presets</h4>
+          <div class="row" id="presets">
+            <button class="btn sm" type="button" data-preset="chipmunk">Chipmunk</button>
+            <button class="btn sm" type="button" data-preset="slowira">Slow-mo Ira</button>
+            <button class="btn sm" type="button" data-preset="australia">From Australia</button>
+            <button class="btn sm" type="button" data-preset="servo">Full Servo</button>
+            <button class="btn sm ghost" type="button" data-preset="clean">Clean</button>
+          </div>
+        </div>
+        <div class="lab-box">
+          <h4>Send it to the Callective</h4>
+          <form id="send" autocomplete="off" class="sendform">
+            <label class="sr" for="s-title">Clip title</label>
+            <input id="s-title" class="lab-in" type="text" maxlength="80" placeholder="Name this clip" required>
+            <label class="sr" for="s-by">Your name</label>
+            <input id="s-by" class="lab-in" type="text" maxlength="40" placeholder="Your caller name (optional)">
+            <label class="sr" for="s-note">Note for the crew</label>
+            <textarea id="s-note" class="lab-in" maxlength="300" rows="2" placeholder="Note for the crew (optional, never posted)"></textarea>
+            <div class="send-btns">
+              <button class="btn sm red solid" type="submit" id="s-go" data-dest="board" disabled>Post to the clip board</button>
+              <button class="btn sm" type="submit" id="s-crew" data-dest="crew" disabled>Send to the crew only</button>
+            </div>
+            <p class="ext" id="s-msg">Clips up to 60 seconds. Board posts go up after the crew gives them a listen. Crew-only clips stay private.</p>
+          </form>
+        </div>
+      </div>
+      <div class="lab-out">
+        <span class="msg-line" id="lab-msg">&gt; Nothing loaded yet.</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button class="btn mustard" type="button" id="lab-mp3" disabled>Download MP3</button>
+          <button class="btn ghost" type="button" id="lab-save" disabled>Save WAV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+<div class="page" id="page-clips" data-page="clips">
+<section class="band" id="clips">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Clipped by the community</p>
+      <h2 class="glitch" data-text="Clip board">Clip board</h2>
+      <p class="lede">Clips people pulled from the radio, the live show and the archive, checked by the crew. Play one, download it, jump to the moment it came from, or remix it in the clip lab.</p>
+    </div>
+    <div class="cb-ctl">
+      <label class="sr" for="cb-q">Search clips</label>
+      <input id="cb-q" type="search" placeholder="> search clips">
+      <div class="yp-chips" id="cb-sort" role="group" aria-label="Sort clips">
+        <button class="yp-chip" type="button" data-sort="new" aria-pressed="true">Newest</button>
+        <button class="yp-chip" type="button" data-sort="short" aria-pressed="false">Shortest</button>
+        <button class="yp-chip" type="button" data-sort="show" aria-pressed="false">By show</button>
+      </div>
+    </div>
+    <div class="cb-grid" id="cbgrid"></div>
+    <p class="ext" id="cb-note" style="margin-top:14px"></p>
+  </div>
+</section>
+</div>
+<div class="page" id="page-bingo" data-page="bingo">
+<section class="band" id="bingo">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Play along with the show</p>
+      <h2 class="glitch" data-text="Callective bingo">Callective bingo</h2>
+      <p class="lede">Keep a card open while you listen, live or on the radio. When it happens on the call, mark it. Five in a row wins. Blackout mode is for the people who stay until the farewell song.</p>
+    </div>
+    <div class="bingo-wrap">
+      <div class="bingo hud" id="bingobox">
+        <div class="bingo-head" aria-hidden="true"><span>C</span><span>A</span><span>L</span><span>L</span><span>S</span></div>
+        <div class="bingo-grid" id="bingogrid" role="grid" aria-label="Bingo card"></div>
+        <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+      </div>
+      <div class="bingo-side">
+        <div class="hud bingo-card-info">
+          <p class="kicker">Card <b id="bg-no">#0000</b></p>
+          <p class="big" id="bg-status">Mark a square to start.</p>
+          <div class="bingo-meter" aria-hidden="true"><i id="bg-meter"></i></div>
+          <p class="ext" id="bg-count">0 of 24 marked</p>
+        </div>
+        <div class="bingo-ctl">
+          <button class="btn sm" type="button" id="bg-new">Deal a new card</button>
+          <button class="btn sm mustard" type="button" id="bg-mode" aria-pressed="false">Blackout mode</button>
+          <button class="btn sm" type="button" id="bg-share">Copy card link</button>
+          <button class="btn sm ghost" type="button" id="bg-clear">Clear marks</button>
+        </div>
+        <p class="ext">Send your card link to a friend and you'll both have the same squares. Your marks stay on this device.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="page" id="page-downloads" data-page="downloads">
+<section class="band" id="downloads">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Take the Callective with you</p>
+      <h2 class="glitch" data-text="Downloads">Downloads</h2>
+      <p class="lede">The show's songs and jingles, plus wallpapers for your desktop and phone. Play anything here first, or grab the file.</p>
+    </div>
+    <div class="dl-songs">
+      <div class="holdcard hud">
+        <div class="big">Hold.fm</div>
+        <canvas class="viz" id="viz" aria-hidden="true"></canvas>
+        <div class="num">You are caller number<b id="callerno">14</b></div>
+        <p>Songs keep playing in the bar at the bottom while you look around the site.</p>
+      </div>
+      <ul class="tracks" id="tracks"></ul>
+    </div>
+    <div class="wp-head">
+      <h3 class="glitch" data-text="Wallpapers">Wallpapers</h3>
+      <div class="yp-chips" id="wp-chips" role="group" aria-label="Filter wallpapers">
+        <button class="yp-chip" type="button" data-k="all" aria-pressed="true">All</button>
+        <button class="yp-chip" type="button" data-k="desktop" aria-pressed="false">Desktop</button>
+        <button class="yp-chip" type="button" data-k="phone" aria-pressed="false">Phone</button>
+        <button class="yp-chip" type="button" data-k="new" aria-pressed="false">Neon set</button>
+      </div>
+    </div>
+    <div class="wp-grid" id="wp-grid"></div>
+  </div>
+</section>
+
+</div>
+<div class="page" id="page-lore" data-page="lore">
+<section class="band" id="court">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">The top of every show</p>
+      <h2 class="glitch" data-text="Court is in session">Court is in session</h2>
+      <p class="lede">Ira reads the rules right after the theme. The chat considers this the best part of the show, and they are not joking.</p>
+    </div>
+    <div class="court">
+      <div class="bench" id="bench">
+        <img src="img/rules-court.webp" alt="The cast in a cartoon courtroom in front of a rotary phone judge" width="1600" height="900" loading="lazy">
+        <div class="allrise"><b>ALL RISE</b><div style="display:flex;flex-wrap:wrap;gap:8px"><button class="btn red solid" type="button" id="gavel"><span class="tri" aria-hidden="true"></span>Bang the gavel</button><button class="btn sm mustard" type="button" id="objection">Objection!</button></div></div>
+      </div>
+      <div class="tablet">
+        <h3>The 10 Callmandments</h3>
+        <ol id="callmandments"></ol>
+        <p>The rest are sealed. Show up Saturday at 7 and Ira will read them to you.</p>
+      </div>
+    </div>
+    <div class="transcript hud" aria-label="Quotes from the Prankcast chat">
+      <p><b>THE GALLERY [7/11/26]&gt;</b> I woke up at 1 am for the rules.</p>
+      <p><b>THE GALLERY [1/7/26]&gt;</b> Without the rules, there would be no show.</p>
+      <p><b>THE CALLECTIVE [1/7/26]&gt;</b> Are you suggesting an all-rules show?</p>
+      <p><b>THE GALLERY [4/11/26]&gt;</b> I'm not here for the pranks, just the rules.</p>
+      <p><b>THE GALLERY [4/11/26]&gt;</b> Hey, what happened to the metal rap version of the rules?</p>
+    </div>
+  </div>
+</section>
+<section class="band" id="lineup">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">The usual suspects</p>
+      <h2 class="glitch" data-text="The lineup">The lineup</h2>
+      <p class="lede">Four cartoons hold down the stream. Pick one out of the lineup to pull their file.</p>
+    </div>
+    <div class="lineup" id="lineupbox">
+      <div class="scale" aria-hidden="true"><span>7'</span><span>6'</span><span>5'</span><span>4'</span><span>3'</span><span>2'</span></div>
+      <div class="suspects" id="suspects"></div>
+      <div class="floor"></div>
+      <div class="flash" id="flash"></div>
+    </div>
+    <div class="sheet hud" id="sheet" aria-live="polite"></div>
+  </div>
+</section>
+<section class="band" id="bill">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Who's been dialing</p>
+      <h2 class="glitch" data-text="Data bill">Data bill</h2>
+      <p class="lede">Every named host and how long they've kept the line open, added up from the Prankcast archive.</p>
+    </div>
+    <div class="billwrap">
+      <div class="bill hud">
+        <div class="bill-head">
+          <div><h3>Callective Telecom</h3><small>Statement of line usage</small></div>
+          <div class="acct">Account <b>THE CALLECTIVE</b><br>Service: Saturdays 7pm ET<br>Period: <span id="bill-period">–</span></div>
+        </div>
+        <div class="billscroll"><table id="billtable"></table></div>
+        <div class="due"><span>Amount due</span><b>One PLA bell</b></div>
+        <p class="billnote" id="billnote"></p>
+      </div>
+      <div class="tomcard">
+        <img src="img/tomman.webp" alt="Tom Man, a comic-book robot hero with spiral goggles, on a payphone" width="1200" height="675" loading="lazy">
+        <div><h3>Top caller: Tom Man</h3><p>Dr. Tom Servo has hosted more Callectives than anyone. His alter ego wears a cape. In a city that never hangs up, one robot dares to dial.</p>
+          <div><button class="btn sm mustard" type="button" data-dial="866626">Dial T-O-M-M-A-N</button></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="sign"><img src="img/mark.webp" alt=""><div><b>THE CALLECTIVE</b>We dial to make you smile.</div></div>
+    <div class="links">
+      <a href="https://discord.gg/NCHd2Mp5km" target="_blank" rel="noopener">WOPC Discord ↗</a>
+      <a href="https://prankcast.com/thecallective" target="_blank" rel="noopener">Prankcast ↗</a>
+      <button class="btn sm ghost" type="button" data-dial="663">Crew login</button>
+    </div>
+  </div>
+</footer>
+
+<div class="takeover" id="takeover" role="dialog" aria-modal="true" aria-label="Dial result"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="pbar" id="pbar" hidden>
+  <button class="pb-btn" type="button" id="pb-btn" aria-label="Pause"><span class="tri" aria-hidden="true"></span></button>
+  <div class="pb-now"><a href="#listen" id="pb-go"><small id="pb-kind">Radio</small><b id="pb-title">–</b></a><label class="sr" for="pb-seek">Seek</label><input type="range" id="pb-seek" min="0" max="1000" value="0"></div>
+  <div class="pb-side"><span class="pb-time" id="pb-time">0:00</span><button class="pb-clip" type="button" id="pb-clip" title="Shortcut: C" hidden>✂ Clip it</button><button class="pb-x" type="button" id="pb-x">Hang up</button></div>
+</div>
+<audio id="holdaud" preload="none"></audio>
+<audio id="cbaud" preload="none"></audio>
+
+<script src="js/core.js"></script>
+<script src="js/router.js"></script>
+<script src="js/player.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/dial.js"></script>
+<script src="js/line.js"></script>
+<script src="js/switchboard.js"></script>
+<script src="js/replay.js"></script>
+<script src="js/lab.js"></script>
+<script src="js/clipboard.js"></script>
+<script src="js/pages.js"></script>
+<script src="js/listen.js"></script>
+<script src="js/bingo.js"></script>
+<script src="js/downloads.js"></script>
+<script src="js/main.js"></script>

@@ -1,0 +1,242 @@
+[
+{
+"k": "ira-my-name",
+"who": "Ira",
+"line": "My name is Ira.",
+"sec": 0.8
+},
+{
+"k": "ira-icecat",
+"who": "Ira",
+"line": "IceCat!",
+"sec": 0.7
+},
+{
+"k": "ira-behold",
+"who": "Ira",
+"line": "Behold, the 10 Commandments.",
+"sec": 2.6
+},
+{
+"k": "ira-rule-2",
+"who": "Ira",
+"line": "Rule 2: put the PLA bell in chat.",
+"sec": 3.0
+},
+{
+"k": "ira-rule-3",
+"who": "Ira",
+"line": "Rule 3: follow the rules of WOPC.",
+"sec": 1.9
+},
+{
+"k": "ira-best-part",
+"who": "Ira",
+"line": "Best part of the show, reading out the rules.",
+"sec": 4.9
+},
+{
+"k": "ira-mouth",
+"who": "Ira",
+"line": "Mouth the words.",
+"sec": 3.2
+},
+{
+"k": "ira-australia",
+"who": "Ira",
+"line": "Calling from Australia.",
+"sec": 2.4
+},
+{
+"k": "ira-edison",
+"who": "Ira",
+"line": "Edison wax cylinder.",
+"sec": 3.9
+},
+{
+"k": "ira-woomp",
+"who": "Ira",
+"line": "Woomp woomp.",
+"sec": 0.7
+},
+{
+"k": "ira-governor",
+"who": "Ira",
+"line": "Welcome, fun Governor Ira.",
+"sec": 4.6
+},
+{
+"k": "icecat-what-call",
+"who": "IceCat",
+"line": "What would you like to call?",
+"sec": 1.0
+},
+{
+"k": "icecat-hey-hey",
+"who": "IceCat",
+"line": "Hey hey hey, oh yeah.",
+"sec": 2.4
+},
+{
+"k": "dogs-woo",
+"who": "DespicableDogs",
+"line": "Woo!",
+"sec": 0.5
+},
+{
+"k": "dogs-download",
+"who": "DespicableDogs",
+"line": "Download America.",
+"sec": 1.3
+},
+{
+"k": "dogs-im-a-man",
+"who": "DespicableDogs",
+"line": "I'm a man.",
+"sec": 1.5
+},
+{
+"k": "dogs-gutter",
+"who": "DespicableDogs",
+"line": "Talk about a gutter ball, right?",
+"sec": 4.6
+},
+{
+"k": "tom-hey",
+"who": "Dr. Tom Servo",
+"line": "Hey.",
+"sec": 1.2
+},
+{
+"k": "tom-yeaugh",
+"who": "Dr. Tom Servo",
+"line": "Yeaugh.",
+"sec": 0.6
+},
+{
+"k": "tom-hose",
+"who": "Dr. Tom Servo",
+"line": "I need a water hose.",
+"sec": 2.7
+},
+{
+"k": "drake-yes-no",
+"who": "Drake Dragsaw",
+"line": "This is a yes or no question, dude.",
+"sec": 1.5
+},
+{
+"k": "drake-did-that",
+"who": "Drake Dragsaw",
+"line": "Did that happen?",
+"sec": 0.8
+},
+{
+"k": "anteater-aw",
+"who": "AnteaterTpose",
+"line": "Aw, f*** you.",
+"sec": 1.4
+},
+{
+"k": "anteater-court",
+"who": "AnteaterTpose",
+"line": "Out of court settlement.",
+"sec": 3.2
+},
+{
+"k": "andy-hell-yeah",
+"who": "Andy Anderson",
+"line": "Hell yeah.",
+"sec": 1.0
+},
+{
+"k": "andy-another",
+"who": "Andy Anderson",
+"line": "I demand another one.",
+"sec": 1.4
+},
+{
+"k": "crie-hotel",
+"who": "CrieFaux",
+"line": "This hotel has a hotel.",
+"sec": 2.8
+},
+{
+"k": "rozin-whats-up",
+"who": "Rozin",
+"line": "What's up, y'all.",
+"sec": 1.3
+},
+{
+"k": "rozin-taquitos",
+"who": "Rozin",
+"line": "Stuff taquitos in your pants and walk out.",
+"sec": 7.1
+},
+{
+"k": "imp-woohoo",
+"who": "GreenImp",
+"line": "Woohoo!",
+"sec": 0.9
+},
+{
+"k": "imp-no-idea",
+"who": "GreenImp",
+"line": "I have no idea what I'm doing, but I'm doing it.",
+"sec": 3.4
+},
+{
+"k": "poop-wooka",
+"who": "PoopMyPee",
+"line": "Wooka wooka.",
+"sec": 1.2
+},
+{
+"k": "idk-yo-ghost",
+"who": "IDontKnow",
+"line": "Yo Ghost drops a bar.",
+"sec": 8.0
+},
+{
+"k": "room-piss-off",
+"who": "The Callective",
+"line": "You trying to piss us off or something?",
+"sec": 1.6
+},
+{
+"k": "room-callective",
+"who": "The Callective",
+"line": "The Callective!",
+"sec": 0.8
+},
+{
+"k": "room-be-quiet",
+"who": "The Callective",
+"line": "Be quiet, the Callective is on.",
+"sec": 5.1
+},
+{
+"k": "room-fun-stuff",
+"who": "The Callective",
+"line": "There's gonna be some fun stuff coming up.",
+"sec": 1.5
+},
+{
+"k": "room-how-long",
+"who": "The Callective",
+"line": "Hey Ira, how long you been doing this?",
+"sec": 2.6
+},
+{
+"k": "mark-bored",
+"who": "On the other end",
+"line": "I was gettin' bored, I needed a laugh. Goodnight.",
+"sec": 4.5
+},
+{
+"k": "mark-candy",
+"who": "On the other end",
+"line": "Everybody's out buying candy and costumes, they don't have time to answer the phone.",
+"sec": 4.6
+}
+]
