@@ -61,7 +61,13 @@ const Line = (() => {
       items.push({ name: `ALL CALL by ${myName()}`, allcall: true }); render(items.length - 1);
       log(`<b>All Call</b> queued at #${items.length}. Everybody on the line for that one.`);
     });
-    if (C.api) { poll(); pollT = setInterval(() => { if (!document.hidden) poll(); }, 10000); }
+    // The queue only changes during a show, and it's only shown on the home page,
+    // so only keep asking while the show is live and someone is looking at it (every 20 seconds).
+    if (C.api) {
+      poll();
+      pollT = setInterval(() => { if (!document.hidden && C.live?.live && Router.page === "home") poll(); }, 20000);
+      document.addEventListener("page", e => { if (e.detail === "home") poll(); });
+    }
   }
   return { init };
 })();
