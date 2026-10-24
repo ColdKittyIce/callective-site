@@ -48,11 +48,11 @@ async function route(request, env, ctx, url) {
       const p = url.pathname.replace(/\/+$/, ""), M = request.method;
       let m;
       if (p === "/api/ping") return json({ ok: true, room: !!env.ROOM });
-      if (p === "/api/status") return json(await getStatus(ctx), 200, 20);
+      if (p === "/api/status") return json(await getStatus(ctx), 200, 60);
       if (p === "/api/radio") return cached(request, ctx, 15, () => radio(env, url, ctx));
-      if (p === "/api/latest") return json(await memo(ctx, "latest", 300, latest), 200, 300);
-      if ((m = p.match(/^\/api\/episode\/(\d+)$/))) return json(await memo(ctx, "ep" + m[1], 86400, () => episode(m[1])), 200, 86400);
-      if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 3600, () => chat(m[1]));
+      if (p === "/api/latest") return json(await memo(ctx, "latest", 1800, latest), 200, 1800);
+      if ((m = p.match(/^\/api\/episode\/(\d+)$/))) return json(await memo(ctx, "ep" + m[1], 604800, () => episode(m[1])), 200, 86400);
+      if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 604800, () => chat(m[1]));
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(m[1], url, ctx, request);
       if (p === "/api/queue") {
@@ -96,7 +96,7 @@ async function memo(ctx, name, ttl, make) {
   return v;
 }
 async function nextData(path) {
-  const r = await fetch(PC + path, { headers: UA, cf: { cacheTtl: 20 } });
+  const r = await fetch(PC + path, { headers: UA, cf: { cacheTtl: 60 } });
   if (!r.ok) throw new Error(`Prankcast ${r.status}`);
   const m = (await r.text()).match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
   if (!m) throw new Error("No page data");
@@ -130,7 +130,8 @@ async function status() {
   return { live, hls: hlsUrl, video: String(prof.stream_bol_video) === "1", bid: prof.broadcast_id || null,
     lastStart: prof.stream_start_date || null, lastEnd: prof.stream_end_date || null, checked: new Date().toISOString() };
 }
-const getStatus = ctx => memo(ctx, "status", 20, status);
+// Checked at most once a minute per Cloudflare location, however many people have the site open.
+const getStatus = ctx => memo(ctx, "status", 60, status);
 async function latest() {
   const posts = parse((await nextData(`/${PROFILE}`)).ssr_data_posts) || [];
   return { posts: (Array.isArray(posts) ? posts : [posts]).filter(p => p && p.post_type === 5).map(toEpisode).filter(e => e.sec > 600) };
@@ -192,7 +193,7 @@ function radioAt(list, t) {
 }
 async function radio(env, url, ctx) {
   const base = await (await env.ASSETS.fetch(new Request(new URL("/data/episodes.json", url)))).json();
-  let extra = []; try { extra = (await memo(ctx, "latest", 300, latest)).posts || []; } catch (e) {}
+  let extra = []; try { extra = (await memo(ctx, "latest", 1800, latest)).posts || []; } catch (e) {}
   const have = new Set(base.map(e => e.id)), list = base.concat(extra.filter(e => !have.has(e.id))).filter(e => e.sec > 600);
   const now = Date.now(), cur = radioAt(list, now);
   const next = []; let t = now + (cur.ep.sec - cur.offset) * 1000 + 500;
@@ -219,8 +220,8 @@ async function cut(id, url, ctx, request) {
   if (!(to > from) || to - from > 75) return json({ error: "Pick a piece between 1 and 75 seconds long" }, 400);
   const cache = caches.default, key = new Request(new URL(request.url).toString(), { method: "GET" });
   const hit = await cache.match(key); if (hit) return hit;
-  const ep = await memo(ctx, "ep" + id, 86400, () => episode(id)); if (!ep.mp3) return json({ error: "No audio for that show" }, 404);
-  const lay = await memo(ctx, "lay" + id, 86400, () => mp3Layout(ep.mp3));
+  const ep = await memo(ctx, "ep" + id, 604800, () => episode(id)); if (!ep.mp3) return json({ error: "No audio for that show" }, 404);
+  const lay = await memo(ctx, "lay" + id, 2592000, () => mp3Layout(ep.mp3));
   const a = Math.floor(lay.start + from * lay.bytesPerSec), z = Math.floor(lay.start + to * lay.bytesPerSec);
   const r = await fetch(ep.mp3, { headers: { range: `bytes=${a}-${z}` } });
   // A 200 here would be the whole multi-hour show, so never pass it through.

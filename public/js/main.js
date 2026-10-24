@@ -21,7 +21,14 @@
   try { const m = localStorage.getItem("cx-mode"); if (m) setMode(m); } catch (e) {}
   await Promise.all([loadData(), detectApi()]);
   countdown(); setInterval(countdown, 30000);
-  if (C.api) setInterval(async () => { try { C.live = await getJSON(C.api + "/status", 5000); countdown(); document.dispatchEvent(new CustomEvent("status")); } catch (e) {} }, 30000);
+  // Ask "is it live?" every 30 seconds around show time (Saturday 6:30pm to 1am ET), every 5 minutes the rest of the week.
+  // The worker caches the answer, so Prankcast sees about one check a minute at most, no matter how many people are on the site.
+  const showWindow = () => { const m = etMinute(); return m >= START - 30 || m < 60; };
+  async function pollStatus() {
+    if (C.api && !document.hidden) { try { C.live = await getJSON(C.api + "/status", 5000); countdown(); document.dispatchEvent(new CustomEvent("status")); } catch (e) {} }
+    setTimeout(pollStatus, showWindow() || C.live?.live ? 30000 : 300000);
+  }
+  setTimeout(pollStatus, 30000);
 
   Dial.init(); Hold.init(); Line.init(); SB.init(); Replay.init(); Lab.init(); Clipper.init(); Board.init();
   Court.init(); Lineup.init(); Bill.init(); Directory.init(); Bingo.init(); Downloads.init();
