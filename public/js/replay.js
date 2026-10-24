@@ -1,6 +1,6 @@
 /* Replay booth: an episode plus its Prankcast chat, synced. The heat strip is chat messages per minute. */
 const Replay = (() => {
-  let markIn = null, markOut = null, ep = null, chat = [], bins = [], dur = 0, hasAudio = false, vt = 0, vplaying = false, vlast = 0, shown = 0, speedI = 0, raf = null, loadToken = 0;
+  let ep = null, chat = [], bins = [], dur = 0, hasAudio = false, vt = 0, vplaying = false, vlast = 0, shown = 0, speedI = 0, raf = null, loadToken = 0;
   const aud = () => $("rp-audio");
   const SPEEDS_AUDIO = [1, 1.5, 2], SPEEDS_VIRT = [1, 10, 60];
   const now = () => hasAudio ? aud().currentTime : vt;
@@ -18,7 +18,7 @@ const Replay = (() => {
     const token = ++loadToken;
     stop(); ep = C.episodes.find(e => e.id === +id); if (!ep) return;
     $("ep-select").value = ep.id;
-    dur = ep.sec || 0; vt = 0; shown = 0; chat = []; hasAudio = false; markIn = markOut = null; showMarks();
+    dur = ep.sec || 0; vt = 0; shown = 0; chat = []; hasAudio = false;
     $("ep-title").textContent = niceTitle(ep);
     $("ep-meta").innerHTML = [`<span>${esc(fmtDate(ep.d))}</span>`, ep.h ? `<span>Host <b>${esc(ep.h)}</b></span>` : "", `<span>${fmtLen(dur)}</span>`,
       `<a href="${PC_POST}${ep.id}" target="_blank" rel="noopener">Open on Prankcast ↗</a>`].join("");
@@ -92,7 +92,7 @@ const Replay = (() => {
   function play() {
     if (!ep) return;
     if (hasAudio) { Media.claim(aud()); aud().play().catch(() => { toast("Couldn't start the audio. Try again or open it on Prankcast."); });
-      Player.set({ kind: "ep", el: aud(), title: `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, page: "replay", seek: true, clip: () => clip(true) }); }
+      Player.set({ kind: "ep", el: aud(), title: `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, page: "replay", seek: true, clip: () => clip() }); }
     else { if (vt >= dur) vt = 0; vplaying = true; vlast = 0; }
     if (!raf) raf = requestAnimationFrame(loop);
   }
@@ -100,27 +100,15 @@ const Replay = (() => {
   function stop() { pause(); if (raf) cancelAnimationFrame(raf); raf = null; }
   function seek(t) { t = clamp(t, 0, dur); if (hasAudio) aud().currentTime = t; else vt = t; renderFeed(true); tick(); }
 
-  function showMarks() {
-    const r = $("cl-range"); if (!r) return;
-    if (markIn != null && markOut != null) r.textContent = `${hms(markIn, true)} → ${hms(markOut, true)} (${Math.round(markOut - markIn)}s)`;
-    else if (markIn != null) r.textContent = `in at ${hms(markIn, true)}`;
-    else r.textContent = "no marks";
-  }
-  function clip(quick) {
+  function clip() {
     if (!ep) return;
     if (!hasAudio || !C.api) { toast("Clipping works on the live site, where the episode audio plays."); return; }
-    let a, b; const t = now();
-    if (!quick && markIn != null && markOut != null && markOut > markIn) { a = markIn; b = markOut; }
-    else { a = Math.max(0, t - 30); b = t; }
-    if (b - a < 1) { toast("Play a little first, then clip."); return; }
-    if (b - a > 60) { b = a + 60; toast("Clips max out at 60 seconds. Took the first minute."); }
-    Lab.loadEpisodeCut(ep, a, b); go("lab");
+    if (now() < 1) { toast("Play a little first, then clip."); return; }
+    Clipper.open(Clipper.episodeSource(aud(), ep), 30);
   }
   function init() {
     fillSelect();
-    $("cl-quick").addEventListener("click", () => clip(true));
-    $("cl-in").addEventListener("click", () => { markIn = now(); if (markOut != null && markOut <= markIn) markOut = null; showMarks(); });
-    $("cl-out").addEventListener("click", () => { const t = now(); if (markIn == null || t <= markIn) { toast("Mark in first, then mark out after it."); return; } markOut = t; showMarks(); clip(false); });
+    $("cl-quick").addEventListener("click", () => clip());
     $("ep-select").addEventListener("change", e => load(e.target.value));
     $("rp-play").addEventListener("click", () => playing() ? pause() : play());
     $("rp-back").addEventListener("click", () => seek(now() - 30));

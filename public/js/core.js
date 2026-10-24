@@ -77,7 +77,7 @@ function playClip(k, vol = 1) {
   clipPlayers.add(a); a.addEventListener("ended", () => clipPlayers.delete(a));
   a.play().catch(() => {});
   const c = C.clips.find(x => x.k === k), label = c ? `${c.who}, “${c.line}”` : k;
-  if (window.Player) Player.set({ kind: "drop", el: a, title: label, page: "switchboard", clip: () => Player.clipFrom(a, `clips/${k}.mp3`, label) });
+  if (typeof Player !== "undefined") Player.set({ kind: "drop", el: a, title: label, page: "switchboard", clip: () => Player.clipFrom(a, `clips/${k}.mp3`, label) });
   return a;
 }
 function stopClips() { clipPlayers.forEach(a => a.pause()); clipPlayers.clear(); }

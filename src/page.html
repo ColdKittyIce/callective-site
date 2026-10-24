@@ -145,8 +145,7 @@
         <div class="scr-ctl">
           <button class="bigplay" type="button" id="ls-play" aria-label="Tune in"><span class="tri" aria-hidden="true"></span></button>
           <div class="scr-btns">
-            <button class="btn sm red solid" type="button" id="ls-clip" title="Shortcut: C">Clip it (last 30s)</button>
-            <button class="btn sm" type="button" id="ls-clip60">Last 60s</button>
+            <button class="btn sm red solid" type="button" id="ls-clip" title="Shortcut: C">✂ Clip it</button>
             <button class="btn sm ghost" type="button" id="ls-full" hidden>Full screen</button>
             <a class="btn sm ghost" id="ls-replay" href="#archive">Replay from the start</a>
           </div>
@@ -177,7 +176,7 @@
     <div class="sec-head">
       <p class="kicker">Party line replay</p>
       <h2 class="glitch" data-text="Replay terminal">Replay terminal</h2>
-      <p class="lede">Play any show with the Prankcast chat scrolling along, right where people typed it. Hear something good? Clip it: grab the last 30 seconds, or mark in and out, then edit it and send it to the Callective.</p>
+      <p class="lede">Play any show with the Prankcast chat scrolling along, right where people typed it. Hear something good? Hit Clip it, drag the markers to the moment, and send it to the editor.</p>
     </div>
     <div class="booth">
       <div class="deck hud">
@@ -195,10 +194,7 @@
         <div class="heat" id="heat" role="slider" aria-label="Position in episode" aria-valuemin="0" tabindex="0"><canvas id="heatc"></canvas><div class="ph" id="heat-ph"></div></div>
         <div class="heat-legend"><span>Start</span><span id="heat-mid">Chat messages per minute</span><span id="heat-end">End</span></div>
         <div class="transport" id="clipbar">
-          <button class="btn sm red solid" type="button" id="cl-quick" title="Shortcut: C">Clip it (last 30s)</button>
-          <button class="btn sm" type="button" id="cl-in">Mark in</button>
-          <button class="btn sm" type="button" id="cl-out">Mark out</button>
-          <span class="tc" style="font-size:20px" id="cl-range">no marks</span>
+          <button class="btn sm red solid" type="button" id="cl-quick" title="Shortcut: C">✂ Clip it</button>
         </div>
         <p class="note" id="rp-note"></p>
         <audio id="rp-audio" preload="none"></audio>
@@ -491,6 +487,25 @@
 
 <div class="takeover" id="takeover" role="dialog" aria-modal="true" aria-label="Dial result"></div>
 <div class="toast" id="toast" role="status"></div>
+<div class="clipper" id="clipper" hidden role="dialog" aria-label="Clip mode">
+  <div class="ct-head"><b>✂ Clip mode</b><span id="ct-title"></span><button class="ct-x" type="button" id="ct-x" aria-label="Close clip mode">✕</button></div>
+  <div class="ct-track" id="ct-track">
+    <canvas id="ct-wave" aria-hidden="true"></canvas>
+    <div class="ct-now" id="ct-now" title="Where you were"></div>
+    <div class="ct-sel" id="ct-sel"><button class="ct-h a" type="button" id="ct-a-h" aria-label="Drag the start">⟨</button><button class="ct-h b" type="button" id="ct-b-h" aria-label="Drag the end">⟩</button></div>
+    <div class="ct-ph" id="ct-ph" hidden></div>
+  </div>
+  <div class="ct-ticks" id="ct-ticks" aria-hidden="true"></div>
+  <div class="ct-row">
+    <div class="ct-read"><span>Start <b id="ct-a">0:00</b></span><span>End <b id="ct-b">0:00</b></span><span>Length <b id="ct-len">0s</b></span></div>
+    <div class="ct-nudge" id="ct-nudge"><button type="button" data-n="a:-1">◀ start</button><button type="button" data-n="a:1">start ▶</button><button type="button" data-n="b:-1">◀ end</button><button type="button" data-n="b:1">end ▶</button></div>
+  </div>
+  <div class="ct-row">
+    <div class="ct-quick" id="ct-quick"><span>Last</span><button type="button" data-len="10">10s</button><button type="button" data-len="15">15s</button><button type="button" data-len="30">30s</button><button type="button" data-len="60">60s</button></div>
+    <div class="ct-acts"><button class="btn sm" type="button" id="ct-play"><span class="tri" aria-hidden="true"></span>Preview</button><button class="btn sm red solid" type="button" id="ct-make">Send to the editor</button></div>
+  </div>
+  <p class="ct-msg" id="ct-msg"></p>
+</div>
 <div class="pbar" id="pbar" hidden>
   <button class="pb-btn" type="button" id="pb-btn" aria-label="Pause"><span class="tri" aria-hidden="true"></span></button>
   <div class="pb-now"><a href="#listen" id="pb-go"><small id="pb-kind">Radio</small><b id="pb-title">–</b></a><label class="sr" for="pb-seek">Seek</label><input type="range" id="pb-seek" min="0" max="1000" value="0"></div>
@@ -508,6 +523,7 @@
 <script src="js/switchboard.js"></script>
 <script src="js/replay.js"></script>
 <script src="js/lab.js"></script>
+<script src="js/clipper.js"></script>
 <script src="js/clipboard.js"></script>
 <script src="js/pages.js"></script>
 <script src="js/listen.js"></script>

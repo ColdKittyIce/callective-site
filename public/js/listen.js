@@ -2,7 +2,7 @@
 const Listen = (() => {
   const RADIO_EPOCH = Date.UTC(2026, 0, 1);
   const HLS_JS = "https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js";
-  let mode = "radio", want = false, sched = null, info = null, switching = false;
+  let hold = false, mode = "radio", want = false, sched = null, info = null, switching = false;
   let hls = null, proxied = false, liveRetry = null;
   const ra = () => $("radioaud"), lv = () => $("livevid");
 
@@ -117,20 +117,18 @@ const Listen = (() => {
     return { attach, dump, get ready() { return !!node; } };
   })();
 
-  async function clip(sec) {
+  async function clip(sec = 30) {
     if (mode === "live") {
       if (lv().paused) { toast("Start the live show first, then clip."); return; }
       if (!Cap.ready) { await Cap.attach(lv()); toast(Cap.ready ? "Clip recorder is on. Give it a few seconds of show, then clip again." : "This browser can't record the live show. Try Chrome or Firefox."); return; }
-      const data = await Cap.dump(); const a = ac(), n = Math.min(data.length, Math.round(a.sampleRate * sec));
-      if (n < a.sampleRate * 2) { toast("Give it a few more seconds of show first."); return; }
-      const b = a.createBuffer(1, n, a.sampleRate); b.copyToChannel(data.subarray(data.length - n), 0);
-      Lab.loadBuffer(b, `Live show, ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`, { live: true });
-      SFX.shutter(); go("lab"); return;
+      const data = await Cap.dump(), c = ac();
+      if (data.length < c.sampleRate * 2) { toast("Give it a few more seconds of show first."); return; }
+      const buf = c.createBuffer(1, data.length, c.sampleRate); buf.copyToChannel(data, 0);
+      Clipper.open(Clipper.bufferSource(buf, `Live show, ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`, lv()), sec); return;
     }
     if (!C.api || !info?.mp3) { toast("Clipping the radio works on the live site."); return; }
     if (ra().paused) { toast("Tune in first, then clip what you hear."); return; }
-    const t = ra().currentTime; SFX.shutter();
-    Lab.loadEpisodeCut(sched.ep, Math.max(0, t - sec), t); go("lab");
+    Clipper.open(Clipper.episodeSource(ra(), sched.ep, { radio: true, label: radioTitle(sched.ep) }), sec);
   }
 
   /* ---------- painting ---------- */
@@ -146,7 +144,7 @@ const Listen = (() => {
     $("ls-full").hidden = !live; $("ls-art").hidden = live && lv().videoWidth > 0;
     const playing = live ? !lv().paused : !ra().paused;
     $("ls-play").classList.toggle("is-playing", playing); $("ls-play").setAttribute("aria-label", playing ? "Pause" : live ? "Watch live" : "Tune in");
-    $("ls-clip").disabled = $("ls-clip60").disabled = !playing && !!C.api;
+    $("ls-clip").disabled = !playing && !!C.api;
     $("nav").querySelector(".nav-listen").classList.toggle("live", live);
     // home page card
     $("nowcard").classList.toggle("live", live);
@@ -194,13 +192,13 @@ const Listen = (() => {
     paintClock();
     if (mode !== "radio" || !sched) return;
     if (Date.now() >= sched.fetchedAt + (sched.ep.sec - sched.offset) * 1000) { await nextShow(); return; }
-    const a = ra(); if (want && !a.paused && a.readyState > 2 && Math.abs(a.currentTime - pos()) > 8) a.currentTime = pos();
+    const a = ra(); if (want && !hold && !a.paused && a.readyState > 2 && Math.abs(a.currentTime - pos()) > 8) a.currentTime = pos();
   }
 
   async function init() {
     $("ls-play").addEventListener("click", toggle);
     $("ls-tap").addEventListener("click", () => { ac(); want = true; playLive(); });
-    $("ls-clip").addEventListener("click", () => clip(30)); $("ls-clip60").addEventListener("click", () => clip(60));
+    $("ls-clip").addEventListener("click", () => clip(30));
     $("ls-full").addEventListener("click", () => { const v = lv(); (v.requestFullscreen || v.webkitEnterFullscreen)?.call(v); });
     $("ls-replay").addEventListener("click", e => { const id = +e.currentTarget.dataset.replay; if (id) { e.preventDefault(); want = false; stopRadio(); Replay.loadAt(id, Math.max(0, pos() - 5)); } });
     $("livebar").addEventListener("click", () => { if (mode === "live") { ac(); want = true; playLive(); } });
@@ -216,5 +214,5 @@ const Listen = (() => {
     await refresh(); paintNow(); paintClock(); setInterval(tick, 1000); osc();
     if (C.live?.live) goLive();
   }
-  return { init, tuneIn, get mode() { return mode; } };
+  return { init, tuneIn, get mode() { return mode; }, get hold() { return hold; }, set hold(v) { hold = !!v; } };
 })();

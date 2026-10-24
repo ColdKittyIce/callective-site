@@ -31,10 +31,7 @@ const Player = (() => {
       if ((e.key === "c" || e.key === "C") && !e.ctrlKey && !e.metaKey && !e.altKey && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName) && cur?.clip && playing()) { e.preventDefault(); cur.clip(); }
     });
   }
-  // Clip a file that's playing in the browser (songs, clip board clips, patch bay clips): the last `sec` seconds up to where you are.
-  function clipFrom(el, url, label, sec = 30, meta = null) {
-    const t = el.ended || !el.currentTime ? (el.duration || 0) : el.currentTime;
-    SFX.shutter(); Lab.loadUrl(url, label, t, sec, meta); go("lab");
-  }
+  // Clip a file that's playing in the browser (songs, clip board clips, patch bay clips): opens clip mode on it.
+  function clipFrom(el, url, label, sec = 30) { Clipper.open(Clipper.fileSource(el, url, label), sec); }
   return { init, set, update, hide, sync, clipFrom, get current() { return cur; } };
 })();

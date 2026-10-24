@@ -17,8 +17,8 @@ const Lab = (() => {
     catch (e) { msg(`Couldn't load ${label}. Try another clip.`); }
   }
   function loadBuffer(b, label, m) {
-    setBuffer(b, label, m); sel = { a: 0, b: buf.duration }; draw(); info();
-    $("s-title").value = ""; msg("> Clipped from the live show. Trim it, add effects, then download or send it.");
+    setBuffer(b, label, m); sel = null; draw(); info();
+    $("s-title").value = ""; msg("> Clip loaded. Fine-trim it, add effects, then download it or send it.");
   }
   async function loadFile(file) {
     if (!file) return; if (!/^audio\//.test(file.type) && !/\.(mp3|wav|ogg|m4a|aac|flac|webm)$/i.test(file.name)) { msg("That doesn't look like an audio file."); return; }

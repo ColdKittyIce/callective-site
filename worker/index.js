@@ -205,7 +205,7 @@ const slim = e => ({ id: e.id, t: e.t, d: e.d, h: e.h, sec: e.sec, chat: e.chat 
 const BITRATES = { 1: [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320], 2: [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160] };
 async function mp3Layout(mp3) {
   const r = await fetch(mp3, { headers: { range: "bytes=0-65535" } });
-  if (!r.ok && r.status !== 206) throw new Error(`Audio ${r.status}`);
+  if (r.status !== 206) { try { await r.body?.cancel(); } catch (e) {} throw new Error(`Audio storage answered ${r.status} instead of a piece`); }
   const b = new Uint8Array(await r.arrayBuffer()); let off = 0;
   if (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33) off = 10 + ((b[6] & 127) << 21 | (b[7] & 127) << 14 | (b[8] & 127) << 7 | (b[9] & 127));
   let kbps = 128;
@@ -220,10 +220,11 @@ async function cut(id, url, ctx, request) {
   const cache = caches.default, key = new Request(new URL(request.url).toString(), { method: "GET" });
   const hit = await cache.match(key); if (hit) return hit;
   const ep = await memo(ctx, "ep" + id, 86400, () => episode(id)); if (!ep.mp3) return json({ error: "No audio for that show" }, 404);
-  const lay = await mp3Layout(ep.mp3);
+  const lay = await memo(ctx, "lay" + id, 86400, () => mp3Layout(ep.mp3));
   const a = Math.floor(lay.start + from * lay.bytesPerSec), z = Math.floor(lay.start + to * lay.bytesPerSec);
   const r = await fetch(ep.mp3, { headers: { range: `bytes=${a}-${z}` } });
-  if (!(r.ok || r.status === 206)) return json({ error: "Couldn't read that part of the show" }, 502);
+  // A 200 here would be the whole multi-hour show, so never pass it through.
+  if (r.status !== 206) { try { await r.body?.cancel(); } catch (e) {} return json({ error: "Couldn't read that part of the show" }, 502); }
   const res = new Response(r.body, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400", ...cors() } });
   ctx.waitUntil(cache.put(key, res.clone()));
   return res;

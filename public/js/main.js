@@ -23,7 +23,7 @@
   countdown(); setInterval(countdown, 30000);
   if (C.api) setInterval(async () => { try { C.live = await getJSON(C.api + "/status", 5000); countdown(); document.dispatchEvent(new CustomEvent("status")); } catch (e) {} }, 30000);
 
-  Dial.init(); Hold.init(); Line.init(); SB.init(); Replay.init(); Lab.init(); Board.init();
+  Dial.init(); Hold.init(); Line.init(); SB.init(); Replay.init(); Lab.init(); Clipper.init(); Board.init();
   Court.init(); Lineup.init(); Bill.init(); Directory.init(); Bingo.init(); Downloads.init();
   await Listen.init();
   mergeLatest();
