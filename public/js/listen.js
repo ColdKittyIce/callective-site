@@ -67,7 +67,9 @@ const Listen = (() => {
     let fails = 0;
     hls.on(Hls.Events.ERROR, (_, d) => {
       if (!d.fatal) return; fails++;
-      if (!proxied && C.api) { attachLive(true).then(() => want && playLive()); return; }
+      // The worker relay (/api/hls) is off unless C.relay is turned on, so live video never runs through your Worker by surprise.
+      if (!proxied && C.api && C.relay) { attachLive(true).then(() => want && playLive()); return; }
+      if (!C.relay && fails >= 3) { $("ls-note").innerHTML = `The live stream won't play here. <a href="https://prankcast.com/thecallective" target="_blank" rel="noopener">Watch it on Prankcast ↗</a>`; return; }
       if (fails < 4 && d.type === Hls.ErrorTypes.NETWORK_ERROR) { setTimeout(() => hls && hls.startLoad(), 3000); return; }
       $("ls-note").textContent = "The live stream dropped. Retrying… you can also listen on Prankcast.";
       clearTimeout(liveRetry); liveRetry = setTimeout(() => mode === "live" && attachLive(proxied).then(() => want && playLive()), 15000);

@@ -53,7 +53,7 @@ async function route(request, env, ctx, url) {
       if (p === "/api/latest") return json(await memo(ctx, "latest", 300, latest), 200, 300);
       if ((m = p.match(/^\/api\/episode\/(\d+)$/))) return json(await memo(ctx, "ep" + m[1], 86400, () => episode(m[1])), 200, 86400);
       if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 3600, () => chat(m[1]));
-      if (p === "/api/hls") return hls(url, ctx);
+      if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(m[1], url, ctx, request);
       if (p === "/api/queue") {
         const kind = "queue";
