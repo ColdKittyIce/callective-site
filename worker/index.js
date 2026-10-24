@@ -31,7 +31,7 @@
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
 const UA = { "user-agent": "CallectiveSite/2.0 (+thecallective site worker)" };
-const MAX_CLIP_BYTES = 2_000_000, MAX_CLIP_SEC = 62, UPLOADS_PER_HOUR = 6;
+const MAX_CLIP_BYTES = 2_000_000, MAX_CLIP_SEC = 62, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 4000;
 const RADIO_EPOCH = Date.UTC(2026, 0, 1);
 
 export default {
@@ -292,6 +292,12 @@ async function clipsPost(request, env, ctx) {
   const ip = request.headers.get("cf-connecting-ip") || "unknown", hour = new Date().toISOString().slice(0, 13);
   const rlKey = `rl:${ip}:${hour}`, used = +(await env.DB.get(rlKey) || 0);
   if (used >= UPLOADS_PER_HOUR) return json({ error: "That's a lot of clips. Try again in an hour" }, 429);
+  // Hard ceilings for the whole site, so storage can never run away (about 2 MB a clip at most):
+  // no more than UPLOADS_PER_DAY sends a day from everyone combined, and no more than MAX_STORED_CLIPS kept at once.
+  const dayKey = `day:${new Date().toISOString().slice(0, 10)}`, today = +(await env.DB.get(dayKey) || 0);
+  if (today >= UPLOADS_PER_DAY) return json({ error: "The clip inbox is full for today. Try again tomorrow" }, 429);
+  const stored = +(await env.DB.get("count") || 0);
+  if (stored >= MAX_STORED_CLIPS) return json({ error: "The clip board is full right now. The crew has been told" }, 507);
   let form; try { form = await request.formData(); } catch (e) { return json({ error: "Send the clip as a form" }, 400); }
   const file = form.get("file"); let meta = {}; try { meta = JSON.parse(form.get("meta") || "{}"); } catch (e) {}
   if (!file || typeof file === "string") return json({ error: "No audio attached" }, 400);
@@ -307,6 +313,8 @@ async function clipsPost(request, env, ctx) {
   await env.CLIPS.put(`clips/${id}.mp3`, bytes, { httpMetadata: { contentType: "audio/mpeg" } });
   await env.DB.put("p:" + id, "1", { metadata: md });
   await env.DB.put(rlKey, String(used + 1), { expirationTtl: 3700 });
+  await env.DB.put(dayKey, String(today + 1), { expirationTtl: 90000 });
+  await env.DB.put("count", String(stored + 1));
   if (env.DISCORD_WEBHOOK) ctx.waitUntil(notify(env.DISCORD_WEBHOOK, md, bytes));
   return json({ ok: true, id, status: dest === "crew" ? "sent to the crew" : "waiting" });
 }
@@ -321,6 +329,9 @@ async function modAct(env, id, action) {
   const k = await env.DB.getWithMetadata("p:" + id);
   if (!k.value) return json({ error: "Not in the queue" }, 404);
   if (action === "approve") { await env.DB.put("a:" + id, "1", { metadata: { ...k.metadata, note: "" } }); await env.DB.delete("p:" + id); }
-  else { await env.DB.delete("p:" + id); await env.CLIPS.delete(`clips/${id}.mp3`); }
+  else {
+    await env.DB.delete("p:" + id); await env.CLIPS.delete(`clips/${id}.mp3`);
+    await env.DB.put("count", String(Math.max(0, (+(await env.DB.get("count")) || 1) - 1)));
+  }
   return json({ ok: true });
 }
