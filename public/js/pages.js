@@ -79,7 +79,7 @@ const Lineup = (() => {
       <div><p class="kicker" style="color:var(--red)">Booking no. ${s.no}</p><h3>${esc(s.name)}</h3>
       <dl><dt>Known as</dt><dd>${esc(s.aka)}</dd><dt>Role</dt><dd>${esc(s.role)}</dd><dt>Charge</dt><dd>${esc(s.sign.charAt(0) + s.sign.slice(1).toLowerCase())}</dd>
       <dt>Shows hosted</dt><dd>${st.n} on Prankcast${st.last ? ` · last on ${fmtDate(st.last.d)}` : ""}</dd><dt>Priors</dt><dd>${esc(s.priors)}</dd></dl>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px"><span class="stamp">BOOKED</span>${st.last ? `<button class="btn sm" type="button" data-replay="${st.last.id}">Replay their last show</button>` : ""}<button class="btn sm" type="button" data-clip="${s.clip}">Hear from the suspect</button></div></div>`;
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px"><span class="stamp">BOOKED</span>${st.last ? (isRecent(st.last.id) ? `<button class="btn sm" type="button" data-replay="${st.last.id}">Replay their last show</button>` : `<a class="btn sm" href="${PC_POST}${st.last.id}" target="_blank" rel="noopener">Their last show on Prankcast ↗</a>`) : ""}<button class="btn sm" type="button" data-clip="${s.clip}">Hear from the suspect</button></div></div>`;
     $("sheet").querySelectorAll("[data-img]").forEach(b => b.addEventListener("click", () => sheet(s, +b.dataset.img)));
   }
   function choose(s) {
@@ -128,7 +128,7 @@ const Directory = (() => {
     let L = C.episodes.filter(e => filter === "all" || (filter === "specials" ? SPECIAL.has(e.id) : e.h === filter));
     if (q) L = L.filter(e => `${e.t} ${e.n || ""} ${e.h || ""} ${fmtDate(e.d)}`.toLowerCase().includes(q));
     const S = all ? L : L.slice(0, 30);
-    $("listings").innerHTML = S.map(e => `<div class="lst"><span class="tt">${esc(niceTitle(e))}</span><span class="dots"><span class="d">${esc(fmtDate(e.d))}</span><span class="len">${fmtLen(e.sec || 0)}</span></span>${e.h ? `<span class="h">Host: ${esc(e.h)}</span>` : ""}${e.n ? `<span class="n">${esc(e.n)}</span>` : ""}<span class="acts"><button type="button" data-replay="${e.id}">▶ Play with chat</button><a href="${PC_POST}${e.id}" target="_blank" rel="noopener">Prankcast ↗</a></span></div>`).join("")
+    $("listings").innerHTML = S.map(e => `<div class="lst"><span class="tt">${esc(niceTitle(e))}</span><span class="dots"><span class="d">${esc(fmtDate(e.d))}</span><span class="len">${fmtLen(e.sec || 0)}</span></span>${e.h ? `<span class="h">Host: ${esc(e.h)}</span>` : ""}${e.n ? `<span class="n">${esc(e.n)}</span>` : ""}<span class="acts">${isRecent(e.id) ? `<button type="button" data-replay="${e.id}">▶ Play here with chat</button><a href="${PC_POST}${e.id}" target="_blank" rel="noopener">Prankcast ↗</a>` : `<a href="${PC_POST}${e.id}" target="_blank" rel="noopener">▶ Listen on Prankcast ↗</a>`}</span></div>`).join("")
       || `<div class="lst"><span class="tt">No listings.</span><span class="h">Try another word, or pick All.</span></div>`;
     $("yp-count").textContent = `${S.length} of ${L.length} listings`; $("yp-more").hidden = all || L.length <= 30;
   }

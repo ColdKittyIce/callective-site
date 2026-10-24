@@ -5,7 +5,9 @@
  *   Shows
  *   GET  /api/ping              health check (no Prankcast call)
  *   GET  /api/status            is TheCallective live on Prankcast, plus the live stream address
- *   GET  /api/radio             what Callective Radio (the 24/7 player) is playing right now
+ *   GET  /api/radio             what Callective Radio (the 24/7 player) is playing right now (the newest 10 shows)
+ *   GET  /api/shows             which shows the site has its own copy of (R2)
+ *   GET  /api/show/:id.mp3      a show's audio from the site's own copy (supports seeking)
  *   GET  /api/latest            newest episode posts (merged into the archive)
  *   GET  /api/episode/:id       audio URL and chat id for one Prankcast post
  *   GET  /api/chat/:cid         Prankcast chat replay for a broadcast, trimmed
@@ -33,6 +35,7 @@ const PC = "https://prankcast.com";
 const UA = { "user-agent": "CallectiveSite/2.0 (+thecallective site worker)" };
 const MAX_CLIP_BYTES = 2_000_000, MAX_CLIP_SEC = 62, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 4000;
 const RADIO_EPOCH = Date.UTC(2026, 0, 1);
+const RADIO_SHOWS = 10; // Callective Radio plays the newest 10 shows, from the site's own copies in R2
 
 export default {
   async fetch(request, env, ctx) {
@@ -41,7 +44,9 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors() });
     try { return await route(request, env, ctx, url); }
     catch (e) { return json({ error: "Upstream error", detail: String(e && e.message || e) }, 502); }
-  }
+  },
+  // Every 15 minutes: copy at most one new show into R2 and drop copies that fell out of the newest 10.
+  async scheduled(event, env, ctx) { ctx.waitUntil(mirrorStep(env).catch(e => console.log("mirror:", e && e.message))); }
 };
 
 async function route(request, env, ctx, url) {
@@ -51,7 +56,13 @@ async function route(request, env, ctx, url) {
       if (p === "/api/status") return json(await getStatus(ctx), 200, 60);
       if (p === "/api/radio") return cached(request, ctx, 15, () => radio(env, url, ctx));
       if (p === "/api/latest") return json(await memo(ctx, "latest", 1800, latest), 200, 1800);
-      if ((m = p.match(/^\/api\/episode\/(\d+)$/))) return json(await memo(ctx, "ep" + m[1], 604800, () => episode(m[1])), 200, 86400);
+      if ((m = p.match(/^\/api\/episode\/(\d+)$/))) {
+        const ep = { ...(await memo(ctx, "ep" + m[1], 604800, () => episode(m[1]))) };
+        if ((await mirrored(env, ctx)).some(x => x.id === +m[1])) ep.mp3 = `/api/show/${m[1]}.mp3`;
+        return json(ep, 200, 300);
+      }
+      if ((m = p.match(/^\/api\/show\/(\d+)\.mp3$/))) return showAudio(env, m[1], request);
+      if (p === "/api/shows") return json({ radio: RADIO_SHOWS, copies: await mirrored(env, ctx, true) }, 200, 60);
       if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 604800, () => chat(m[1]));
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(m[1], url, ctx, request);
@@ -191,10 +202,15 @@ function radioAt(list, t) {
   for (const e of radioOrder(list, cycle)) { if (pos < e.sec) return { ep: e, offset: pos }; pos -= e.sec; }
   return null;
 }
-async function radio(env, url, ctx) {
-  const base = await (await env.ASSETS.fetch(new Request(new URL("/data/episodes.json", url)))).json();
+async function allEpisodes(env, ctx) {
+  const base = await (await env.ASSETS.fetch(new Request("https://assets.local/data/episodes.json"))).json();
   let extra = []; try { extra = (await memo(ctx, "latest", 1800, latest)).posts || []; } catch (e) {}
-  const have = new Set(base.map(e => e.id)), list = base.concat(extra.filter(e => !have.has(e.id))).filter(e => e.sec > 600);
+  const have = new Set(base.map(e => e.id));
+  return base.concat(extra.filter(e => !have.has(e.id))).filter(e => e.sec > 600);
+}
+const newest = list => list.slice().sort((a, b) => b.id - a.id).slice(0, RADIO_SHOWS);
+async function radio(env, url, ctx) {
+  const list = newest(await allEpisodes(env, ctx));
   const now = Date.now(), cur = radioAt(list, now);
   const next = []; let t = now + (cur.ep.sec - cur.offset) * 1000 + 500;
   for (let i = 0; i < 4; i++) { const n = radioAt(list, t); next.push({ ...slim(n.ep), at: t - 500 }); t += n.ep.sec * 1000; }
@@ -202,12 +218,57 @@ async function radio(env, url, ctx) {
 }
 const slim = e => ({ id: e.id, t: e.t, d: e.d, h: e.h, sec: e.sec, chat: e.chat || 0 });
 
+/* ---------- the site's own copies of the newest shows (R2: shows/<id>.mp3) ---------- */
+// Only ever reads from Prankcast and writes to this site's own bucket. Nothing on Prankcast is changed or deleted.
+async function listCopies(env) {
+  if (!env.CLIPS) return [];
+  const out = []; let cursor;
+  do { const pg = await env.CLIPS.list({ prefix: "shows/", cursor, include: ["customMetadata"] });
+    for (const o of pg.objects) { const id = +o.key.slice(6).replace(/\.mp3$/, ""); if (id) out.push({ id, size: o.size, uploaded: o.uploaded, sec: +(o.customMetadata?.sec || 0) }); }
+    cursor = pg.truncated ? pg.cursor : null; } while (cursor);
+  return out;
+}
+const mirrored = (env, ctx, fresh) => fresh ? listCopies(env) : memo(ctx, "copies", 300, () => listCopies(env));
+async function mirrorStep(env) {
+  if (!env.CLIPS) return;
+  const fakeCtx = { waitUntil() {} };
+  const want = newest(await allEpisodes(env, fakeCtx)), wantIds = new Set(want.map(e => e.id)), have = await listCopies(env);
+  for (const c of have) if (!wantIds.has(c.id)) await env.CLIPS.delete(`shows/${c.id}.mp3`); // our own copy only
+  const haveIds = new Set(have.map(c => c.id));
+  for (const e of want) {
+    if (haveIds.has(e.id)) continue;
+    const info = await episode(e.id); if (!info.mp3) continue;
+    const r = await fetch(info.mp3, { headers: UA });
+    if (!r.ok || !r.body) throw new Error(`copy ${e.id}: ${r.status}`);
+    await env.CLIPS.put(`shows/${e.id}.mp3`, r.body, { httpMetadata: { contentType: "audio/mpeg" }, customMetadata: { sec: String(e.sec || 0), d: e.d || "", h: e.h || "" } });
+    return; // one show per run keeps each run short
+  }
+}
+async function showAudio(env, id, request) {
+  if (!env.CLIPS) return json({ error: "Storage not set up" }, 500);
+  const obj = await env.CLIPS.get(`shows/${id}.mp3`, { range: request.headers });
+  if (!obj) return json({ error: "Not found" }, 404);
+  const h = new Headers({ "content-type": "audio/mpeg", "accept-ranges": "bytes", "cache-control": "public, max-age=86400", etag: obj.httpEtag, ...cors() });
+  if (obj.range && request.headers.get("range")) {
+    const off = obj.range.offset ?? (obj.size - obj.range.suffix), len = obj.range.length ?? (obj.size - off);
+    h.set("content-range", `bytes ${off}-${off + len - 1}/${obj.size}`); h.set("content-length", String(len));
+    return new Response(obj.body, { status: 206, headers: h });
+  }
+  h.set("content-length", String(obj.size));
+  return new Response(obj.body, { headers: h });
+}
+
 /* ---------- cutting a piece of an episode ---------- */
 const BITRATES = { 1: [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320], 2: [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160] };
-async function mp3Layout(mp3) {
-  const r = await fetch(mp3, { headers: { range: "bytes=0-65535" } });
+async function readPiece(env, id, mp3, a, z) {
+  if (env.CLIPS) { const o = await env.CLIPS.get(`shows/${id}.mp3`, { range: { offset: a, length: z - a + 1 } }); if (o) return o.body; }
+  const r = await fetch(mp3, { headers: { range: `bytes=${a}-${z}` } });
+  // A 200 here would be the whole multi-hour show, so never pass it through.
   if (r.status !== 206) { try { await r.body?.cancel(); } catch (e) {} throw new Error(`Audio storage answered ${r.status} instead of a piece`); }
-  const b = new Uint8Array(await r.arrayBuffer()); let off = 0;
+  return r.body;
+}
+async function mp3Layout(env, id, mp3) {
+  const b = new Uint8Array(await new Response(await readPiece(env, id, mp3, 0, 65535)).arrayBuffer()); let off = 0;
   if (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33) off = 10 + ((b[6] & 127) << 21 | (b[7] & 127) << 14 | (b[8] & 127) << 7 | (b[9] & 127));
   let kbps = 128;
   for (let i = off; i < b.length - 4; i++) {
@@ -221,12 +282,10 @@ async function cut(id, url, ctx, request) {
   const cache = caches.default, key = new Request(new URL(request.url).toString(), { method: "GET" });
   const hit = await cache.match(key); if (hit) return hit;
   const ep = await memo(ctx, "ep" + id, 604800, () => episode(id)); if (!ep.mp3) return json({ error: "No audio for that show" }, 404);
-  const lay = await memo(ctx, "lay" + id, 2592000, () => mp3Layout(ep.mp3));
+  const lay = await memo(ctx, "lay" + id, 2592000, () => mp3Layout(env, id, ep.mp3));
   const a = Math.floor(lay.start + from * lay.bytesPerSec), z = Math.floor(lay.start + to * lay.bytesPerSec);
-  const r = await fetch(ep.mp3, { headers: { range: `bytes=${a}-${z}` } });
-  // A 200 here would be the whole multi-hour show, so never pass it through.
-  if (r.status !== 206) { try { await r.body?.cancel(); } catch (e) {} return json({ error: "Couldn't read that part of the show" }, 502); }
-  const res = new Response(r.body, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400", ...cors() } });
+  let body; try { body = await readPiece(env, id, ep.mp3, a, z); } catch (e) { return json({ error: "Couldn't read that part of the show" }, 502); }
+  const res = new Response(body, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400", ...cors() } });
   ctx.waitUntil(cache.put(key, res.clone()));
   return res;
 }

@@ -32,3 +32,8 @@ class_name = "Room"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room"]
+
+# Every 15 minutes the worker copies the newest shows into R2 (one per run)
+# so Callective Radio plays from the site's own copies instead of Prankcast.
+[triggers]
+crons = ["*/15 * * * *"]

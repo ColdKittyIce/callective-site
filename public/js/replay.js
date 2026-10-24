@@ -8,13 +8,15 @@ const Replay = (() => {
 
   function fillSelect(selectId) {
     const byYear = new Map();
-    for (const e of C.episodes) { const y = e.d ? e.d.slice(0, 4) : "Undated"; if (!byYear.has(y)) byYear.set(y, []); byYear.get(y).push(e); }
+    const recent = recentIds();
+    for (const e of C.episodes.filter(x => recent.has(x.id))) { const y = e.d ? e.d.slice(0, 4) : "Undated"; if (!byYear.has(y)) byYear.set(y, []); byYear.get(y).push(e); }
     $("ep-select").innerHTML = [...byYear].map(([y, list]) => `<optgroup label="${y}">${list.map(e =>
       `<option value="${e.id}">${esc(fmtDate(e.d))} · ${esc(e.h || niceTitle(e).replace(/^The Callective\s*[-–:]?\s*/i, "") || "The Callective")}${e.chat ? ` · ${e.chat} chats` : ""}</option>`).join("")}</optgroup>`).join("");
     if (selectId) $("ep-select").value = selectId;
   }
 
   async function load(id, autoplay) {
+    if (!isRecent(id)) { window.open(PC_POST + id, "_blank", "noopener"); return; }
     const token = ++loadToken;
     stop(); ep = C.episodes.find(e => e.id === +id); if (!ep) return;
     $("ep-select").value = ep.id;
@@ -129,8 +131,10 @@ const Replay = (() => {
     a.addEventListener("error", () => { if (hasAudio) { hasAudio = false; $("rp-note").textContent = "The audio didn't load. The chat still replays on its own, or open the show on Prankcast."; } });
     new ResizeObserver(() => drawHeat()).observe(heat);
     document.addEventListener("episodes-changed", () => fillSelect(ep?.id));
-    const start = C.episodes.find(e => e.chat >= 60) || C.episodes[0];
+    const recent = recentIds(), mine = C.episodes.filter(e => recent.has(e.id));
+    const start = mine.find(e => e.chat >= 30) || mine[0];
     load(start.id);
   }
-  return { init, load: (id, autoplay = true) => { load(id, autoplay); go("replay"); }, loadAt: async (id, t) => { await load(id, false); seek(t); go("replay"); } };
+  return { init, load: (id, autoplay = true) => { if (!isRecent(id)) { window.open(PC_POST + id, "_blank", "noopener"); return; } load(id, autoplay); go("replay"); },
+    loadAt: async (id, t) => { if (!isRecent(id)) { window.open(PC_POST + id, "_blank", "noopener"); return; } await load(id, false); seek(t); go("replay"); } };
 })();

@@ -88,6 +88,11 @@ const Media = {
   claim(el) { this.els.forEach(x => { if (x !== el && !x.paused) x.pause(); }); this.els.add(el); }
 };
 
+/* The site plays the newest 10 shows itself (from its own copies). Anything older opens on Prankcast. */
+const RECENT = 10;
+function recentIds() { return new Set(C.episodes.filter(e => e.sec > 600).sort((a, b) => b.id - a.id).slice(0, RECENT).map(e => e.id)); }
+const isRecent = id => recentIds().has(+id);
+
 async function loadData() {
   const [eps, clips] = await Promise.all([getJSON("data/episodes.json"), getJSON("data/clips.json")]);
   C.episodes = eps.sort((a, b) => b.id - a.id); C.clips = clips;

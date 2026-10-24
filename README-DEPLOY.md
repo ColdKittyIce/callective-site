@@ -77,9 +77,12 @@ It goes back to the practice line 15 minutes after the last update.
 
 ## Listen: Callective Radio and the live show
 
-- **Callective Radio** plays every archived episode on a shuffled loop, around the clock.
+- **Callective Radio** plays the **10 newest shows** on a shuffled loop, around the clock.
   - The order comes from the clock, so everyone hears the same moment.
-  - New Prankcast episodes join the loop on their own.
+  - The site keeps its own copies of those 10 shows in R2 (`shows/<id>.mp3`), so the radio never streams from Prankcast.
+    Every 15 minutes the worker copies in at most one new show and drops copies that fall out of the newest 10. That's about 2.6 GB, inside R2's free 10 GB.
+  - The 10 newest also play in the archive's replay terminal. Older shows link out to Prankcast.
+  - `/api/shows` lists which shows the site has copied so far.
 - **When TheCallective goes live on Prankcast**, the site notices within about 30 seconds.
   - Anyone listening to the radio is switched to the live show automatically, with video if the stream has it.
   - When the show ends, the radio picks back up.

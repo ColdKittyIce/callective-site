@@ -12,7 +12,7 @@ const Listen = (() => {
   function at(list, t) { const total = list.reduce((s, e) => s + e.sec, 0), el = (t - RADIO_EPOCH) / 1000, cycle = Math.floor(el / total); let p = el - cycle * total;
     for (const e of order(list, cycle)) { if (p < e.sec) return { ep: e, offset: p }; p -= e.sec; } return null; }
   function local() {
-    const list = C.episodes.filter(e => e.sec > 600), now = Date.now(), cur = at(list, now), next = []; let t = now + (cur.ep.sec - cur.offset) * 1000 + 500;
+    const list = C.episodes.filter(e => e.sec > 600).sort((x, y) => y.id - x.id).slice(0, 10), now = Date.now(), cur = at(list, now), next = []; let t = now + (cur.ep.sec - cur.offset) * 1000 + 500;
     for (let i = 0; i < 4; i++) { const n = at(list, t); next.push({ ...n.ep, at: t - 500 }); t += n.ep.sec * 1000; }
     return { now, ep: cur.ep, offset: cur.offset, endsAt: now + (cur.ep.sec - cur.offset) * 1000, next };
   }
@@ -152,7 +152,7 @@ const Listen = (() => {
     $("nowcard").classList.toggle("live", live);
     $("nc-badge").classList.toggle("live", live); $("nc-badge").querySelector("span").textContent = live ? "Live" : "Radio";
     $("nc-label").textContent = live ? "On the air right now" : playing ? "You're tuned in" : "Callective Radio is playing";
-    $("nc-title").textContent = live ? "The Callective is live. Watch it here." : e ? radioTitle(e) : "The archive, around the clock";
+    $("nc-title").textContent = live ? "The Callective is live. Watch it here." : e ? radioTitle(e) : "The newest shows, around the clock";
     if (Player.current?.kind === "radio" && e) Player.update({ title: radioTitle(e) });
   }
   function paintNext() {
