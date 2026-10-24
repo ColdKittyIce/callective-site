@@ -14,9 +14,6 @@
  *   GET  /api/hls?u=            relays the live stream, only used if the browser can't read it directly
  *   GET  /api/cut/:id?from&to   a piece of an episode's MP3 (for clipping), max 75s
  *
- *   Discord queue (pushed by CallBot, kept in the Room durable object)
- *   GET  /api/queue             live Discord queue
- *   POST /api/queue             CallBot pushes the queue here           (QUEUE_TOKEN)
  *
  *   Clips
  *   GET  /api/clips             approved community clips
@@ -27,7 +24,7 @@
  *   POST /api/mod/:id/approve   put it on the board                       (ADMIN_TOKEN)
  *   POST /api/mod/:id/reject    remove it                                 (ADMIN_TOKEN)
  *
- * Storage: KV namespace DB (clip records, rate limits), R2 bucket CLIPS (clip audio), durable object ROOM (the queue).
+ * Storage: KV namespace DB (clip records, rate limits), R2 bucket CLIPS (clip audio).
  * Nothing here writes to Prankcast or Discord, except the optional DISCORD_WEBHOOK heads-up for new clips.
  */
 const PROFILE = "thecallective";
@@ -52,7 +49,7 @@ export default {
 async function route(request, env, ctx, url) {
       const p = url.pathname.replace(/\/+$/, ""), M = request.method;
       let m;
-      if (p === "/api/ping") return json({ ok: true, room: !!env.ROOM });
+      if (p === "/api/ping") return json({ ok: true });
       if (p === "/api/status") return json(await getStatus(ctx), 200, 60);
       if (p === "/api/radio") return cached(request, ctx, 15, () => radio(env, url, ctx));
       if (p === "/api/latest") return json(await memo(ctx, "latest", 1800, latest), 200, 1800);
@@ -66,14 +63,6 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 604800, () => chat(m[1]));
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(m[1], url, ctx, request);
-      if (p === "/api/queue") {
-        const kind = "queue";
-        if (M === "GET") return roomGet(env, ctx, request, kind);
-        if (M === "POST") {
-          if (!env.QUEUE_TOKEN || (request.headers.get("authorization") || "") !== `Bearer ${env.QUEUE_TOKEN}`) return json({ error: "Unauthorized" }, 401);
-          return roomPost(env, request, kind);
-        }
-      }
       if (p === "/api/clips" && M === "GET") return clipsList(env);
       if (p === "/api/clips" && M === "POST") return clipsPost(request, env, ctx);
       if ((m = p.match(/^\/api\/clips\/([a-z0-9-]+)\.mp3$/)) && M === "GET") return clipAudio(env, m[1], "a:", url);
@@ -288,41 +277,6 @@ async function cut(id, url, ctx, request) {
   const res = new Response(body, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400", ...cors() } });
   ctx.waitUntil(cache.put(key, res.clone()));
   return res;
-}
-
-/* ---------- live queue (CallBot -> Room durable object -> site) ---------- */
-// GETs are cached for a few seconds at each Cloudflare location, so a crowd of listeners makes very few Room requests.
-async function roomGet(env, ctx, request, kind) {
-  if (!env.ROOM) return json({ updated: null, items: [], locked: false });
-  const cache = caches.default, key = new Request(new URL(`/api/${kind}`, request.url).toString());
-  const hit = await cache.match(key); if (hit) return hit;
-  const r = await env.ROOM.get(env.ROOM.idFromName("callective")).fetch(`https://room/${kind}`);
-  const res = json(await r.json(), 200, 3);
-  ctx.waitUntil(cache.put(key, res.clone()));
-  return res;
-}
-async function roomPost(env, request, kind) {
-  if (!env.ROOM) return json({ error: "The ROOM durable object isn't set up" }, 500);
-  let body; try { body = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
-  const r = await env.ROOM.get(env.ROOM.idFromName("callective")).fetch(`https://room/${kind}`, { method: "POST", body: JSON.stringify(body) });
-  return json(await r.json(), r.status);
-}
-export class Room {
-  constructor(state) { this.state = state; }
-  async fetch(request) {
-    const kind = new URL(request.url).pathname.slice(1), s = this.state.storage, post = request.method === "POST";
-    if (kind === "queue") {
-      if (!post) return Response.json((await s.get("queue")) || { updated: null, items: [], locked: false });
-      const body = await request.json();
-      const items = (Array.isArray(body.items) ? body.items : []).slice(0, 60).map(x => {
-        const name = clean(typeof x === "string" ? x : x && x.name, 60);
-        return { name, allcall: !!(x && x.allcall) || /^all call/i.test(name) };
-      }).filter(x => x.name);
-      await s.put("queue", { updated: new Date().toISOString(), locked: !!body.locked, items });
-      return Response.json({ ok: true, count: items.length });
-    }
-    return Response.json({ error: "Not found" }, { status: 404 });
-  }
 }
 
 /* ---------- clip board ---------- */

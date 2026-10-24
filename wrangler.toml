@@ -23,15 +23,15 @@ id = "bd359d37b7a840759a6f60986d43b7e0"
 binding = "CLIPS"
 bucket_name = "callective-clips"
 
-# Holds the live queue that CallBot sends in.
-# Nothing to create by hand: "npx wrangler deploy" sets it up the first time.
-[[durable_objects.bindings]]
-name = "ROOM"
-class_name = "Room"
-
+# History of the "Room" durable object (it held the live queue, which was removed).
+# Keep these two blocks: Cloudflare needs them to know it was created and then deleted.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room"]
+
+[[migrations]]
+tag = "v2"
+deleted_classes = ["Room"]
 
 # Every 15 minutes the worker copies the newest shows into R2 (one per run)
 # so Callective Radio plays from the site's own copies instead of Prankcast.
