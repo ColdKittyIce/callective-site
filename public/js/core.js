@@ -100,9 +100,9 @@ async function loadData() {
 /* Call lists (who made each call, and when it starts). Built from the Discord queue bot's handoffs, checked by the crew. */
 function callsFor(id, dur) {
   const L = C.calls[id]?.calls; if (!L) return [];
-  // t = the host's !next (where a clip starts and the previous one ends, so banter stays in). ring = when the phone starts ringing (where "jump" lands).
+  // t = the host's !next. A call (and its clip) runs from one !next to the next, so the banter stays in.
   const end = dur || C.episodes.find(e => e.id === +id)?.sec;
-  return L.map((c, i) => { const nx = L.slice(i + 1).find(x => !x.skip); return { ...c, n: i + 1, at: c.ring || c.t, end: nx ? nx.t : (end || c.t + 600) }; });
+  return L.map((c, i) => { const nx = L.slice(i + 1).find(x => !x.skip); return { ...c, n: i + 1, at: c.t, end: nx ? nx.t : (end || c.t + 600) }; });
 }
 function callAt(id, t, dur) { const L = callsFor(id, dur).filter(c => !c.skip); for (let i = L.length - 1; i >= 0; i--) if (t >= L[i].t) return L[i]; return null; }
 async function mergeLatest() {

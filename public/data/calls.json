@@ -15,14 +15,12 @@
    {
     "t": 1767,
     "by": "Tiff",
-    "title": "Introducing \"New Tiff\"",
-    "ring": 1809
+    "title": "Introducing \"New Tiff\""
    },
    {
     "t": 2241,
     "by": "rosin",
-    "title": "Grandpa Wakes Up for Trump Weed",
-    "ring": 2374
+    "title": "Grandpa Wakes Up for Trump Weed"
    },
    {
     "t": 2829,
@@ -32,8 +30,7 @@
    {
     "t": 3257,
     "by": "iregretjumping",
-    "title": "Booking a Room Until 2041",
-    "ring": 3297
+    "title": "Booking a Room Until 2041"
    },
    {
     "t": 3685,
@@ -54,8 +51,7 @@
    {
     "t": 4202,
     "by": "wild-one",
-    "title": "The Pumpkin Man",
-    "ring": 4272
+    "title": "The Pumpkin Man"
    },
    {
     "t": 4485,
@@ -65,20 +61,17 @@
    {
     "t": 4702,
     "by": "AnteaterTPose",
-    "title": "\"One of Those Australians\"",
-    "ring": 4818
+    "title": "\"One of Those Australians\""
    },
    {
     "t": 4959,
     "by": "Dr. Tom Servo",
-    "title": "I Own the Roof, the Sky, and You",
-    "ring": 5100
+    "title": "I Own the Roof, the Sky, and You"
    },
    {
     "t": 5676,
     "by": "Cyber🚀Space🛸boiii",
-    "title": "The Professional Pie Sitter",
-    "ring": 5722
+    "title": "The Professional Pie Sitter"
    },
    {
     "t": 5918,
@@ -88,22 +81,19 @@
    {
     "t": 6094,
     "by": "Mr. LallyBirdie",
-    "title": "Auntie Smeared Vaseline on Everything",
-    "ring": 6131
+    "title": "Auntie Smeared Vaseline on Everything"
    },
    {
     "t": 6556,
     "by": "Roy's Hippie Aunt",
-    "title": "The Sweetest Lady in Vermont",
-    "ring": 6612
+    "title": "The Sweetest Lady in Vermont"
    },
    {
     "t": 6855,
     "by": "AnteaterTPose",
-    "title": "The Haunted Hotel With Nepo Music",
-    "ring": 6950
+    "title": "The Haunted Hotel With Nepo Music"
    }
   ],
-  "note": "t = the !next handoff in Discord (clips run handoff to handoff, banter included). ring = when the phone tone was heard (jump target)."
+  "note": "t = the host's !next handoff in Discord. Calls (and their clips) run from one !next to the next, banter included."
  }
 }
