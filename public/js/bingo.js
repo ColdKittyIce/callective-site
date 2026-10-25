@@ -11,6 +11,11 @@ const Bingo = (() => {
     "“Are you serious?”", "They transfer the call", "“We're closed”", "“Where are you calling from?”", "“Get a life”",
     "They know it's a prank and stay on anyway", "They call us the wrong name", "A dog barks on their end", "A kid answers, so we hang up", "They try to sell us something",
     "Straight to voicemail", "Number disconnected or busy", "They sigh before they answer",
+    "“Hello? HELLO?”", "They answer mid-conversation with someone else", "“Is this a joke?”", "“I'm gonna find you”", "They ask “Who put you up to this?”",
+    "“What did you just say?”", "“Speak up, I can't hear you”", "They give a fake name back", "They threaten to sue", "“I'm calling the police right now”",
+    "They try to trace the call", "“Very funny”", "They put a kid on the phone", "They say “OK” and just hang up", "“Do you know what time it is?”",
+    "“I don't have time for this”", "They try to prank us back", "They ask us to stop laughing", "“What is wrong with you?”", "They actually answer the question",
+    "An answering machine message from 2003", "Elevator or hold music", "They mute us and come back", "They say “bye” about five times",
     // things that just happen during a show
     "Dead air", "A call goes over 10 minutes", "Caller cracks up and breaks character", "Somebody forgets to unmute", "Discord echo / feedback",
     "Host's internet dies", "Somebody gets skipped in the queue", "The Technical Issues song plays", "The farewell song plays"];

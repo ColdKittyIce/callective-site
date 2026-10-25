@@ -144,3 +144,30 @@ const Directory = (() => {
   }
   return { init };
 })();
+
+/* ---------- the Do Not Call Me registry (a parody: nothing is stored or sent) ---------- */
+const DNC = {
+  init() {
+    const out = $("dnc-out"), rnd = a => a[Math.floor(Math.random() * a.length)];
+    $("dnc-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const name = $("dnc-name").value.trim(), what = $("dnc-what").value.trim(); if (!name || !what) return;
+      const steps = ["Dialing the registry…", "Busy signal. Redialing…", "Transferred to the Governor…", "Ira is reading your form out loud…", "Stamping it…"];
+      out.innerHTML = `<ol class="dnc-steps"></ol>`; const ol = out.querySelector("ol"); let i = 0; SFX.ringback(1);
+      const tick = () => {
+        if (i < steps.length) { ol.insertAdjacentHTML("beforeend", `<li>&gt; ${steps[i++]}</li>`); setTimeout(tick, 650); return; }
+        SFX.thump();
+        const no = "DNC-" + String(Math.floor(Math.random() * 900000) + 100000), status = rnd(["UNDER ADVISEMENT", "FILED UNDER 'F'", "PENDING FOREVER", "APPROVED (NOT REALLY)", "LOST IN THE QUEUE"]);
+        out.innerHTML = `<div class="dnc-cert"><p class="dnc-k">Certificate of Request · ${no}</p>
+          <h3>This certifies that</h3><p class="dnc-big">${esc(name)}</p>
+          <p>has formally asked not to be called<br><b>“${esc(what)}”</b><br>on Saturdays between 7pm and midnight Eastern.</p>
+          <p class="dnc-stamp">${status}</p>
+          <p class="ext">Your request has been placed in the queue behind ${Math.floor(Math.random() * 40) + 12} All Calls. The Callective thanks you for your patience and will be calling you something else shortly.</p>
+          <p class="ext">Not a real registry. Nothing was saved or sent anywhere.</p>
+          <button class="btn sm" type="button" id="dnc-again">File another</button></div>`;
+        $("dnc-again").addEventListener("click", () => { $("dnc-form").reset(); out.innerHTML = `<p class="dnc-wait">&gt; Waiting for your paperwork…</p>`; });
+      };
+      tick();
+    });
+  }
+};

@@ -68,7 +68,7 @@ const Mod = (() => {
   function open() {
     if (!C.api) { openTakeover(`<div class="card" style="padding:22px;max-width:520px;display:flex;flex-direction:column;gap:12px"><b class="mod-h">CREW LOGIN</b><p>The mod panel works on the live site. Dial it there.</p><button class="btn" type="button" data-close>Hang up</button></div>`); return; }
     openTakeover(`<div class="card mod" style="padding:20px;width:min(860px,100%);max-height:86vh;overflow:auto;display:flex;flex-direction:column;gap:14px">
-      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><b class="mod-h">CREW LOGIN // CLIP INBOX</b><button class="btn sm ghost" type="button" data-close>Hang up</button></div>
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><b class="mod-h">CREW LOGIN // INBOX</b><button class="btn sm ghost" type="button" data-close>Hang up</button></div>
       <form id="mod-login" style="display:flex;gap:8px;flex-wrap:wrap"><label class="sr" for="mod-tok">Crew password</label><input id="mod-tok" class="lab-in" type="password" placeholder="Crew password" value="${esc(token)}" style="flex:1;min-width:0"><button class="btn sm" type="submit">Load the queue</button></form>
       <div id="mod-list" class="mod-list"><p class="ext">Enter the crew password to see clips sent to the crew and clips waiting for the board.</p></div></div>`);
     $("mod-login").addEventListener("submit", e => { e.preventDefault(); token = $("mod-tok").value.trim(); try { sessionStorage.setItem("cx-mod", token); } catch (err) {} list(); });
@@ -91,14 +91,27 @@ const Mod = (() => {
       const held = clips.filter(c => c.dest !== "crew"), crew = clips.filter(c => c.dest === "crew");
       box.innerHTML = `<h4 class="mod-sec">Waiting for a look (${held.length})</h4>${held.map(c => row(c, "held")).join("") || `<p class="ext">Nothing held. Clean clips from shows post on their own.</p>`}
         <h4 class="mod-sec">Sent to the crew (${crew.length})</h4>${crew.map(c => row(c, "crew")).join("") || `<p class="ext">Nothing sent privately.</p>`}
-        <h4 class="mod-sec">On the board (${pub.length})</h4>${pub.map(c => row(c, "pub")).join("") || `<p class="ext">The board is empty.</p>`}`;
+        <h4 class="mod-sec">On the board (${pub.length})</h4>${pub.map(c => row(c, "pub")).join("") || `<p class="ext">The board is empty.</p>`}
+        <h4 class="mod-sec">1998 guestbook</h4><div id="mod-gb"><p class="ext">Loading…</p></div>`;
+      gbList();
       for (const el of box.querySelectorAll("audio[data-src]")) {
         el.addEventListener("play", async () => { if (el.src) return; const u0 = el.dataset.pub ? `${C.api}/clips/${encodeURIComponent(el.dataset.src)}.mp3` : `${C.api}/mod/clip/${encodeURIComponent(el.dataset.src)}.mp3`;
           const r2 = await fetch(u0, { headers: hdr() }); const u = URL.createObjectURL(await r2.blob()); blobs.push(u); el.src = u; el.play(); }, { once: true });
       }
     } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the inbox.</p>`; }
   }
+  async function gbList() {
+    const box = $("mod-gb"); if (!box) return;
+    try {
+      const j = await (await fetch(`${C.api}/mod/guestbook`, { headers: hdr() })).json();
+      const ent = (e, held) => `<div class="mod-row gb" data-gb="${esc(e.id)}"><div style="min-width:0"><span class="mod-tag">${held ? `Held${e.flag ? ": " + esc(e.flag) : ""}` : "Posted"}</span><b>${esc(e.n)}</b><p class="mod-note" style="color:var(--text)">${esc(e.m)}</p><span class="ext">${new Date(e.t).toLocaleString()}</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${held ? `<button class="btn sm solid" type="button" data-gbact="approve">Approve</button>` : ""}<button class="btn sm red" type="button" data-gbact="delete">Delete</button></div></div>`;
+      box.innerHTML = (j.held || []).map(e => ent(e, true)).join("") + ((j.pub || []).map(e => ent(e, false)).join("") || `<p class="ext">No entries yet.</p>`);
+    } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the guestbook.</p>`; }
+  }
   async function act(e) {
+    const ga = e.target.closest("[data-gbact]");
+    if (ga) { const r0 = ga.closest("[data-gb]"); ga.disabled = true; const r = await fetch(`${C.api}/mod/gb/${encodeURIComponent(r0.dataset.gb)}/${ga.dataset.gbact}`, { method: "POST", headers: hdr() }); if (r.ok) { toast(ga.dataset.gbact === "approve" ? "Approved." : "Deleted."); gbList(); } else { ga.disabled = false; toast("That didn't go through."); } return; }
     const d = e.target.closest("[data-moddl]");
     if (d) { const r = await fetch(d.dataset.pub ? `${C.api}/clips/${encodeURIComponent(d.dataset.moddl)}.mp3` : `${C.api}/mod/clip/${encodeURIComponent(d.dataset.moddl)}.mp3`, { headers: hdr() }); const u = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = u; a.download = `callective-${d.dataset.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50)}.mp3`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); return; }
     const b = e.target.closest("[data-mod]"); if (!b) return; const row = b.closest(".mod-row"), id = row.dataset.id;

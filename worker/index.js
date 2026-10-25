@@ -6,6 +6,10 @@
  *   GET  /api/ping              health check (no Prankcast call)
  *   GET  /api/status            is TheCallective live on Prankcast, plus the live stream address
  *   GET  /api/radio             what Callective Radio (the 24/7 player) is playing right now (the newest 10 shows)
+ *   GET  /api/guestbook         the 1998 page's guestbook (POST signs it; flagged entries wait for the crew)
+ *   GET  /api/mod/guestbook     guestbook entries, posted and held        (ADMIN_TOKEN)
+ *   POST /api/mod/gb/:id/approve|delete                                   (ADMIN_TOKEN)
+ *   GET  /api/hits              the 1998 page's visitor counter (POST adds one)
  *   GET  /api/shows             which shows the site has its own copy of (R2)
  *   GET  /api/show/:id.mp3      a show's audio from the site's own copy (supports seeking)
  *   GET  /api/latest            newest episode posts (merged into the archive)
@@ -69,6 +73,9 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 604800, () => chat(m[1]));
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
+      if (p === "/api/hits") return hits(env, M === "POST");
+      if (p === "/api/guestbook" && M === "GET") return cached(request, ctx, 20, () => gbList(env, "g:"));
+      if (p === "/api/guestbook" && M === "POST") return gbPost(request, env);
       if (p === "/api/clips" && M === "GET") return clipsList(env);
       if (p === "/api/clips" && M === "POST") return clipsPost(request, env, ctx);
       if ((m = p.match(/^\/api\/clips\/([a-z0-9-]+)\/report$/)) && M === "POST") return report(env, m[1], request);
@@ -77,6 +84,8 @@ async function route(request, env, ctx, url) {
         if (!env.ADMIN_TOKEN || (request.headers.get("authorization") || "") !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: "Wrong crew password" }, 401);
         if (p === "/api/mod/pending") return clipsList(env, "p:");
         if (p === "/api/mod/public") return clipsList(env, "a:", true);
+        if (p === "/api/mod/guestbook") return json({ pub: (await gbList(env, "g:")).entries, held: (await gbList(env, "h:")).entries });
+        if ((m = p.match(/^\/api\/mod\/gb\/([a-z0-9-]+)\/(approve|delete)$/)) && M === "POST") return gbAct(env, m[1], m[2]);
         if ((m = p.match(/^\/api\/mod\/clip\/([a-z0-9-]+)\.mp3$/))) return clipAudio(env, ctx, m[1], "p:", url, request);
         if ((m = p.match(/^\/api\/mod\/([a-z0-9-]+)\/(approve|reject|remove)$/)) && M === "POST") return modAct(env, m[1], m[2]);
       }
@@ -293,6 +302,43 @@ async function cut(env, id, url, ctx, request) {
   if (!(to > from) || to - from > MAX_REF_SEC + 10) return json({ error: "Pick a piece between 1 second and 10 minutes long" }, 400);
   const extra = url.searchParams.get("dl") ? { "content-disposition": `attachment; filename="${fileName(url.searchParams.get("name"))}"` } : {};
   return slice(env, ctx, request, id, from, to, extra);
+}
+
+/* ---------- the 1998 page's hit counter (each browser counts once a day) ---------- */
+async function hits(env, add) {
+  if (!env.DB) return json({ hits: 0 });
+  let n = +(await env.DB.get("hits") || 0);
+  if (add) { n += 1; try { await env.DB.put("hits", String(n)); } catch (e) {} }
+  return json({ hits: n });
+}
+
+/* ---------- the 1998 page's guestbook ----------
+   Entries post straight up unless the filter trips (then they wait for the crew). 3 per hour per person, 2,000 kept at most. */
+async function gbList(env, prefix) {
+  if (!env.DB) return { entries: [] };
+  const out = []; let cursor;
+  do { const pg = await env.DB.list({ prefix, cursor, limit: 1000 }); for (const k of pg.keys) if (k.metadata) out.push({ id: k.name.slice(2), ...k.metadata }); cursor = pg.list_complete ? null : pg.cursor; } while (cursor && out.length < 2000);
+  out.sort((a, b) => b.t - a.t);
+  return { entries: prefix === "g:" ? out.slice(0, 300) : out };
+}
+async function gbPost(request, env) {
+  if (!env.DB) return json({ error: "Guestbook isn't set up" }, 500);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
+  const n = clean(b.name, 30) || "anonymous", msg = clean(b.msg, 200); if (!msg) return json({ error: "Write something first" }, 400);
+  const ip = request.headers.get("cf-connecting-ip") || "unknown", hour = new Date().toISOString().slice(0, 13), rl = `gr:${ip}:${hour}`, used = +(await env.DB.get(rl) || 0);
+  if (used >= 3) return json({ error: "Easy there. Try again in an hour" }, 429);
+  if (+(await env.DB.get("gbcount") || 0) >= 2000) return json({ error: "The guestbook is full" }, 507);
+  const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 4), flag = screen(n, msg), md = { n, m: msg, t: Date.now(), ...(flag ? { flag } : {}) };
+  await env.DB.put((flag ? "h:" : "g:") + id, "1", { metadata: md });
+  await env.DB.put(rl, String(used + 1), { expirationTtl: 3700 });
+  await env.DB.put("gbcount", String(+(await env.DB.get("gbcount") || 0) + 1));
+  return json({ ok: true, held: !!flag, entry: { id, ...md } });
+}
+async function gbAct(env, id, action) {
+  if (action === "approve") { const k = await env.DB.getWithMetadata("h:" + id); if (!k.value) return json({ error: "Not found" }, 404); const md = { ...k.metadata }; delete md.flag; await env.DB.put("g:" + id, "1", { metadata: md }); await env.DB.delete("h:" + id); return json({ ok: true }); }
+  await env.DB.delete("g:" + id); await env.DB.delete("h:" + id);
+  await env.DB.put("gbcount", String(Math.max(0, +(await env.DB.get("gbcount") || 1) - 1)));
+  return json({ ok: true });
 }
 
 /* ---------- clip board ---------- */

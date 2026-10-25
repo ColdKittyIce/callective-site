@@ -723,3 +723,24 @@ body:not(.has-pbar) .clipper{bottom:calc(10px + env(safe-area-inset-bottom,0px))
 .mod-row.pub .mod-tag{background:var(--violet);color:#fff}
 .clipper>*{flex-shrink:0}
 @media (max-width:640px){.ct-nb button{padding:6px 5px;font-size:11px}}
+/* Do Not Call Me registry */
+.dnc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.dnc{grid-template-columns:minmax(0,1fr)}}
+.dnc-form{padding:20px;display:flex;flex-direction:column;gap:12px;position:relative}
+.dnc-form h3{margin:0;font-family:var(--f-head);font-size:22px;text-transform:uppercase;color:var(--volt);padding-right:96px}
+.dnc-form label{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dnc-form fieldset{border:1px solid var(--line);padding:10px 12px;margin:0;display:flex;flex-direction:column;gap:6px}
+.dnc-form legend{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding:0 6px}
+.dnc-form .dnc-r{flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--text)}
+.dnc-off{opacity:.45;text-decoration:line-through}
+.dnc-seal{position:absolute;right:16px;top:14px;width:84px;height:84px;border-radius:50%;border:2px dashed var(--pink);color:var(--pink);font-family:var(--f-mono);font-size:9px;line-height:1.2;text-align:center;display:grid;place-items:center;transform:rotate(-12deg);box-shadow:var(--glow-p)}
+.dnc-seal b{font-size:11px}
+.dnc-out{padding:20px;min-height:260px;display:flex;flex-direction:column;justify-content:center}
+.dnc-wait,.dnc-steps{font-family:var(--f-crt);font-size:22px;color:var(--cyan);margin:0}
+.dnc-steps{list-style:none;padding:0;display:flex;flex-direction:column;gap:4px}
+.dnc-cert{text-align:center;border:3px double var(--volt);padding:18px;background:#0a0919}
+.dnc-cert h3{margin:6px 0 0;font-family:var(--f-mono);font-weight:400;text-transform:uppercase;letter-spacing:.2em;font-size:13px;color:var(--muted)}
+.dnc-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--pink);margin:0}
+.dnc-big{font-family:var(--f-neon);font-size:clamp(28px,5vw,44px);color:var(--cyan);text-shadow:var(--glow-c);margin:6px 0;word-break:break-word}
+.dnc-cert b{color:var(--volt)}
+.dnc-stamp{display:inline-block;margin:12px auto;padding:6px 14px;border:3px solid var(--red);color:var(--red);font-family:var(--f-head);font-weight:700;font-size:20px;letter-spacing:.08em;transform:rotate(-6deg)}

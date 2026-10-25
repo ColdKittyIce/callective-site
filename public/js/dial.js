@@ -163,6 +163,8 @@ const Dir = (() => {
     { word: "ALLCALL", label: "Everybody on the line", act() { go("switchboard"); SB.conference(5); } },
     { word: "MOD", label: "Crew login", act() { Mod.open(); } },
     { word: "CLIP", label: "The clip board", act() { go("clips"); } },
+    { word: "GEOCITIES", label: "Our old homepage", act() { location.href = "1998.html"; } },
+    { word: "DNC", label: "Do Not Call Me registry", act() { go("dnc"); } },
     { word: "LIVE", label: "The live show", act() { go("listen"); Listen.tuneIn(); } },
     { word: "MERCH", label: "Downloads", act() { go("downloads"); } }
   ];

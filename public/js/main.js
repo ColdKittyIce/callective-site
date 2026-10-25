@@ -31,7 +31,7 @@
   setTimeout(pollStatus, 30000);
 
   Dial.init(); Hold.init(); Line.init(); SB.init(); Replay.init(); Lab.init(); Clipper.init(); Board.init();
-  Court.init(); Lineup.init(); Bill.init(); Directory.init(); Bingo.init(); Downloads.init();
+  Court.init(); Lineup.init(); Bill.init(); DNC.init(); Directory.init(); Bingo.init(); Downloads.init();
   await Listen.init();
   mergeLatest();
 
