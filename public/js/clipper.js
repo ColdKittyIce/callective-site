@@ -53,7 +53,7 @@ const Clipper = (() => {
       async peaks(s, e) { return peaksOf(await cutBuffer(ep, s, e), s); },
       async chat() {
         if (!C.api) return null;
-        try { const info = await getJSON(`${C.api}/episode/${ep.id}`, 8000); if (!info.cid) return null; const r = await getJSON(`${C.api}/chat/${info.cid}`, 10000); return (r.messages || []).map(m => m[0]); } catch (e) { return null; }
+        try { const info = await getJSON(`${C.api}/episode/${ep.id}`, 8000); if (!info.cid) return null; const r = await getJSON(`${C.api}/chat/${info.cid}?v=2`, 10000); return (r.messages || []).map(m => m[0]); } catch (e) { return null; }
       },
       meta: s => ({ ep: ep.id, at: Math.round(s) })
     };

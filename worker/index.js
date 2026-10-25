@@ -177,7 +177,10 @@ function chatRows(rows) {
     .filter(x => x.user_name && x.message && !/has entered chat/.test(x.message) && x.message.trim() !== "📞" && !x.bol_private)
     .map(x => [Math.round(x.broadcast_duration || 0), x.user_name, String(x.message)
       .replace(/!\[([^\]]*)\]\([^)]*\)/g, (_, t) => "[gif" + (t ? ": " + t.slice(0, 60) : "") + "]")
-      .replace(/https?:\/\/\S+/g, "[link]").replace(/\s+/g, " ").trim().slice(0, 300)])
+      .replace(/https?:\/\/\S+/g, "[link]")
+      // never show a phone number or email from chat (call recipients' numbers get posted sometimes)
+      .replace(/(?:\+?1[\s.-]?)?\(?\b\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g, "[number removed]").replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, "[email removed]")
+      .replace(/\s+/g, " ").trim().slice(0, 300)])
     .filter(m => m[2]);
 }
 async function chat(cid) {

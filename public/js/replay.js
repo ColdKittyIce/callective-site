@@ -28,7 +28,7 @@ const Replay = (() => {
     let src = null, cid = null;
     if (C.api) {
       try { const info = await getJSON(`${C.api}/episode/${ep.id}`, 8000); src = info.mp3; cid = info.cid; if (info.sec) dur = info.sec; } catch (e) {}
-      if (cid) { try { const r = await getJSON(`${C.api}/chat/${cid}`, 10000); if (Array.isArray(r.messages)) chat = r.messages; } catch (e) {} }
+      if (cid) { try { const r = await getJSON(`${C.api}/chat/${cid}?v=2`, 10000); if (Array.isArray(r.messages)) chat = r.messages; } catch (e) {} }
     }
     if (!chat.length && ep.chat) { try { chat = await getJSON(`data/chat/${ep.id}.json`); } catch (e) {} }
     if (token !== loadToken) return;

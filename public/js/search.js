@@ -1,4 +1,5 @@
-/* Search everything: calls (who made them, titles), shows, the clip board, patch bay drops, and (on request) the saved Prankcast chat.
+/* Search everything: calls (who made them, titles), shows, the clip board and patch bay drops.
+   Chat logs are deliberately NOT searchable (house rule: chat is offline material, never mined on the site).
    Forgiving on purpose: emoji and punctuation are ignored, nicknames map to the usual name (rozin → rosin, tom man → Dr. Tom Servo),
    words can be partial, and a one-letter typo in a longer word still matches.
    Extras: "exact phrase", by:name, host:name, year:2025, and #search/your+words links. */
@@ -18,7 +19,7 @@ const Search = (() => {
     criefaux: "criefaux", crie: "criefaux", cryfawkes: "criefaux", deltron: "deltron3000", starry: "starry", stacy: "starry"
   };
   const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
-  let index = null, chatIdx = null, chatLoading = null, type = "all", year = "", sortBy = "best", limit = 40, last = "";
+  let index = null, type = "all", year = "", sortBy = "best", limit = 40, last = "";
 
   /* ---------- the index ---------- */
   function dateWords(d) {
@@ -40,19 +41,6 @@ const Search = (() => {
     for (const r of R) { r.n_ = norm(r.text); r.s_ = r.n_.replace(/ /g, ""); r.w_ = r.n_.split(" "); r.who_ = squash(r.by || r.host || ""); }
     index = R;
   }
-  async function loadChat() {
-    if (chatIdx) return chatIdx; if (chatLoading) return chatLoading;
-    chatLoading = (async () => {
-      const out = [], list = C.episodes.filter(e => e.chat);
-      await Promise.all(list.map(async e => {
-        try { for (const [t, u, m] of await getJSON(`data/chat/${e.id}.json`, 15000)) { if (/^\[gif/.test(m)) continue;
-          const r = { type: "chat", ep: e.id, d: e.d, t, by: u, title: m, text: `${u} ${m}` }; r.n_ = norm(r.text); r.s_ = r.n_.replace(/ /g, ""); r.w_ = r.n_.split(" "); r.who_ = squash(u); out.push(r); } } catch (err) {}
-      }));
-      chatIdx = out; return out;
-    })();
-    return chatLoading;
-  }
-
   /* ---------- matching ---------- */
   function lev1(a, b) { // true if a and b are at most one edit apart
     if (Math.abs(a.length - b.length) > 1) return false; let i = 0, j = 0, d = 0;
@@ -89,7 +77,7 @@ const Search = (() => {
   }
   function run(q) {
     const f = parse(q), want = f.type || (type === "all" ? "" : type), yr = f.year || year;
-    const pool = (want === "chat" || (type === "all" && chatIdx && $("s-chat").checked) ? index.concat(chatIdx || []) : index);
+    const pool = index;
     const hits = [];
     for (const r of pool) {
       if (want && r.type !== want) continue;
@@ -146,10 +134,9 @@ const Search = (() => {
       <div class="s-acts">${rec ? `<button class="btn sm" type="button" data-show="${r.ep}">▶ Play here</button>` : `<a class="btn sm ghost" href="${PC_POST}${r.ep}" target="_blank" rel="noopener">Prankcast ↗</a>`}</div></li>`;
     if (r.type === "clip") return `<li class="s-row clip"><span class="s-k">Clip</span><div class="s-main"><b>${mark(r.title, f)}</b><small>clipped by ${mark(r.by || "anonymous", f)}${r.d ? ` · from ${when(r)}` : ""}</small></div><div class="s-acts"><button class="btn sm" type="button" data-cb="${esc(r.id)}">▶ Play</button></div></li>`;
     if (r.type === "drop") return `<li class="s-row drop"><span class="s-k">Drop</span><div class="s-main"><b>${mark(r.title, f)}</b><small>${mark(r.by, f)} · patch bay</small></div><div class="s-acts"><button class="btn sm" type="button" data-drop="${esc(r.k)}">▶</button></div></li>`;
-    return `<li class="s-row chat"><span class="s-k">Chat</span><div class="s-main"><b>${mark(r.by, f)}</b><em>${mark(r.title, f)}</em><small>${when(r)} · at ${hms(r.t, true)} · Prankcast chat</small></div>
-      <div class="s-acts">${rec ? `<button class="btn sm" type="button" data-play="${r.ep}" data-t="${Math.max(0, r.t - 15)}">▶ Hear it</button>` : `<a class="btn sm ghost" href="${PC_POST}${r.ep}" target="_blank" rel="noopener">Prankcast ↗</a>`}</div></li>`;
+    return "";
   }
-  const LABEL = { call: "Calls", show: "Shows", clip: "Clips", drop: "Drops", chat: "Chat" };
+  const LABEL = { call: "Calls", show: "Shows", clip: "Clips", drop: "Drops", };
   function render() {
     const q = $("sq").value.trim(); if (!index) build();
     try { history.replaceState(null, "", "#search" + (q ? "/" + encodeURIComponent(q) : "")); } catch (e) {}
@@ -160,10 +147,10 @@ const Search = (() => {
     $("s-types").querySelectorAll("[data-type]").forEach(b => { const k = b.dataset.type; b.querySelector("i").textContent = k === "all" ? (hits.length || "") : (counts[k] || ""); });
     $("s-count").textContent = hits.length ? `${hits.length} result${hits.length === 1 ? "" : "s"}` : "";
     if (!hits.length) {
-      $("s-res").innerHTML = `<p class="feed-empty">Nothing for that. Try fewer words, part of a name, or ${$("s-chat").checked ? "another year" : `turn on <b>Include the Prankcast chat</b>`}.</p>`; $("s-more").hidden = true; return;
+      $("s-res").innerHTML = `<p class="feed-empty">Nothing for that. Try fewer words, part of a name, or another year.</p>`; $("s-more").hidden = true; return;
     }
     if (type === "all" && !f.type) {
-      const groups = ["call", "show", "clip", "drop", "chat"].filter(k => counts[k]);
+      const groups = ["call", "show", "clip", "drop"].filter(k => counts[k]);
       $("s-res").innerHTML = groups.map(k => { const L = hits.filter(h => h.r.type === k);
         return `<h3 class="s-h">${LABEL[k]} <span>${L.length}</span></h3><ol class="s-list">${L.slice(0, 8).map(h => row(h, f)).join("")}</ol>${L.length > 8 ? `<button class="btn sm ghost s-all" type="button" data-type-go="${k}">See all ${L.length} ${LABEL[k].toLowerCase()} →</button>` : ""}`; }).join("");
       $("s-more").hidden = true;
@@ -174,8 +161,7 @@ const Search = (() => {
   }
   let timer = null;
   const later = () => { clearTimeout(timer); timer = setTimeout(() => { limit = 40; render(); }, 140); };
-  function setType(k) { type = k; limit = 40; $("s-types").querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.type === k))); if (k === "chat" && !$("s-chat").checked) { $("s-chat").checked = true; chatOn(); } else render(); }
-  async function chatOn() { if (!$("s-chat").checked) { render(); return; } $("s-count").textContent = "Loading the chat logs…"; await loadChat(); render(); }
+  function setType(k) { type = k; limit = 40; $("s-types").querySelectorAll("[data-type]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.type === k))); render(); }
 
   function init() {
     $("sq").addEventListener("input", later);
@@ -183,7 +169,6 @@ const Search = (() => {
     $("s-types").addEventListener("click", e => { const b = e.target.closest("[data-type]"); if (b) setType(b.dataset.type); });
     $("s-years").addEventListener("click", e => { const b = e.target.closest("[data-year]"); if (!b) return; year = year === b.dataset.year ? "" : b.dataset.year; $("s-years").querySelectorAll("[data-year]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.year === year))); render(); });
     $("s-sort").addEventListener("change", e => { sortBy = e.target.value; render(); });
-    $("s-chat").addEventListener("change", chatOn);
     $("s-more").addEventListener("click", () => { limit += 60; render(); });
     $("page-search").addEventListener("click", e => {
       const sq = e.target.closest("[data-sq]"); if (sq) { $("sq").value = sq.dataset.sq; setType("call"); window.scrollTo(0, 0); return; }
