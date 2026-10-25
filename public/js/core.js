@@ -104,6 +104,18 @@ function callsFor(id, dur) {
   const end = dur || C.episodes.find(e => e.id === +id)?.sec;
   return L.map((c, i) => { const nx = L.slice(i + 1).find(x => !x.skip); return { ...c, n: i + 1, at: c.t, end: nx ? nx.t : (end || c.t + 600) }; });
 }
+// Crew fixes (typed in on the site) sit on top of the built-in lists.
+let CALLS_BASE = null;
+function applyCallFixes(fix) {
+  if (!CALLS_BASE) CALLS_BASE = JSON.parse(JSON.stringify(C.calls));
+  const out = JSON.parse(JSON.stringify(CALLS_BASE));
+  for (const [ep, f] of Object.entries(fix || {})) { const s = out[ep]; if (!s) continue;
+    if (f.desc != null) s.desc = f.desc;
+    for (const c of s.calls) { const x = f.c?.[String(c.t)]; if (x) { if (x.title != null) c.title = x.title; if (x.by) c.by = x.by; } } }
+  C.calls = out; document.dispatchEvent(new CustomEvent("calls-changed"));
+}
+async function loadCallFixes() { if (!C.api) return; try { applyCallFixes(await getJSON(C.api + "/calls", 6000)); } catch (e) {} }
+const callLabel = c => c.title ? `${c.by}: ${c.title}` : `${c.by}'s call`;
 function callAt(id, t, dur) { const L = callsFor(id, dur).filter(c => !c.skip); for (let i = L.length - 1; i >= 0; i--) if (t >= L[i].t) return L[i]; return null; }
 async function mergeLatest() {
   if (!C.api) return;

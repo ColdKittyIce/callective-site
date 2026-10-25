@@ -95,5 +95,759 @@
    }
   ],
   "note": "t = the host's !next handoff in Discord. Calls (and their clips) run from one !next to the next, banter included."
+ },
+ "15086": {
+  "desc": "Corporate week: half the Discord renamed itself as Bonerhouse middle management, and the calls followed. Spider work orders, a ride accident at Six Flags, a crow with a room key, and a very demonic rock.",
+  "calls": [
+   {
+    "t": 51,
+    "by": "Crimson"
+   },
+   {
+    "t": 1988,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 2472,
+    "by": "Buc-ee's Kansas City",
+    "title": "A Head Popped Off at Six Flags"
+   },
+   {
+    "t": 2902,
+    "by": "Saturn",
+    "title": "The Spider Replenishment Work Order"
+   },
+   {
+    "t": 3836,
+    "by": "Cyber🚀Space🛸boiii🪐",
+    "title": "The Crow Keeps Bringing Me Room Keys"
+   },
+   {
+    "t": 4399,
+    "by": "AnteaterTPose",
+    "title": "A British Bloke Compares Willies"
+   },
+   {
+    "t": 4786,
+    "by": "Tiff"
+   },
+   {
+    "t": 5776,
+    "by": "starry"
+   },
+   {
+    "t": 6639,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 7596,
+    "by": "GreenImp",
+    "title": "The Demonic Rock"
+   },
+   {
+    "t": 8489,
+    "by": "Pastor Dixon Butts",
+    "skip": true
+   },
+   {
+    "t": 8490,
+    "by": "CrieFaux"
+   },
+   {
+    "t": 9267,
+    "by": "wild-one"
+   },
+   {
+    "t": 9854,
+    "by": "cmann"
+   },
+   {
+    "t": 10383,
+    "by": "Crimson"
+   },
+   {
+    "t": 10756,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 10913,
+    "by": "AnteaterTPose"
+   }
+  ]
+ },
+ "14990": {
+  "calls": [
+   {
+    "t": 0,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 1816,
+    "by": "Crimson"
+   },
+   {
+    "t": 2341,
+    "by": "despicabledogs"
+   },
+   {
+    "t": 3030,
+    "by": "IceCat"
+   },
+   {
+    "t": 3625,
+    "by": "Roy's Hippie Aunt"
+   },
+   {
+    "t": 4076,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 4398,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 5100,
+    "by": "That Weird Face Guy From Murder One"
+   },
+   {
+    "t": 5705,
+    "by": "Rat King"
+   },
+   {
+    "t": 6851,
+    "by": "starry"
+   },
+   {
+    "t": 7375,
+    "by": "rosin"
+   },
+   {
+    "t": 7645,
+    "by": "Tiff"
+   },
+   {
+    "t": 8329,
+    "by": "iregretjumping"
+   },
+   {
+    "t": 8986,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 9441,
+    "by": "Crimson",
+    "title": "Saddam's Service Dog"
+   }
+  ]
+ },
+ "14957": {
+  "calls": [
+   {
+    "t": 0,
+    "by": "Soundwave"
+   },
+   {
+    "t": 1158,
+    "by": "Saturn"
+   },
+   {
+    "t": 1824,
+    "by": "cmann"
+   },
+   {
+    "t": 2690,
+    "by": "Crimson"
+   },
+   {
+    "t": 3735,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 3992,
+    "by": "AnteaterTPose"
+   },
+   {
+    "t": 4505,
+    "by": "rosin"
+   },
+   {
+    "t": 5041,
+    "by": "GreenImp"
+   },
+   {
+    "t": 5586,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 6202,
+    "by": "starry"
+   },
+   {
+    "t": 6583,
+    "by": "wild-one"
+   },
+   {
+    "t": 7434,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 7797,
+    "by": "Pastor Dixon Butts"
+   },
+   {
+    "t": 8575,
+    "by": "Tiff"
+   },
+   {
+    "t": 8972,
+    "by": "Soundwave"
+   },
+   {
+    "t": 9430,
+    "by": "Exa747"
+   },
+   {
+    "t": 11190,
+    "by": "Crimson"
+   }
+  ]
+ },
+ "14917": {
+  "desc": "The Dingtember Special. One call each, no rejoining the queue, and a lot of fallout from the ding line: dinged cars, goat calls and Domino's.",
+  "calls": [
+   {
+    "t": 783,
+    "by": "despicabledogs"
+   },
+   {
+    "t": 1515,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 1842,
+    "by": "cmann"
+   },
+   {
+    "t": 2296,
+    "by": "GreenImp"
+   },
+   {
+    "t": 2652,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 3037,
+    "by": "CrieFaux"
+   },
+   {
+    "t": 3528,
+    "by": "Crimson"
+   },
+   {
+    "t": 3970,
+    "by": "AnteaterTPose"
+   },
+   {
+    "t": 4420,
+    "by": "Poopmypee"
+   },
+   {
+    "t": 4827,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 5287,
+    "by": "wild-one"
+   },
+   {
+    "t": 5645,
+    "by": "Pastor Dixon Butts"
+   },
+   {
+    "t": 6326,
+    "by": "Tiff"
+   },
+   {
+    "t": 6659,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 7012,
+    "by": "iregretjumping"
+   },
+   {
+    "t": 7469,
+    "by": "[XEN] JonRow"
+   },
+   {
+    "t": 8239,
+    "by": "Airis"
+   },
+   {
+    "t": 9356,
+    "by": "starry"
+   },
+   {
+    "t": 10357,
+    "by": "Dale D. Mayos-Mell"
+   }
+  ]
+ },
+ "14883": {
+  "calls": [
+   {
+    "t": 0,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 1497,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 1813,
+    "by": "GreenImp"
+   },
+   {
+    "t": 2284,
+    "by": "cmann"
+   },
+   {
+    "t": 2806,
+    "by": "rosin"
+   },
+   {
+    "t": 4786,
+    "by": "Tiff"
+   },
+   {
+    "t": 5367,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 5744,
+    "by": "wild-one",
+    "title": "Big Miranda"
+   },
+   {
+    "t": 5998,
+    "by": "DelTron3000",
+    "title": "The Job Interview"
+   },
+   {
+    "t": 6316,
+    "by": "despicabledogs"
+   },
+   {
+    "t": 6778,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 7336,
+    "by": "Arbee"
+   },
+   {
+    "t": 8470,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 9102,
+    "by": "Rat King"
+   },
+   {
+    "t": 9948,
+    "by": "charlie"
+   },
+   {
+    "t": 11239,
+    "by": "iregretjumping"
+   },
+   {
+    "t": 11962,
+    "by": "Yo Ghost"
+   },
+   {
+    "t": 12420,
+    "by": "Nicky T"
+   },
+   {
+    "t": 12670,
+    "by": "Pastor Dixon Butts"
+   }
+  ]
+ },
+ "14819": {
+  "calls": [
+   {
+    "t": 0,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 1363,
+    "by": "rosin"
+   },
+   {
+    "t": 1679,
+    "by": "GreenImp"
+   },
+   {
+    "t": 1909,
+    "by": "Tiff"
+   },
+   {
+    "t": 2248,
+    "by": "Saturn"
+   },
+   {
+    "t": 2692,
+    "by": "NEDDY"
+   },
+   {
+    "t": 3340,
+    "by": "AndyAnderson"
+   },
+   {
+    "t": 3676,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 3995,
+    "by": "wild-one"
+   },
+   {
+    "t": 4533,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 4829,
+    "by": "AnteaterTPose"
+   },
+   {
+    "t": 5111,
+    "by": "Crimson"
+   },
+   {
+    "t": 6254,
+    "by": "Pastor Dixon Butts"
+   },
+   {
+    "t": 6486,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 6835,
+    "by": "GreenImp"
+   },
+   {
+    "t": 6995,
+    "by": "Rat King",
+    "skip": true
+   },
+   {
+    "t": 7019,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 7468,
+    "by": "AnteaterTPose"
+   },
+   {
+    "t": 8148,
+    "by": "wild-one"
+   },
+   {
+    "t": 8538,
+    "by": "iregretjumping",
+    "title": "Kids Running Loose in the Hotel"
+   },
+   {
+    "t": 9581,
+    "by": "Crimson"
+   },
+   {
+    "t": 9679,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 10332,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 10952,
+    "by": "AnteaterTPose"
+   },
+   {
+    "t": 11344,
+    "by": "Crimson"
+   },
+   {
+    "t": 11560,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 11962,
+    "by": "Yo Ghost"
+   },
+   {
+    "t": 12148,
+    "by": "AnteaterTPose"
+   }
+  ]
+ },
+ "14759": {
+  "calls": [
+   {
+    "t": 0,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 1119,
+    "by": "GreenImp"
+   },
+   {
+    "t": 1544,
+    "by": "Crimson"
+   },
+   {
+    "t": 1921,
+    "by": "AndyAnderson",
+    "title": "Jesus Checks In"
+   },
+   {
+    "t": 2154,
+    "by": "despicabledogs"
+   },
+   {
+    "t": 2850,
+    "by": "cmann"
+   },
+   {
+    "t": 3427,
+    "by": "iregrettposing"
+   },
+   {
+    "t": 3881,
+    "by": "wild-one"
+   },
+   {
+    "t": 4725,
+    "by": "Tiff"
+   },
+   {
+    "t": 5263,
+    "by": "IceCat"
+   },
+   {
+    "t": 5759,
+    "by": "CrieFaux"
+   },
+   {
+    "t": 6104,
+    "by": "Saturn"
+   },
+   {
+    "t": 6644,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 7267,
+    "by": "NEDDY"
+   },
+   {
+    "t": 7770,
+    "by": "dantheman"
+   },
+   {
+    "t": 8258,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 8751,
+    "by": "[XEN] JonRow"
+   },
+   {
+    "t": 9286,
+    "by": "TeePoZucks"
+   },
+   {
+    "t": 9850,
+    "by": "despicabledogs",
+    "skip": true
+   },
+   {
+    "t": 9860,
+    "by": "Nicky T"
+   },
+   {
+    "t": 10079,
+    "by": "Crimson"
+   }
+  ]
+ },
+ "14723": {
+  "calls": [
+   {
+    "t": 0,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 1650,
+    "by": "GreenImp"
+   },
+   {
+    "t": 1910,
+    "by": "Crimson"
+   },
+   {
+    "t": 2308,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 2522,
+    "by": "wild-one"
+   },
+   {
+    "t": 3050,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 3300,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 3657,
+    "by": "Tiff"
+   },
+   {
+    "t": 3944,
+    "by": "AnteaterTPose"
+   },
+   {
+    "t": 4485,
+    "by": "IceCat"
+   },
+   {
+    "t": 5117,
+    "by": "Buc-ee's Kansas City",
+    "title": "The Printer That Makes Meat"
+   },
+   {
+    "t": 5784,
+    "by": "Crimson",
+    "title": "Resurrecting Dolly Parton"
+   },
+   {
+    "t": 6497,
+    "by": "wild-one"
+   },
+   {
+    "t": 6748,
+    "by": "jelly",
+    "skip": true
+   },
+   {
+    "t": 6779,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 7276,
+    "by": "Dr. Tom Servo"
+   },
+   {
+    "t": 7973,
+    "by": "Tiff"
+   },
+   {
+    "t": 8467,
+    "by": "DelTron3000"
+   },
+   {
+    "t": 8893,
+    "by": "AnteaterTPose"
+   },
+   {
+    "t": 9420,
+    "by": "Soundwave"
+   }
+  ]
+ },
+ "14691": {
+  "calls": [
+   {
+    "t": 0,
+    "by": "cmann"
+   },
+   {
+    "t": 1342,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 1874,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 2267,
+    "by": "charlie"
+   },
+   {
+    "t": 2934,
+    "by": "Cyber🚀Space🛸boiii🪐"
+   },
+   {
+    "t": 3401,
+    "by": "GreenImp"
+   },
+   {
+    "t": 3830,
+    "by": "Drake Dragsaw"
+   },
+   {
+    "t": 4184,
+    "by": "Saturn"
+   },
+   {
+    "t": 4754,
+    "by": "wild-one"
+   },
+   {
+    "t": 5201,
+    "by": "I_8_A_P_P"
+   },
+   {
+    "t": 5998,
+    "by": "rosin"
+   },
+   {
+    "t": 6706,
+    "by": "Arbee"
+   },
+   {
+    "t": 6987,
+    "by": "Dr. Tom Servo"
+   },
+   {
+    "t": 7768,
+    "by": "iregretjumping"
+   },
+   {
+    "t": 8040,
+    "by": "Roy's Hippie Aunt"
+   },
+   {
+    "t": 8102,
+    "by": "Tiff"
+   },
+   {
+    "t": 8696,
+    "by": "Buc-ee's Kansas City"
+   },
+   {
+    "t": 8983,
+    "by": "Mr. LallyBirdie"
+   },
+   {
+    "t": 9460,
+    "by": "Rat King"
+   }
+  ]
  }
 }

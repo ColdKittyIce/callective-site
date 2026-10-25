@@ -7,6 +7,8 @@
  *   GET  /api/status            is TheCallective live on Prankcast, plus the live stream address
  *   GET  /api/radio             what Callective Radio (the 24/7 player) is playing right now (the newest 10 shows)
  *   GET  /api/guestbook         the 1998 page's guestbook (POST signs it; flagged entries wait for the crew)
+ *   GET  /api/calls             crew fixes to the call lists (titles, callers, blurbs)
+ *   POST /api/mod/calls         save one fix {ep, t, title, by} or {ep, desc}  (ADMIN_TOKEN)
  *   GET  /api/mod/guestbook     guestbook entries, posted and held        (ADMIN_TOKEN)
  *   POST /api/mod/gb/:id/approve|delete                                   (ADMIN_TOKEN)
  *   GET  /api/hits              the 1998 page's visitor counter (POST adds one)
@@ -74,6 +76,7 @@ async function route(request, env, ctx, url) {
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
       if (p === "/api/hits") return hits(env, M === "POST");
+      if (p === "/api/calls" && M === "GET") return json(env.DB ? JSON.parse(await env.DB.get("callfix") || "{}") : {}, 200, 30);
       if (p === "/api/guestbook" && M === "GET") return cached(request, ctx, 20, () => gbList(env, "g:"));
       if (p === "/api/guestbook" && M === "POST") return gbPost(request, env);
       if (p === "/api/clips" && M === "GET") return clipsList(env);
@@ -84,6 +87,7 @@ async function route(request, env, ctx, url) {
         if (!env.ADMIN_TOKEN || (request.headers.get("authorization") || "") !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: "Wrong crew password" }, 401);
         if (p === "/api/mod/pending") return clipsList(env, "p:");
         if (p === "/api/mod/public") return clipsList(env, "a:", true);
+        if (p === "/api/mod/calls" && M === "POST") return callFix(request, env);
         if (p === "/api/mod/guestbook") return json({ pub: (await gbList(env, "g:")).entries, held: (await gbList(env, "h:")).entries });
         if ((m = p.match(/^\/api\/mod\/gb\/([a-z0-9-]+)\/(approve|delete)$/)) && M === "POST") return gbAct(env, m[1], m[2]);
         if ((m = p.match(/^\/api\/mod\/clip\/([a-z0-9-]+)\.mp3$/))) return clipAudio(env, ctx, m[1], "p:", url, request);
@@ -302,6 +306,19 @@ async function cut(env, id, url, ctx, request) {
   if (!(to > from) || to - from > MAX_REF_SEC + 10) return json({ error: "Pick a piece between 1 second and 20 minutes long" }, 400);
   const extra = url.searchParams.get("dl") ? { "content-disposition": `attachment; filename="${fileName(url.searchParams.get("name"))}"` } : {};
   return slice(env, ctx, request, id, from, to, extra);
+}
+
+/* ---------- crew fixes to call lists (titles, who called, show blurbs). One small KV document. ---------- */
+async function callFix(request, env) {
+  if (!env.DB) return json({ error: "Storage isn't set up" }, 500);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
+  const ep = String(+b.ep || ""); if (!ep || ep === "0") return json({ error: "Which show?" }, 400);
+  const all = JSON.parse(await env.DB.get("callfix") || "{}"), show = all[ep] || (all[ep] = { c: {} });
+  if (b.desc != null) show.desc = clean(b.desc, 400);
+  if (b.t != null) { const k = String(Math.round(+b.t)), c = show.c[k] || (show.c[k] = {});
+    if (b.title != null) c.title = clean(b.title, 120); if (b.by != null) c.by = clean(b.by, 60); }
+  await env.DB.put("callfix", JSON.stringify(all));
+  return json({ ok: true, fix: show });
 }
 
 /* ---------- the 1998 page's hit counter (each browser counts once a day) ---------- */

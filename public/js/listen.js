@@ -162,12 +162,13 @@ const Listen = (() => {
     $("ls-next").innerHTML = sched.next.map(n => `<li><time>${fmt(n.at)}</time><span><b>${esc(fmtDate(n.d))}</b>${n.h ? ` · ${esc(n.h)}` : ""}</span><em>${fmtLen(n.sec)}</em></li>`).join("");
   }
   let lastCall;
+  document.addEventListener("calls-changed", () => { lastCall = undefined; });
   function paintCall(p) {
     const c = mode === "radio" && sched ? callAt(sched.ep.id, p, sched.ep.sec) : null, key = c ? sched.ep.id + ":" + c.t : "";
     if (key === lastCall) return; lastCall = key;
-    $("ls-call").hidden = !c; $("ls-call").innerHTML = c ? `On the line: <b>${esc(c.by)}</b> · ${esc(c.title)}` : "";
-    if (Player.current?.kind === "radio" && sched) Player.update({ title: c ? `${c.by}: ${c.title}` : radioTitle(sched.ep) });
-    if (c && !$("nowcard").classList.contains("live")) $("nc-title").textContent = `${c.by}: ${c.title}`;
+    $("ls-call").hidden = !c; $("ls-call").innerHTML = c ? `On the line: <b>${esc(c.by)}</b>${c.title ? " · " + esc(c.title) : ""}` : "";
+    if (Player.current?.kind === "radio" && sched) Player.update({ title: c ? callLabel(c) : radioTitle(sched.ep) });
+    if (c && !$("nowcard").classList.contains("live")) $("nc-title").textContent = callLabel(c);
   }
   function paintClock() {
     $("ls-clock").textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });

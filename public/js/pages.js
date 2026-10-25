@@ -126,7 +126,7 @@ const Directory = (() => {
   function list() {
     const q = $("yp-q").value.trim().toLowerCase();
     let L = C.episodes.filter(e => filter === "all" || (filter === "specials" ? SPECIAL.has(e.id) : e.h === filter));
-    if (q) L = L.filter(e => `${e.t} ${e.n || ""} ${e.h || ""} ${fmtDate(e.d)} ${(C.calls[e.id]?.calls || []).map(c => c.by + " " + c.title).join(" ")}`.toLowerCase().includes(q));
+    if (q) L = L.filter(e => `${e.t} ${e.n || ""} ${e.h || ""} ${fmtDate(e.d)} ${(C.calls[e.id]?.calls || []).map(c => c.by + " " + (c.title || "")).join(" ")}`.toLowerCase().includes(q));
     const S = all ? L : L.slice(0, 30);
     $("listings").innerHTML = S.map(e => `<div class="lst"><span class="tt">${esc(niceTitle(e))}</span><span class="dots"><span class="d">${esc(fmtDate(e.d))}</span><span class="len">${fmtLen(e.sec || 0)}</span></span>${e.h ? `<span class="h">Host: ${esc(e.h)}</span>` : ""}${C.calls[e.id]?.desc ? `<span class="n">${esc(C.calls[e.id].desc)}</span>` : e.n ? `<span class="n">${esc(e.n)}</span>` : ""}${C.calls[e.id] ? `<span class="n cl">${callsFor(e.id).filter(c => !c.skip).length} calls: ${esc([...new Set(callsFor(e.id).filter(c => !c.skip).map(c => c.by))].join(", "))}</span>` : ""}<span class="acts">${isRecent(e.id) ? `<button type="button" data-replay="${e.id}">▶ Play here with chat</button><a href="${PC_POST}${e.id}" target="_blank" rel="noopener">Prankcast ↗</a>` : `<a href="${PC_POST}${e.id}" target="_blank" rel="noopener">▶ Listen on Prankcast ↗</a>`}</span></div>`).join("")
       || `<div class="lst"><span class="tt">No listings.</span><span class="h">Try another word, or pick All.</span></div>`;
@@ -140,7 +140,7 @@ const Directory = (() => {
     $("yp-chips").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) { filter = b.dataset.k; all = false; chips(); list(); } });
     $("yp-q").addEventListener("input", () => { all = false; list(); });
     $("yp-more").addEventListener("click", () => { all = true; list(); });
-    document.addEventListener("episodes-changed", list);
+    document.addEventListener("episodes-changed", list); document.addEventListener("calls-changed", list);
   }
   return { init };
 })();

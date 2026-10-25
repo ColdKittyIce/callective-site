@@ -82,24 +82,38 @@ const Replay = (() => {
 
   /* The call list: who's on, jump to a call, clip a whole call. */
   let curCall = null;
+  const crew = () => { try { return sessionStorage.getItem("cx-mod") || ""; } catch (e) { return ""; } };
   function paintCalls() {
-    const box = $("ep-calls"), L = callsFor(ep.id, dur), info = C.calls[ep.id]; curCall = null;
+    const box = $("ep-calls"), L = callsFor(ep.id, dur), info = C.calls[ep.id], ed = !!crew() && !!C.api; curCall = null;
     box.hidden = !L.length; if (!L.length) { box.innerHTML = ""; return; }
-    box.innerHTML = `${info.desc ? `<p class="calls-desc">${esc(info.desc)}</p>` : ""}<div class="calls-head"><b>${L.filter(c => !c.skip).length} calls</b><span>Tap to jump · ✂ clips the whole turn</span></div><ol>${L.map((c, i) => c.skip
+    const pen = (attr, what) => ed ? `<button type="button" class="call-ed" ${attr} title="Edit ${what}" aria-label="Edit ${what}">✎</button>` : "";
+    box.innerHTML = `${info.desc || ed ? `<p class="calls-desc">${esc(info.desc || "No show blurb yet.")} ${pen('data-desc="1"', "the show blurb")}</p>` : ""}<div class="calls-head"><b>${L.filter(c => !c.skip).length} calls</b><span>${ed ? "Crew mode: ✎ fixes a title or name" : "Tap to jump · ✂ clips the whole turn"}</span></div><ol>${L.map((c, i) => c.skip
       ? `<li class="call skip"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b><em>skipped</em></span></li>`
-      : `<li class="call" data-i="${i}"><button type="button" class="call-go" data-t="${c.at}"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b><em>${esc(c.title)}</em></span><small>${fmtLen(c.end - c.t)}</small></button><button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button></li>`).join("")}</ol>`;
+      : `<li class="call" data-i="${i}"><button type="button" class="call-go" data-t="${c.at}"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b>${c.title ? `<em>${esc(c.title)}</em>` : ""}</span><small>${fmtLen(c.end - c.t)}</small></button>${pen(`data-i="${i}"`, `${esc(c.by)}'s call`)}<button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button></li>`).join("")}</ol>`;
+  }
+  async function editCall(i, desc) {
+    const tok = crew(); if (!tok) return; const body = { ep: ep.id };
+    if (desc) { const v = prompt("Show blurb (one or two sentences):", C.calls[ep.id]?.desc || ""); if (v == null) return; body.desc = v; }
+    else { const c = callsFor(ep.id, dur)[i]; const title = prompt(`Title for ${c.by}'s call at ${hms(c.t, true)} (leave empty for none):`, c.title || ""); if (title == null) return;
+      const by = prompt("Who made the call?", c.by); if (by == null) return; Object.assign(body, { t: c.t, title, by }); }
+    try {
+      const r = await fetch(`${C.api}/mod/calls`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${tok}` }, body: JSON.stringify(body) });
+      if (r.status === 401) { toast("Wrong crew password. Log in again on the Clip board page."); return; }
+      if (!r.ok) throw 0; const j = await r.json(), fix = {}; fix[ep.id] = j.fix;
+      const cur = await getJSON(`${C.api}/calls?x=${Date.now()}`, 6000).catch(() => ({})); applyCallFixes({ ...cur, ...fix }); toast("Saved. Everyone sees it within a minute.");
+    } catch (e) { toast("That didn't save. Try again."); }
   }
   function paintCurCall(t) {
     const c = ep ? callAt(ep.id, t, dur) : null; if (curCall !== undefined && (c === curCall || (c && curCall && c.t === curCall.t))) return; curCall = c;
     $("ep-calls").querySelectorAll(".call.on").forEach(x => x.classList.remove("on"));
     if (c) { const li = $("ep-calls").querySelector(`.call[data-i="${c.n - 1}"]`); li?.classList.add("on"); const ol = li?.parentElement; if (ol) ol.scrollTop = li.offsetTop - ol.offsetTop - ol.clientHeight / 3; }
-    if (Player.current?.kind === "ep" && ep) Player.update({ title: c ? `${c.by}: ${c.title}` : `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}` });
+    if (Player.current?.kind === "ep" && ep) Player.update({ title: c ? callLabel(c) : `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}` });
   }
   function clipCall(i) {
     const c = callsFor(ep.id, dur)[i]; if (!c) return;
     if (!hasAudio || !C.api) { toast("Clipping works on the live site, where the episode audio plays."); return; }
     if (c.end - c.t > 1200) toast("Clips top out at 20 minutes, so this one has the first 20. Drag the markers if you want a different part.");
-    Clipper.open(Clipper.episodeSource(aud(), ep), 30, { from: c.t, to: c.end, name: `${c.by}: ${c.title}` });
+    Clipper.open(Clipper.episodeSource(aud(), ep), 30, { from: c.t, to: c.end, name: callLabel(c) });
   }
 
   function tick() {
@@ -135,8 +149,8 @@ const Replay = (() => {
     fillSelect();
     $("cl-quick").addEventListener("click", () => clip());
     $("ep-calls").addEventListener("click", e => {
-      const go = e.target.closest(".call-go"), cl = e.target.closest(".call-clip");
-      if (go) { seek(+go.dataset.t); play(); } else if (cl) clipCall(+cl.dataset.i);
+      const go = e.target.closest(".call-go"), cl = e.target.closest(".call-clip"), ed = e.target.closest(".call-ed");
+      if (ed) editCall(+ed.dataset.i, !!ed.dataset.desc); else if (go) { seek(+go.dataset.t); play(); } else if (cl) clipCall(+cl.dataset.i);
     });
     $("ep-select").addEventListener("change", e => load(e.target.value));
     $("rp-play").addEventListener("click", () => playing() ? pause() : play());
@@ -158,6 +172,7 @@ const Replay = (() => {
     a.addEventListener("error", () => { if (hasAudio) { hasAudio = false; $("rp-note").textContent = "The audio didn't load. The chat still replays on its own, or open the show on Prankcast."; } });
     new ResizeObserver(() => drawHeat()).observe(heat);
     document.addEventListener("episodes-changed", () => fillSelect(ep?.id));
+    document.addEventListener("calls-changed", () => { if (ep) { paintCalls(); curCall = undefined; tick(); drawHeat(); } });
     const recent = recentIds(), mine = C.episodes.filter(e => recent.has(e.id));
     const start = mine.find(e => e.chat >= 30) || mine[0];
     load(start.id);
