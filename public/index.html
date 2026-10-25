@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Monoton&family=Share+Tech+Mono&family=VT323&display=swap">
-<link rel="stylesheet" href="css/site.css?v=86c41bb9">
+<link rel="stylesheet" href="css/site.css?v=2cee96ee">
 
 <div class="bg" aria-hidden="true"><div class="sun"></div><canvas class="rain" id="rain"></canvas><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
@@ -445,6 +445,128 @@
   </div>
 </section>
 
+<section class="band" id="audiobible">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Help desk · how to sound like you know what you're doing</p>
+      <h2 class="glitch" data-text="The Audio Bible">The Audio Bible</h2>
+      <p class="lede">So you want to make calls and run your own show, and your computer has other plans. This is CrieFaux's Audio Bible 1.0, rewritten for the site: a caveman's guide to making fire, written by a caveman. Caw.</p>
+    </div>
+    <div class="ab">
+      <aside class="ab-toc hud">
+        <b>Contents</b>
+        <ol>
+          <li><a href="#ab-pick">Pick your setup</a></li>
+          <li><a href="#ab-need">What you need</a></li>
+          <li><a href="#ab-quick">A. The Quick and Dirty</a></li>
+          <li><a href="#ab-full">B. The Full Dirty</a></li>
+          <li><a href="#ab-matrix">The routing cheat sheet</a></li>
+          <li><a href="#ab-learn">How Voicemeeter actually works</a></li>
+          <li><a href="#ab-cables">Virtual cables</a></li>
+          <li><a href="#ab-tips">Tips and fixes</a></li>
+        </ol>
+        <p class="ext">Original guide by <b>CrieFaux</b>, cover art by <b>IceCat</b>. He's not an expert and never claimed to be. Found an error? Tell him. Think you can make a better version? Please do.</p>
+      </aside>
+      <div class="ab-body">
+        <details class="ab-sec hud" id="ab-pick" open><summary>1. Pick your setup</summary>
+          <p>Don't do both guides. Pick one.</p>
+          <div class="ab-two">
+            <div><h4>A. The Quick and Dirty</h4><p>Gets you making calls and streaming a show today. Anyone can set it up.</p><p class="ab-pro">+ dead simple</p><p class="ab-con">− no guests from Discord, and the person you call won't hear your music or soundboards</p></div>
+            <div><h4>B. The Full Dirty</h4><p>The do-it-all setup with Voicemeeter Potato. Soundboards, music, chat guests, the works.</p><p class="ab-pro">+ guests and soundboards</p><p class="ab-con">− confusing the first time. Follow every step.</p></div>
+          </div>
+        </details>
+
+        <details class="ab-sec hud" id="ab-need"><summary>2. What you need</summary>
+          <ul>
+            <li><b>A headset.</b> Headphones stop the call from leaking back into your mic.</li>
+            <li><b>A mic.</b> The one on your headset counts.</li>
+            <li><b>A call machine.</b> Whatever places your calls: a softphone app with your VoIP provider, for example. The original guide used Skype, which has since shut down. RIP Skype. The settings below work the same in any call app.</li>
+            <li><b>A stream machine.</b> Whatever sends your audio to Prankcast, like Rocket Broadcaster (used in the original guide) or the classic BUTT, which really is called that.</li>
+            <li><b>Voicemeeter Potato</b>, only if you're doing the Full Dirty.</li>
+          </ul>
+        </details>
+
+        <details class="ab-sec hud" id="ab-quick"><summary>A. The Quick and Dirty</summary>
+          <p>Bad with computer machines, or just want to get your feet wet? This is the one. You can still have a guest by calling them with your call machine, but they'll sound like they're on a phone. This setup (or something close) has carried plenty of successful prank callers for years.</p>
+          <ol class="ab-steps">
+            <li>In Windows sound settings, set your <b>default output</b> to your headset and your <b>default input</b> to your mic.</li>
+            <li>In your <b>call machine</b>: microphone = your mic, speakers = your headset.</li>
+            <li>In your <b>stream machine</b>: input = your mic, plus your system sounds (your headset, or the Windows default). In Rocket Broadcaster, tick both of those boxes.</li>
+            <li>That's it. Go call a hotel.</li>
+          </ol>
+        </details>
+
+        <details class="ab-sec hud" id="ab-full"><summary>B. The Full Dirty</summary>
+          <p class="ab-warn">This won't teach you Voicemeeter, but if you follow <b>every single step</b> you'll have a working rig. Skip one and you will be haunted.</p>
+          <ol class="ab-steps">
+            <li><b>Install Voicemeeter Potato.</b></li>
+            <li><b>Set every device to 48000 Hz.</b> Windows 11: Settings → System → Sound → More sound settings. On the <b>Playback</b> tab, right-click each device you'll use (every Voicemeeter device plus your speakers and headset) → Properties → Advanced → set the format to <b>48000 Hz</b> (24-bit if you can). Then do the same on the <b>Recording</b> tab for every Voicemeeter device and every mic. Miss one and you'll be plagued with bad audio for years to come.</li>
+            <li>Set your Windows <b>default output</b> to <code>Voicemeeter Input</code>.</li>
+            <li>Set your Windows <b>default input</b> to <code>Voicemeeter Out B3</code>.</li>
+            <li>In Voicemeeter, set <b>Hardware Input 1</b> to your mic (click the input's label).</li>
+            <li>Set <b>A1</b> (top right) to your computer speakers.</li>
+            <li>Set <b>A2</b> to your headset.</li>
+            <li>Light up the routing buttons on each strip exactly like the <a href="#ab-matrix">cheat sheet</a>.</li>
+            <li>Mute A1 or A2 so you only hear things in one place. Flip the two mutes to switch between speakers and headset.</li>
+            <li><b>Call machine:</b> microphone = <code>Voicemeeter Out B1</code>, speakers = <code>Voicemeeter AUX Input</code>.</li>
+            <li><b>Stream machine:</b> broadcast <code>Voicemeeter Out B3</code>, and make sure it's the <b>only</b> source, or everything doubles. Recording separately? Record B3 too.</li>
+            <li><b>Chat machine (Discord):</b> input = <code>Voicemeeter Out B2</code>, output = <code>Voicemeeter VAIO3 Input</code>. Mumble works the same way, but only one chat app at a time, or the two rooms can hear you but not each other.</li>
+            <li>Done. Your chat can hear the call and your music, and the person you call hears your music and soundboards too, so mind what's playing.</li>
+          </ol>
+          <p>Didn't work? You skipped a step or picked the wrong device. Go back through every step. Yes, every one.</p>
+        </details>
+
+        <details class="ab-sec hud" id="ab-matrix" open><summary>The routing cheat sheet</summary>
+          <p>Which buttons to light on each Voicemeeter strip. <b>A</b> = what you hear (speakers, headset). <b>B</b> = who else hears it: B1 the call, B2 chat, B3 the stream.</p>
+          <div class="ab-scroll"><table class="ab-matrix">
+            <thead><tr><th>Strip (what it is)</th><th>A1<br><small>speakers</small></th><th>A2<br><small>headset</small></th><th>B1<br><small>call</small></th><th>B2<br><small>chat</small></th><th>B3<br><small>stream</small></th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td><b>Your mic</b><br><small>Hardware Input 1</small></td><td>–</td><td>–</td><td class="on">●</td><td class="on">●</td><td class="on">●</td><td>Everyone hears you. You don't hear yourself, unless you're a psycho.</td></tr>
+              <tr><td><b>Desktop: music, browser soundboards</b><br><small>Voicemeeter Input</small></td><td class="on">●</td><td class="on">●</td><td class="on">●</td><td class="on">●</td><td class="on">●</td><td>Everyone hears the music, including you.</td></tr>
+              <tr><td><b>The call</b><br><small>Voicemeeter AUX Input</small></td><td class="on">●</td><td class="on">●</td><td>–</td><td class="on">●</td><td class="on">●</td><td>Never send the call back to the call, or they hear themselves.</td></tr>
+              <tr><td><b>Chat (Discord)</b><br><small>Voicemeeter VAIO3 Input</small></td><td class="on">●</td><td class="on">●</td><td class="on">●</td><td>–</td><td class="on">●</td><td>Never send chat back to chat, or they hear themselves.</td></tr>
+            </tbody>
+          </table></div>
+          <p class="ext">The rule behind the whole table: <b>nothing ever goes back to where it came from.</b></p>
+        </details>
+
+        <details class="ab-sec hud" id="ab-learn"><summary>How Voicemeeter actually works</summary>
+          <h4>Inputs: sounds coming in</h4>
+          <p>Inputs are everything Voicemeeter can hear: your mics, and the sound coming out of your programs (dialer, chat, music, soundboards). Voicemeeter Potato gives you <b>5 hardware inputs</b> (your physical mics) and <b>3 virtual inputs</b> (programs).</p>
+          <p>The virtual inputs have confusing names, so here's the decoder ring. When a program asks where to send its sound ("speakers"), pick one of these:</p>
+          <ul>
+            <li><code>Voicemeeter Input</code>: virtual input 1. Your Windows default: browser, music, soundboards.</li>
+            <li><code>Voicemeeter AUX Input</code>: virtual input 2. Your call machine.</li>
+            <li><code>Voicemeeter VAIO3 Input</code>: virtual input 3. Your chat machine.</li>
+          </ul>
+          <h4>Outputs: who gets to hear what</h4>
+          <p>Outputs are where the mixed sound goes. The <b>A outputs</b> (A1–A5) are hardware, like your speakers and headset, set across the top of Voicemeeter. The <b>B outputs</b> (B1–B3) are virtual. Other programs pick them as their microphone: <code>Voicemeeter Out B1</code> for the call, <code>Out B2</code> for chat, <code>Out B3</code> for the stream.</p>
+          <h4>Mixing: the A/B buttons</h4>
+          <p>Every input strip has A1–A5 and B1–B3 buttons. Light a button and that input goes to that output. Your mic lights all the B's and no A's. The call lights the A's (so you hear it), B2 (so chat hears it) and B3 (so the stream hears it), but <b>not B1</b>, because that would send the call back to itself. Chat is the mirror image: everything except <b>B2</b>.</p>
+          <p>"But WHAT DOES IT MEAN?!" Calm down. Look at the <a href="#ab-matrix">cheat sheet</a> again. Clear as mud, right?</p>
+        </details>
+
+        <details class="ab-sec hud" id="ab-cables"><summary>Virtual cables</summary>
+          <p>A virtual cable lets a program's sound come in on a <b>hardware</b> input slot. Voicemeeter includes one free cable and sells more.</p>
+          <p>Why bother? Potato only has 3 virtual inputs. Say you want soundboards (from a Stream Deck, maybe) on their own volume slider separate from your music. Send the soundboards to the cable, set a spare hardware input to the cable's other end, and now music and soundboards have their own faders.</p>
+          <p>Cables also let you run two chat apps at once (Discord and Mumble both hearing everything), or add a fourth output. Put a cable on a spare A slot for a separate recording, so you can mute something on the stream and still keep it in the recording.</p>
+        </details>
+
+        <details class="ab-sec hud" id="ab-tips"><summary>Tips and fixes</summary>
+          <ul>
+            <li><b>Start with Windows:</b> in the Voicemeeter menu, turn on the options to run at Windows startup and show on launch.</li>
+            <li><b>Mic full of fuzz?</b> Turn up the <b>denoiser</b> on your mic strip.</li>
+            <li><b>Mic picks up everything</b> (keyboard, clicks, the dog)? Turn up the <b>gate</b>.</li>
+            <li><b>Want labels</b> like the pros? Right-click any strip's name to rename it.</li>
+            <li><b>Playing sounds through your mic in Discord?</b> Turn off Discord's noise reduction, or it'll eat your soundboard.</li>
+            <li><b>Robot voice or crackle?</b> Something isn't on 48000 Hz. Go back to step 2 of the Full Dirty.</li>
+            <li><b>Everything sounds doubled on the stream?</b> Your stream machine has more than one source. It should only have <code>Out B3</code>.</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
 </div>
 <div class="page" id="page-show" data-page="show" hidden>
 <section class="band" id="showpage"><div class="wrap" id="sp-body"></div></section>
@@ -476,27 +598,38 @@
 </section>
 </div>
 <div class="page" id="page-lore" data-page="lore">
-<section class="band" id="glossary">
+<section class="band" id="story">
   <div class="wrap">
     <div class="sec-head">
-      <p class="kicker">Say it like a regular</p>
-      <h2 class="glitch" data-text="The glossary">The glossary</h2>
-      <p class="lede">Every running bit, inside joke and catchphrase the room has made since December 2024. If you've ever wondered why everyone types "bathroom bathroom" at the same time, start here.</p>
+      <p class="kicker">How a voice channel became a problem</p>
+      <h2 class="glitch" data-text="Our story">Our story</h2>
+      <p class="lede">The Callective is what happens when you give a room full of prank callers one phone line, a queue and a Governor. Here's how we got here, mostly true.</p>
     </div>
-    <div class="gl-ctl"><label class="sr" for="gl-q">Look up a word</label><input id="gl-q" type="search" placeholder="> look up a word" autocomplete="off"></div>
-    <div class="gl-grid" id="gl-grid"></div>
-    <details class="gl-rules hud"><summary>Read the original rules, as posted in December 2024</summary><ol id="gl-rules"></ol><p class="ext">Posted by Ira before the first shows. They've been trimmed since, but rules 5 and 7 survived.</p></details>
-  </div>
-</section>
-<section class="band" id="wrapped">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker">The year in numbers</p>
-      <h2 class="glitch" data-text="Callective Wrapped">Callective Wrapped</h2>
-      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every fresh fleshbag who made their first call. Tap a name to hear the evidence.</p>
+    <div class="story">
+      <div class="story-intro hud">
+        <p>Every Saturday at 7pm Eastern, a voice channel in the <b>World of Prank Calls</b> Discord fills up. Somebody hosts. Somebody else drops a PLA bell in chat. Ira reads the rules (the best part, per the chat). Then, one by one, anybody who wants a turn gets on the phone and tries their bit on a hotel front desk somewhere in America while forty people listen, type, and absolutely do not unmute.</p>
+        <p>It's a community show, built on the prank calling tradition the Phone Losers of America and the Snow Plow Show have carried for decades: <b>make it funny, keep it light, no police, no threats, and when it's over, tell them they just got buttslammed by 101.1 The Butt.</b> Everything else is negotiable.</p>
+      </div>
+      <ol class="timeline">
+        <li><time>Dec 2024</time><div><b>The first dial.</b> Ira posts the rules, including rule 5, which everyone agrees exists because of someone specific. The first shows go out from the WOPC voice channel, and Episode 02 on Dec 21 runs with IceCat hosting: hotel pools, loose gerbils, and a Ham Man.</div></li>
+        <li><time>Feb 2025</time><div><b>TheCallective lands on Prankcast.</b> The show gets its own channel, and the archive starts piling up. Nearly a hundred episodes later, it hasn't stopped.</div></li>
+        <li><time>Spring 2025</time><div><b>It gets a face.</b> IceCat draws up the rotary-dial logo, the cartoon cast (a bearded Governor, a blue cat, a dog in a 101.1 The Butt hoodie, and a robot with hypno goggles), the theme song and the farewell song.</div></li>
+        <li><time>Apr 2025</time><div><b>The queue gets a bot.</b> The Callective Queue Bot starts keeping the line honest. Over the next year it logs more than a thousand handoffs, which is how this site knows who called when.</div></li>
+        <li><time>2025</time><div><b>Hosts rotate in.</b> Dr. Tom Servo becomes the most frequent host. RBCP of the PLA, milkbox, CrieFaux, Andy Anderson, DespicableDogs, IceCat, Devon and more take the chair. The chat develops opinions about all of them.</div></li>
+        <li><time>Nov–Dec 2025</time><div><b>Holiday specials.</b> The Only Pranksgiving Special (so far) runs three and a half hours. The Secret Santa Special swaps lists of things to ask Five Below for, and Five Below has not been the same since.</div></li>
+        <li><time>Feb 2026</time><div><b>Tom Man is born.</b> Dr. Tom Servo gets a cape, a comic book origin, and a habit of laughing psychotically in phone booths.</div></li>
+        <li><time>Jul 2026</time><div><b>Patrick Fucking Howard takes over the queue.</b> Once a call character, now the bot that greets everyone in voice and moves the line like a mall cop with a badge and a schedule. The MEGA show that month runs over four hours.</div></li>
+        <li><time>Sep 2026</time><div><b>Dingtember.</b> A whole month of "sorry, I dinged your car, call me" notes, a Dingtember Special hosted by RBCP, and at least one ding recipient so charmed they joined the queue.</div></li>
+        <li><time>Oct 2026</time><div><b>Spooky season.</b> The Doglective and the Hellective rebrands, Boner Haus corporate week, and the arrival of the Pumpkin Man. Also, this website.</div></li>
+      </ol>
+      <div class="story-stats">
+        <div><b>~100</b><span>episodes on Prankcast</span></div>
+        <div><b>1,400+</b><span>turns on the phone, logged</span></div>
+        <div><b>300+</b><span>people who've typed in chat</span></div>
+        <div><b>~2,700</b><span>PLA bells dropped</span></div>
+        <div><b>1</b><span>rule 5. You know who you are.</span></div>
+      </div>
     </div>
-    <div class="yp-chips wr-years" id="wr-years" role="group" aria-label="Year"></div>
-    <div id="wr-body" class="wr-body"></div>
   </div>
 </section>
 <section class="band" id="court">
@@ -523,6 +656,55 @@
       <p><b>THE CALLECTIVE [1/7/26]&gt;</b> Are you suggesting an all-rules show?</p>
       <p><b>THE GALLERY [4/11/26]&gt;</b> I'm not here for the pranks, just the rules.</p>
       <p><b>THE GALLERY [4/11/26]&gt;</b> Hey, what happened to the metal rap version of the rules?</p>
+    </div>
+  </div>
+</section>
+<section class="band" id="rules">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Read them. Live them. Hear Ira read them.</p>
+      <h2 class="glitch" data-text="The rules">The rules</h2>
+      <p class="lede">Two rulebooks. The Callective's own, read out loud at the top of every show, and the Rules of Prank Calling the whole scene runs on.</p>
+    </div>
+    <div class="rules-grid">
+      <div class="rulebook hud">
+        <h3>The Callective rules</h3>
+        <p class="ext">As read by Ira, the Governor, at the top of every show.</p>
+        <ol class="rlist">
+          <li><b>Keep muted unless it's your turn.</b><span>Open mics get muted. All conversation happens in text chat. The roycipient doesn't need to hear you breathing.</span></li>
+          <li><b>Want to make a call? Put a PLA bell in chat.</b><span>That's the whole sign-up. Patrick Fucking Howard will take it from there.</span></li>
+          <li><b>Follow the rules of the WoPC server and the PLA.</b><span>No slurs, no threatening violence, no involving police. Keep it light. The rules of prank calling are just below.</span></li>
+          <li><b>Be nice. Sometimes calls just don't work out.</b><span>Dead air happens. Hang-ups happen. Nobody needs your notes. Clap anyway.</span></li>
+          <li><b>If you're drunk and abusive, you'll be removed.</b><span>Drunk and charming is a gray area. Drunk and abusive is not. If you don't know why this rule exists, it exists because of you.</span></li>
+          <li><b>Please use headphones if you have them.</b><span>Turn off Discord noise reduction if you're going to play sounds through your mic, or your soundboard turns into a whisper.</span></li>
+          <li><b>No interrupting a call unless you're invited.</b><span>That includes sound effects. The host or the show mods will play them if you ask nicely in chat.</span></li>
+          <li><b>No leaking the source of the call.</b><span>When it's time to come clean, you're 101.1 The Butt and they just got buttslammed. That's all they need to know.</span></li>
+        </ol>
+        <button class="btn sm mustard" type="button" data-hold="ira-rules">&#9654; Hear Ira read them</button>
+      </div>
+      <div class="rulebook hud">
+        <h3>The Rules of Prank Calling</h3>
+        <p class="ext">The scene-wide rulebook from the Phone Losers of America and the World of Prank Calls, in our words. Read the originals at <a href="https://phonelosers.com/rules/" target="_blank" rel="noopener">phonelosers.com/rules</a> and <a href="https://worldofprankcalls.com/rules/" target="_blank" rel="noopener">worldofprankcalls.com/rules</a>.</p>
+        <ol class="rlist">
+          <li><b>Don't involve emergency services.</b><span>Never send police or fire anywhere, and never prank 911 or a police line.</span></li>
+          <li><b>Don't make threats.</b><span>Not even as a joke. It's a crime, and it ends the fun for everyone.</span></li>
+          <li><b>Don't impersonate the police.</b><span>No pretend cops, no pretend FBI. The real ones notice.</span></li>
+          <li><b>Don't call emergency hotlines.</b><span>Crisis and suicide lines are there to help people. Leave them alone.</span></li>
+          <li><b>Don't cause damage.</b><span>Never talk anyone into breaking things or hurting themselves or anybody else.</span></li>
+          <li><b>Confess when it's going sideways.</b><span>If someone looks like they're about to call the cops, reveal it's a prank, apologize, and move on.</span></li>
+          <li><b>Don't steal personal data.</b><span>No asking for account numbers or personal info. That's not a prank, that's a scam.</span></li>
+          <li><b>Don't prank locally.</b><span>Call somewhere far away, not your own town.</span></li>
+          <li><b>One call per person.</b><span>Two at the most. More than that starts to look like harassment.</span></li>
+        </ol>
+        <h4>And a few pro tips</h4>
+        <ul class="rtips">
+          <li><b>Be prepared.</b> Know your opening line before they pick up.</li>
+          <li><b>Be silly, not serious.</b> The goal is funny, not believable.</li>
+          <li><b>Don't laugh.</b> At least not before the good part.</li>
+          <li><b>A conversation isn't a prank call.</b> Bring an actual bit.</li>
+          <li><b>Keep it short.</b> Under five minutes is the sweet spot. Buttslam and bail.</li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
@@ -556,7 +738,10 @@
           <div class="acct">Account <b>THE CALLECTIVE</b><br>Service: Saturdays 7pm ET<br>Period: <span id="bill-period">–</span></div>
         </div>
         <div class="billscroll"><table id="billtable"></table></div>
-        <div class="due"><span>Amount due</span><b>One PLA bell</b></div>
+        <h4 class="bill-sub">Fees, surcharges and other crimes</h4>
+        <div class="billscroll"><table class="billfees"><tbody id="billfees"></tbody></table></div>
+        <div class="due"><span>Amount due</span><b id="billdue">–</b></div>
+        <p class="bill-pay">Payment accepted: one (1) PLA bell. Late fees are assessed in buttslams. Please do not call our billing department; we will call you.</p>
         <p class="billnote" id="billnote"></p>
       </div>
       <div class="tomcard">
@@ -565,6 +750,17 @@
           <div><button class="btn sm mustard" type="button" data-dial="866626">Dial T-O-M-M-A-N</button></div></div>
       </div>
     </div>
+  </div>
+</section>
+<section class="band" id="wrapped">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">The year in numbers</p>
+      <h2 class="glitch" data-text="Callective Wrapped">Callective Wrapped</h2>
+      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every fresh fleshbag who made their first call. Tap a name to hear the evidence.</p>
+    </div>
+    <div class="yp-chips wr-years" id="wr-years" role="group" aria-label="Year"></div>
+    <div id="wr-body" class="wr-body"></div>
   </div>
 </section>
 <section class="band" id="dnc">
@@ -593,6 +789,18 @@
         <p class="dnc-wait">&gt; Waiting for your paperwork…</p>
       </div>
     </div>
+  </div>
+</section>
+<section class="band" id="glossary">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Say it like a regular</p>
+      <h2 class="glitch" data-text="The glossary">The glossary</h2>
+      <p class="lede">Every running bit, inside joke and catchphrase the room has made since December 2024. If you've ever wondered why everyone types "bathroom bathroom" at the same time, start here.</p>
+    </div>
+    <div class="gl-ctl"><label class="sr" for="gl-q">Look up a word</label><input id="gl-q" type="search" placeholder="> look up a word" autocomplete="off"></div>
+    <div class="gl-grid" id="gl-grid"></div>
+    <details class="gl-rules hud"><summary>Read the original rules, as posted in December 2024</summary><ol id="gl-rules"></ol><p class="ext">Posted by Ira before the first shows. They've been trimmed since, but rules 5 and 7 survived.</p></details>
   </div>
 </section>
 
@@ -674,7 +882,7 @@
 <script src="js/lab.js?v=bd0ea94b"></script>
 <script src="js/clipper.js?v=f52ae01e"></script>
 <script src="js/clipboard.js?v=05df78e7"></script>
-<script src="js/pages.js?v=bb1e78d3"></script>
+<script src="js/pages.js?v=99fead53"></script>
 <script src="js/listen.js?v=c73bc9ab"></script>
 <script src="js/bingo.js?v=e098cc1c"></script>
 <script src="js/downloads.js?v=01b8c4c8"></script>

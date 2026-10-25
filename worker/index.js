@@ -80,6 +80,7 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 604800, () => chat(m[1]));
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
+      if ((m = p.match(/^\/api\/g98\/([a-z0-9]+)\.gif$/))) return gif98(env, m[1]);
       if (p === "/api/hits") return hits(env, M === "POST");
       if (p === "/api/suggest" && M === "GET") return cached(request, ctx, 30, () => sgAll(env));
       if ((m = p.match(/^\/api\/suggest(?:\/(vote|report))?$/)) && M === "POST") return sgPost(request, env, m[1] || "add");
@@ -375,6 +376,25 @@ async function sgPost(request, env, action, crew) {
   }
   await env.DB.put(key, JSON.stringify(doc));
   return json({ ok: true, call: L.filter(x => !x.hide).map(x => ({ id: x.id, title: x.title, v: x.v.length, mine: x.v.includes(me) })) });
+}
+
+/* ---------- real 90s GIFs for the 1998 page ----------
+   Picked from the Internet Archive's GeoCities collection (gifcities.org). The first request copies each one into R2,
+   so after that the site serves its own copy and never asks the Archive again. Only these names are allowed. */
+const G98 = { phone: "ITIO4JSORE2E73YN2ZL7EJAJ3V2BECLH", phone3: "IN247ZSIHFK36HRRZ5DKUCAPLYB7CQQJ", flamebar: "4GWM5R7ZEIYA5M7TH7HPQOCFVC67JUFL",
+  fire: "7XCJH5B6O4BVBAFOY5QJPFOXRMSOV3DL", campfire: "FUUQ4XTCRKKLJUMVV3MOA4WF76IZTTGM", skull: "2TXWUNOD5M3HFTWFTHIRKFAMMMDS3EIN", skull2: "C5WW2WBHWFVNSQVZH3PG3NQHF5OQWBXJ",
+  redskull: "BJLYVRBWWRPPMLICRGSQ4N5J3GCYYQTT", construction: "4EMVT763OYXVU23TRDIYOMIG63UTTR6H", sorry: "AA7OX7BZBGRUV6IJLHCTCAY6KDZHP2TY", constr2: "3BRQCUJYYW2BZTHNT5NCVMX7GBP3AKFT",
+  netscape: "2HWGKKL26HMWLHET7A5GJT3T5X6XSGLN", welcome: "CX2IO4Z3E5UPA7PEP5UZKKZSRHFUKFTF", guestbook: "52YCYR75K3XSH2E3QUE2ZR3QTGZLT2R3", guestbook2: "3ICNUIOT7RE7QTYOODZMWINASVD4O5TF",
+  rainbow: "2EFGA4USC76OJCYG3H4UFFY564YFCCYJ", newb: "4GWF4AMXUG5DHQG3CG5JEFA6JPUZJPEV", stars: "2D5BTPJP2UJ3R6SCF2KF4NW374RNGK3B", baby: "7EJDSXOHSHL4PATBBPPIVKEWDVXZQXM2" };
+async function gif98(env, key) {
+  if (!G98[key]) return json({ error: "Not found" }, 404);
+  const h = { "content-type": "image/gif", "cache-control": "public, max-age=31536000, immutable", ...cors() }, rk = `g98/${key}.gif`;
+  if (env.CLIPS) { const o = await env.CLIPS.get(rk); if (o) return new Response(o.body, { headers: h }); }
+  const r = await fetch(`https://blob.gifcities.org/gifcities/${G98[key]}.gif`, { cf: { cacheTtl: 31536000 } });
+  if (!r.ok) return json({ error: "Couldn't fetch that GIF" }, 502);
+  const buf = await r.arrayBuffer(); if (buf.byteLength > 200000) return json({ error: "Too big" }, 413);
+  if (env.CLIPS) try { await env.CLIPS.put(rk, buf, { httpMetadata: { contentType: "image/gif" } }); } catch (e) {}
+  return new Response(buf, { headers: h });
 }
 
 /* ---------- the 1998 page's hit counter (each browser counts once a day) ---------- */

@@ -104,9 +104,26 @@ const Bill = {
     const maxMin = Math.max(...rows.map(r => r.min)), dates = C.episodes.filter(e => e.d).map(e => e.d).sort();
     $("bill-period").textContent = `${fmtDate(dates[0])} to ${fmtDate(dates[dates.length - 1])}`;
     const totN = rows.reduce((s, r) => s + r.n, 0), totM = rows.reduce((s, r) => s + r.min, 0);
-    $("billtable").innerHTML = `<thead><tr><th>Host</th><th class="num">Shows</th><th class="num">Minutes on the line</th><th style="width:28%"><span class="sr">Share</span></th><th class="num">Charge</th></tr></thead>
-      <tbody>${rows.map(r => `<tr><td>${esc(r.h)}</td><td class="num">${r.n}</td><td class="num">${r.min.toLocaleString()}</td><td><span class="bar" style="width:${(r.min / maxMin * 100).toFixed(1)}%"></span></td><td class="num">$0.00</td></tr>`).join("")}</tbody>
-      <tfoot><tr><td>Total</td><td class="num">${totN}</td><td class="num">${totM.toLocaleString()}</td><td></td><td class="num">$0.00</td></tr></tfoot>`;
+    // Callective Telecom rates: $500 a minute, plus fees. Nobody has ever paid.
+    const RATE = 500, money = n => "$" + Math.round(n).toLocaleString("en-US") + ".00";
+    const FEES = [
+      ["Long-distance prank surcharge (every call, every time)", 4.20 * totN * 100],
+      ["Buttslam activation fees", 101.10 * totN * 10],
+      ["PLA bell rental, ~2,700 bells", 2700 * 69],
+      ["Drunk and abusive removal service (rule 5)", 50000],
+      ["Hold music royalties (Ira Reads the Rules, on loop)", 31337],
+      ["\"Bathroom bathroom\" noise ordinance violation", 9999],
+      ["Five Below restocking fee", 55555],
+      ["Pumpkin Man shift coverage", 8008],
+      ["Patrick Fucking Howard's overtime (he's got a badge)", 40404],
+      ["Emergency services", 0, "never. not once. rule 1 of prank calling"]];
+    const sub = totM * RATE + FEES.reduce((t, f) => t + f[1], 0), tax = sub * .18;
+    $("billtable").innerHTML = `<thead><tr><th>Host</th><th class="num">Shows</th><th class="num">Minutes on the line</th><th style="width:24%"><span class="sr">Share</span></th><th class="num">Charge @ $500/min</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td>${esc(r.h)}</td><td class="num">${r.n}</td><td class="num">${r.min.toLocaleString()}</td><td><span class="bar" style="width:${(r.min / maxMin * 100).toFixed(1)}%"></span></td><td class="num">${money(r.min * RATE)}</td></tr>`).join("")}</tbody>
+      <tfoot><tr><td>Airtime total</td><td class="num">${totN}</td><td class="num">${totM.toLocaleString()}</td><td></td><td class="num">${money(totM * RATE)}</td></tr></tfoot>`;
+    $("billfees").innerHTML = FEES.map(([k, v, note]) => `<tr><td>${esc(k)}${note ? ` <i>(${esc(note)})</i>` : ""}</td><td class="num">${money(v)}</td></tr>`).join("")
+      + `<tr class="sub"><td>Governor's tax (18%)</td><td class="num">${money(tax)}</td></tr>`;
+    $("billdue").textContent = money(sub + tax);
     $("billnote").textContent = `Counted from Prankcast episode titles, plus hosts worked out from the Discord chat for uploads that didn't name one. ${unnamed} uploads are still unknown (mostly spring and summer 2025). Shows uploaded twice are counted once.`;
   }
 };
