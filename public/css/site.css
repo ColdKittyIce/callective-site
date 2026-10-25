@@ -882,3 +882,17 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .wr-hosts,.wr-new p{display:flex;flex-wrap:wrap;gap:6px;margin:0}
 .wr-hosts button,.wr-new button{border:1px solid var(--line);padding:4px 8px;font-size:13px}
 .wr-hosts em{font-style:normal;color:var(--volt);font-family:var(--f-mono)}
+/* name that caller */
+.gx{padding:18px;display:flex;flex-direction:column;gap:14px}
+.gx-top{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+#gx-score{font-family:var(--f-mono);font-size:13px;color:var(--volt)}
+.gx-btns{display:flex;flex-wrap:wrap;gap:8px}
+.gx-q{min-height:160px;display:flex;flex-direction:column;gap:14px}
+.gx-hint{margin:0;color:var(--muted)}
+.gx-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.gx-opts .btn{justify-content:center;font-size:15px;padding:14px}
+.gx-opts .btn.right{background:var(--volt);color:var(--void);border-color:var(--volt);box-shadow:var(--glow-v)}
+.gx-opts .btn.wrong{border-color:var(--pink);color:var(--pink);opacity:.8}
+.gx-after p{margin:0 0 10px}
+.gx-end{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:10px}
+.gx-end b{font-family:var(--f-head);font-size:64px;color:var(--volt);text-shadow:0 0 18px #e9ff3b66;line-height:1}
