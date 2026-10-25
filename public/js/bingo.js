@@ -43,13 +43,13 @@ const Bingo = (() => {
   function check(quiet) {
     const win = blackout ? (marks.size === 25 ? [...Array(25).keys()] : null) : (LINES.find(l => l.every(i => marks.has(i))) || null);
     const best = Math.max(...LINES.map(l => l.filter(i => marks.has(i)).length));
-    if (win) { render(win); $("bg-status").textContent = blackout ? "BLACKOUT. Absolute legend." : "BINGO!"; if (!won && !quiet) celebrate(); won = true; }
-    else { won = false; $("bg-status").textContent = blackout ? `Blackout: ${25 - marks.size} to go.` : best >= 4 ? "One away. Somebody dial something." : marks.size > 1 ? `Best line: ${best} of 5.` : "Mark a square to start."; }
+    if (win) { render(win); $("bg-status").textContent = blackout ? "BLACKOUT. Absolute legend. Seek help." : "BINGO!"; if (!won && !quiet) celebrate(); won = true; }
+    else { won = false; $("bg-status").textContent = blackout ? `Blackout: ${25 - marks.size} to go.` : best >= 4 ? "One away. Somebody dial something stupid." : marks.size > 1 ? `Best line: ${best} of 5.` : "Mark a square to start."; }
   }
   function celebrate() {
     SFX.ringback(1); setTimeout(() => { SFX.pickup(); const ks = ["dogs-woo", "tom-yeaugh", "icecat-hey-hey", "ira-woomp"].filter(k => C.clips.some(c => c.k === k)); if (ks.length) playClip(pick(ks)); }, 900);
     confetti();
-    setTimeout(() => openTakeover(`<div class="card" style="padding:26px;display:flex;flex-direction:column;gap:14px;max-width:560px;text-align:center"><b class="bingo-win">BINGO!</b><p>${blackout ? "Every square. You stayed for the whole show." : "Five in a row. Type BINGO in the chat and make it everyone's problem."}</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn mustard" type="button" data-close id="bg-again">Keep playing</button><a class="btn" href="#listen" data-close>Back to the show</a></div></div>`), 700);
+    setTimeout(() => openTakeover(`<div class="card" style="padding:26px;display:flex;flex-direction:column;gap:14px;max-width:560px;text-align:center"><b class="bingo-win">BINGO!</b><p>${blackout ? "Every square. You stayed for the whole show. The farewell song is for you." : "Five in a row. Type BINGO in the chat and make it everyone's problem."}</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn mustard" type="button" data-close id="bg-again">Keep playing</button><a class="btn" href="#listen" data-close>Back to the show</a></div></div>`), 700);
   }
   function confetti() {
     if (reduceMotion) return; const cv = $("confetti"), box = $("bingobox"), w = cv.width = box.clientWidth, h = cv.height = box.clientHeight, g = cv.getContext("2d");

@@ -4,20 +4,20 @@
 const Hold = (() => {
   const TRACKS = [
     { k: "theme", t: "The Callective Theme", s: "By IceCat and Suno · the opener", d: "1:19" },
-    { k: "ira-rules", t: "Ira Reads the Rules", s: "The best part of the show, per the chat", d: "2:28" },
+    { k: "ira-rules", t: "Ira Reads the Rules", s: "The best part of the show, per the chat. Not a bit.", d: "2:28" },
     { k: "farewell", t: "The Callective Farewell", s: "By IceCat and Suno · the closer", d: "3:20" },
     { k: "theme-2026", t: "The Callective Theme, 2026 take", s: "Newer cut of the opener", d: "1:19" },
     { k: "jingle", t: "Jingle: Ramp In & Out", s: "Bumper between calls", d: "0:27" },
     { k: "sting", t: "Jingle: Sting", s: "Instrumental hit", d: "0:05" },
-    { k: "technical-issues", t: "The Technical Issues Song", s: "Plays when the phones fight back", d: "3:50" },
-    { k: "host-has-to-pee", t: "Host Has to Pee", s: "Bathroom break music", d: "2:08" },
-    { k: "badly-sung", t: "The Theme, Badly Sung", s: "a.k.a. the drunk version, by IceCat", d: "0:31" },
+    { k: "technical-issues", t: "The Technical Issues Song", s: "Plays when the phones fight back and win", d: "3:50" },
+    { k: "host-has-to-pee", t: "Host Has to Pee", s: "For when the host has to pee. Again.", d: "2:08" },
+    { k: "badly-sung", t: "The Theme, Badly Sung", s: "a.k.a. the drunk version. Rule 5 was not enforced.", d: "0:31" },
     { k: "church", t: "The Theme, Church Version", s: "Alternate version", d: "1:00" },
     { k: "lullaby", t: "The Theme, Lullaby Version", s: "Alternate version", d: "0:54" },
     { k: "dinglective", t: "Dinglective Remix", s: "Dial D-I-N-G", d: "1:05" },
     { k: "doglective", t: "The Doglective", s: "Dial D-O-G", d: "1:35" },
     { k: "hellective", t: "Hellective Theme", s: "Dial H-E-L-L", d: "1:59" },
-    { k: "cheers-to-ira", t: "Cheers to Ira the Governor", s: "A toast to the show runner", d: "3:18" },
+    { k: "cheers-to-ira", t: "Cheers to Ira the Governor", s: "A toast to the show runner, who is muting you right now", d: "3:18" },
     { k: "be-quiet", t: "Be Quiet, the Callective Is On", s: "Drop", d: "0:05" }];
   const T = Object.fromEntries(TRACKS.map(t => [t.k, t]));
   let cur = null; const aud = () => $("holdaud");
@@ -61,13 +61,13 @@ const Court = {
 const Lineup = (() => {
   const S = [
     { k: "ira", name: "Ira", aka: "iregretjumping · the Governor", role: "Show runner", sign: "LEAKED CALL SOURCE", no: "0001", host: "iregretjumping", clip: "ira-my-name",
-      imgs: [["Happy", "lineup-ira.webp"], ["Sad", "lineup-ira-sad.webp"]], priors: "Reads the rules at the top of every show, then gets asked to read them again." },
+      imgs: [["Happy", "lineup-ira.webp"], ["Sad", "lineup-ira-sad.webp"]], priors: "Reads the rules at the top of every show, then gets asked to read them again. Wrote rule 5 for you specifically. Knows what you did." },
     { k: "icecat", name: "IceCat", aka: "icecat", role: "Crew", sign: "REFUSED TO MUTE", no: "0002", host: "IceCat", clip: "icecat-what-call",
-      imgs: [["Excited", "lineup-icecat.webp"], ["Confused", "lineup-icecat-confused.webp"]], priors: "Made the logo, the cartoon cast, the theme songs and the queue bot. Hosts when it's his turn." },
+      imgs: [["Excited", "lineup-icecat.webp"], ["Confused", "lineup-icecat-confused.webp"]], priors: "Made the logo, the cartoon cast, the theme songs and the queue bot. Also recorded the drunk version of the theme, which he will not be taking questions about." },
     { k: "dogs", name: "DespicableDogs", aka: "despicabledogs", role: "Crew", sign: "TOO LOUD ON MIC", no: "0003", host: "DespicableDogs", clip: "dogs-woo",
-      imgs: [["Hype", "lineup-dogs.webp"]], priors: "Never seen without the sunglasses or the 101.1 The Butt hoodie." },
+      imgs: [["Hype", "lineup-dogs.webp"]], priors: "Never seen without the sunglasses or the 101.1 The Butt hoodie. Will buttslam on sight. Hosted the Bonerhaus corporate takeover and somehow made quarterly targets." },
     { k: "tom", name: "Dr. Tom Servo", aka: "DrTomServo · Tom Man", role: "Crew", sign: "HACKED THE QUEUE SYSTEM", no: "0004", host: "Dr. Tom Servo", clip: "tom-yeaugh",
-      imgs: [["Servo", "lineup-tom.webp"], ["Tom Man", "tomman.webp"]], priors: "Hosts more Callectives than anyone. Has a cape." }];
+      imgs: [["Servo", "lineup-tom.webp"], ["Tom Man", "tomman.webp"]], priors: "Hosts more Callectives than anyone. Has a cape. Owns the roof, the sky, and every shingle you call a liar about." }];
   function stats(host) {
     const seen = new Map(); for (const e of C.episodes) if (e.h === host) seen.set(e.d || e.id, e);
     const list = [...seen.values()].filter(e => e.d).sort((a, b) => b.d.localeCompare(a.d));
@@ -116,8 +116,8 @@ const Directory = (() => {
   const ADS = [
     [14917, "Dingtember Special", "It's always Dingtember on this line."], [14548, "MEGA 4-Hour Show", "Over four hours on the phone. Bring snacks."],
     [14481, "Fourth of July Special", "We are Paul."], [14452, "The Poop Texts Show", "We called a guy who was getting poop texts, and he called us back."],
-    [13908, "April Fools Special", "Hosted by iregretjumping."], [13536, "Valentine's Day Special", "Hosted by milkbox."],
-    [13091, "Secret Santa Special", "The community swapped lists of wacky things to ask Five Below for."], [12938, "The Only Pranksgiving Special (so far)", "Three and a half hours of Thanksgiving calls."],
+    [13908, "April Fools Special", "Hosted by iregretjumping. Allegedly."], [13536, "Valentine's Day Special", "Hosted by milkbox. Somebody got their heart broken by a front desk."],
+    [13091, "Secret Santa Special", "The community swapped lists of wacky things to ask Five Below for."], [12938, "The Only Pranksgiving Special (so far)", "Three and a half hours of Thanksgiving calls. Pass the stuffing and the phone."],
     [12389, "The Secret Show", "A secret after-show, in two parts."]];
   let filter = "all", all = false;
   const SPECIAL = new Set([...ADS.map(a => a[0]), 12390, 13693, 13477, 11726]);

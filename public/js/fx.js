@@ -12,6 +12,7 @@ const FX = (() => {
       "&gt; LINKING WORLD OF PRANK CALLS ............ <b>OK</b>",
       "&gt; LOADING EPISODE ARCHIVE ................. <b>OK</b>",
       "&gt; PATCHING 40 JACKS ....................... <b>OK</b>",
+      "&gt; SCANNING FOR DRUNK AND ABUSIVE ......... <i>1 FOUND</i>",
       "&gt; IRA.EXE: READING THE RULES .............. <i>STANDBY</i>",
       "&gt; DIAL TONE ACQUIRED <span class=\"caret\"></span>"];
     el.innerHTML = `<div class="skip">tap to skip</div>`;
@@ -63,8 +64,9 @@ const FX = (() => {
   }
 
   function ticker() {
-    const msgs = ["Live Saturdays 7PM ET", "Drop a PLA bell to get in line", "Dial 0 for the operator", "Clip it. Send it. Get on the board.",
-      "Follow the rules of WOPC", "We dial to make you smile", "Some numbers aren't listed", "Tom Man: pranks without mercy"];
+    const msgs = ["Live Saturdays 7PM ET", "Drop a PLA bell to get in line", "You're listening to 101.1 The Butt", "If you're drunk and abusive, you're out",
+      "Clip it. Send it. Get on the board.", "Follow the rules of WOPC", "We dial to make you smile", "Patrick Fucking Howard is watching",
+      "It's always Dingtember somewhere", "Bathroom bathroom", "Caw", "Tom Man: pranks without mercy", "Quackers sends his regards", "Some numbers aren't listed"];
     const one = msgs.map(m => `${m}<span>///</span>`).join("");
     $("tickertxt").innerHTML = one + one;
   }

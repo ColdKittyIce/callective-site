@@ -39,22 +39,22 @@ const Wrapped = (() => {
     if (!S.N.length) { $("wr-body").innerHTML = `<p class="feed-empty">No shows on file for ${year}.</p>`; return; }
     const top = S.callers.slice(0, 10), max = top[0]?.[1] || 1, mmax = Math.max(1, ...S.months);
     $("wr-body").innerHTML = `
-      <div class="wr-hero"><small>${now ? `${year} so far` : year}</small><b>${S.N.length} shows. ${S.turns.length.toLocaleString()} turns on the phone.</b>
-        <span>${Math.round(S.hours)} hours of Saturday nights, ${S.callers.length} different callers${S.firsts.length ? `, and ${S.firsts.length} of them made their first call this year` : ""}.</span></div>
+      <div class="wr-hero"><small>${now ? `${year} so far` : year}</small><b>${S.N.length} shows. ${S.turns.length.toLocaleString()} turns on the phone. Zero regrets.</b>
+        <span>${Math.round(S.hours)} hours of Saturday nights you're never getting back, ${S.callers.length} different callers${S.firsts.length ? `, and ${S.firsts.length} of them made their first call this year` : ""}.</span></div>
       <div class="wr-tiles">
-        ${S.longest ? tile(fmtLen(S.longest.end - S.longest.t), `Longest turn: <b>${esc(S.longest.by)}</b> on ${esc(fmtDate(S.longest.e.d))}${S.longest.title ? `, “${esc(S.longest.title)}”` : ""}`, "pink") : ""}
-        ${S.busiest?.n ? tile(S.busiest.n, `Busiest night: ${esc(fmtDate(S.busiest.e.d))}${S.busiest.e.h ? `, hosted by ${esc(S.busiest.e.h)}` : ""}`) : ""}
-        ${S.streak.n > 2 ? tile(S.streak.n, `shows in a row: <b>${esc(S.streak.name)}</b> never missed a turn`, "volt") : ""}
+        ${S.longest ? tile(fmtLen(S.longest.end - S.longest.t), `Longest turn: <b>${esc(S.longest.by)}</b> on ${esc(fmtDate(S.longest.e.d))}${S.longest.title ? `, “${esc(S.longest.title)}”` : ""}. Somebody check on that roycipient.`, "pink") : ""}
+        ${S.busiest?.n ? tile(S.busiest.n, `turns on the busiest night, ${esc(fmtDate(S.busiest.e.d))}${S.busiest.e.h ? `, hosted by ${esc(S.busiest.e.h)}` : ""}`) : ""}
+        ${S.streak.n > 2 ? tile(S.streak.n, `shows in a row: <b>${esc(S.streak.name)}</b> never missed a turn. Does this person sleep?`, "volt") : ""}
         ${S.longShow ? tile(fmtLen(S.longShow.sec || 0), `Longest show: ${esc(fmtDate(S.longShow.d))}${S.longShow.h ? `, ${esc(S.longShow.h)}` : ""}`) : ""}
         ${S.hosts.length ? tile(S.hosts.length, `different hosts. Most shows: <b>${esc(S.hosts[0][0])}</b> (${S.hosts[0][1]})`, "cyan") : ""}
-        ${tile(S.titled, `calls with a title so far. <a href="#search/${encodeURIComponent("is:untitled " + year)}">Help name the rest →</a>`)}
+        ${tile(S.titled, `calls with a title so far. The rest are just vibes. <a href="#search/${encodeURIComponent("is:untitled " + year)}">Help name the rest →</a>`)}
       </div>
       <div class="wr-cols">
-        <div class="wr-card hud"><h3>Most turns on the phone</h3><ol class="wr-bars">${top.map(([n, v], i) => `<li><span class="wr-n">${i + 1}</span><button type="button" data-who="${esc(n)}">${esc(n)}</button><i style="width:${(v / max * 100).toFixed(1)}%"></i><em>${v}</em></li>`).join("")}</ol></div>
+        <div class="wr-card hud"><h3>Phone hogs of the year</h3><ol class="wr-bars">${top.map(([n, v], i) => `<li><span class="wr-n">${i + 1}</span><button type="button" data-who="${esc(n)}">${esc(n)}</button><i style="width:${(v / max * 100).toFixed(1)}%"></i><em>${v}</em></li>`).join("")}</ol></div>
         <div class="wr-card hud"><h3>Turns by month</h3><div class="wr-months">${S.months.map((v, i) => `<div title="${MONTHS[i]}: ${v} turns"><i style="height:${(v / mmax * 100).toFixed(1)}%"></i><span>${MONTHS[i][0]}</span></div>`).join("")}</div>
           <h3 style="margin-top:18px">Hosts</h3><p class="wr-hosts">${S.hosts.map(([h, v]) => `<button type="button" data-host="${esc(h)}">${esc(h)} <em>${v}</em></button>`).join("")}</p></div>
       </div>
-      ${S.firsts.length ? `<div class="wr-card hud wr-new"><h3>First call in ${year}: welcome to the line</h3><p>${S.firsts.map(n => `<button type="button" data-who="${esc(n)}">${esc(n)}</button>`).join("")}</p></div>` : ""}
+      ${S.firsts.length ? `<div class="wr-card hud wr-new"><h3>Popped their cherry in ${year}: first call ever</h3><p>${S.firsts.map(n => `<button type="button" data-who="${esc(n)}">${esc(n)}</button>`).join("")}</p></div>` : ""}
       <p class="ext">Counted from the show list and the Discord queue handoffs${S.listed < S.N.length ? ` (${S.listed} of ${S.N.length} shows have a call list; the rest predate the queue bot or didn't log turns)` : ""}. Shows uploaded twice count once.</p>`;
   }
   function setYear(y) { year = y; $("wr-years").querySelectorAll("[data-y]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.y === y))); render(); }

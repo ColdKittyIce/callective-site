@@ -3,7 +3,7 @@
 const Guess = (() => {
   const ROUNDS = 10, SNIP = 12, NOT_A_PERSON = /^(all call|the host is|unknown caller|deleted user)/i;
   let pool = [], round = 0, score = 0, streak = 0, cur = null, locked = false;
-  const aud = () => $("gx-aud");
+  const aud = () => $("gx-aud"), pick2 = a => a[Math.floor(Math.random() * a.length)];
   function buildPool() {
     const out = [], recent = recentIds();
     for (const e of C.episodes) { if (!recent.has(e.id) || !C.calls[e.id]) continue;
@@ -38,13 +38,13 @@ const Guess = (() => {
     if (locked) return; locked = true; const ok = name === cur.c.by, c = cur.c;
     if (ok) { score += 10 + Math.min(streak, 5) * 2; streak++; SFX.pickup(); } else { streak = 0; SFX.hangup(); }
     $("gx-q").querySelectorAll("[data-pick]").forEach(b => { b.disabled = true; if (b.dataset.pick === c.by) b.classList.add("right"); else if (b === btn) b.classList.add("wrong"); });
-    $("gx-after").innerHTML = `<p><b>${ok ? "Got it." : "Nope."}</b> That was ${esc(c.by)}${c.title ? `: “${esc(c.title)}”` : ""}, ${hms(c.t, true)} into the show.</p>
+    $("gx-after").innerHTML = `<p><b>${ok ? pick2(["Got it.", "Correct. Nerd.", "Nailed it.", "That's the one."]) : pick2(["Nope.", "Buttslammed.", "Wrong line.", "Not even close, pig boy."])}</b> That was ${esc(c.by)}${c.title ? `: “${esc(c.title)}”` : ""}, ${hms(c.t, true)} into the show.</p>
       <div class="gx-btns"><button class="btn red solid" type="button" id="gx-next">${round >= ROUNDS ? "See your score" : "Next caller →"}</button><button class="btn sm ghost" type="button" data-whole="${c.e.id}" data-t="${c.t}">▶ Hear the whole call</button>${!c.title ? `<button class="btn sm ghost" type="button" data-whole="${c.e.id}" data-t="${c.t}">💡 It needs a title</button>` : ""}</div>`;
     paintScore(); $("gx-next").focus();
   }
   function finish() {
     aud().pause(); const b = best(); if (score > b) try { localStorage.setItem("cx-guess-best", score); } catch (e) {}
-    const max = ROUNDS * 20, rank = score >= max * .7 ? "Certified regular. You've been here every Saturday." : score >= max * .4 ? "You know the voices. Mostly." : score > 0 ? "Fresh on the line. Keep listening." : "Have you tried turning the volume up?";
+    const max = ROUNDS * 20, rank = score >= max * .7 ? "Certified regular. Patrick knows your name. Go touch grass." : score >= max * .4 ? "You know the voices. Mostly. Tiff would be proud-ish." : score > 0 ? "Fresh fleshbag on the line. Keep listening." : "Did you guess Buc-ee's every time? You did, didn't you.";
     $("gx-q").innerHTML = `<div class="gx-end"><b>${score}</b><p>${rank}${score > b ? " New personal best." : ""}</p><button class="btn red solid" type="button" id="gx-again">Play again</button></div>`;
     cur = null; paintScore();
   }

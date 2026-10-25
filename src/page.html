@@ -21,7 +21,7 @@
     <a class="lamp" id="lamp" href="#listen"><i aria-hidden="true"></i><span id="lamptxt">Off the hook</span></a>
   </div>
   <div class="ticker" aria-hidden="true"><div id="tickertxt"></div></div>
-  <a class="livebar" id="livebar" href="#listen" hidden><i aria-hidden="true"></i><span>The Callective is live right now. Tap to tune in.</span></a>
+  <a class="livebar" id="livebar" href="#listen" hidden><i aria-hidden="true"></i><span>We're LIVE. Somebody's about to get buttslammed. Tap to tune in.</span></a>
 </header>
 
 <main>
@@ -29,9 +29,9 @@
 <section class="hero" id="dial">
   <div class="wrap">
     <div class="hero-copy">
-      <p class="kicker">Community prank calls · Saturdays 7pm ET</p>
+      <p class="kicker">Community prank calls · Saturdays 7pm ET · broadcasting on 101.1 The Butt</p>
       <h1 class="glitch" data-text="We dial to make you smile.">We dial to make you <em>smile.</em></h1>
-      <p class="lede">The Callective is a prank call show where <b>anybody can take a turn on the phone</b>. A different caller hosts every week, live from the World of Prank Calls Discord and broadcast on Prankcast.</p>
+      <p class="lede">The Callective is a prank call show where <b>any fleshbag with a mic can take a turn on the phone</b>. A different host every week, live from the World of Prank Calls Discord, broadcast on Prankcast, and cheered on by a chat that thinks the rules are the best part. They might be right.</p>
       <div class="next" id="next" aria-live="polite">
         <div><small id="next-label">Next show in</small><strong id="next-time">–</strong></div>
         <div><small>Your time</small><strong id="next-local">Saturday</strong></div>
@@ -39,7 +39,7 @@
       <a class="nowcard" href="#listen" id="nowcard"><span class="onair" id="nc-badge"><i aria-hidden="true"></i><span>Radio</span></span><span class="nc-txt"><small id="nc-label">Callective Radio is playing</small><b id="nc-title">The newest shows, around the clock</b></span><span class="nc-go" aria-hidden="true">▶</span></a>
       <div class="hero-actions">
         <a class="btn red solid" href="https://discord.gg/NCHd2Mp5km" target="_blank" rel="noopener">Jack in: WOPC Discord</a>
-        <a class="btn" href="#listen">Tune in 24/7</a>
+        <a class="btn" href="#listen">Radio's on 24/7</a>
       </div>
     </div>
 
@@ -54,7 +54,7 @@
       <div class="directory-card hud">
         <h3>Callective directory</h3>
         <ul id="dirlist"></ul>
-        <p>Spin the dial or tap a hole. Letters dial like an old phone. Some numbers aren't listed.</p>
+        <p>Spin the dial or tap a hole. Letters dial like an old phone. Some numbers aren't listed, and some you'll wish you hadn't dialed.</p>
       </div>
     </div>
   </div>
@@ -62,16 +62,16 @@
 <section class="band" id="line">
   <div class="wrap">
     <div class="sec-head">
-      <p class="kicker">How you get on the phone</p>
+      <p class="kicker">How to go from lurker to menace</p>
       <h2 class="glitch" data-text="The line">The line</h2>
-      <p class="lede">Calls happen in the WOPC Discord voice channel, and the real queue lives there. Here is how to get on the phone, plus a practice line to mess around with.</p>
+      <p class="lede">Calls happen in the WOPC Discord voice channel, and the real queue lives there. Four steps from lurker to legend, plus a practice line where nobody can hear you choke.</p>
     </div>
     <div class="line-grid">
       <ol class="how">
-        <li class="hud"><span class="n">1</span><div><h3>Jack into the WOPC Discord</h3><p>Hop in the voice channel called <b>The Callective (Saturdays at 7pm EST)</b>. There's no separate Callective server.</p></div></li>
-        <li class="hud"><span class="n">2</span><div><h3>Drop a PLA bell</h3><p>Put the PLA bell emoji in the voice channel's text chat, or type <code>/join</code>. You're on the line.</p></div></li>
-        <li class="hud"><span class="n">3</span><div><h3>Wait for your ticket</h3><p>The host runs <code>!next</code> and the bot pings whoever's up.</p></div></li>
-        <li class="hud"><span class="n">4</span><div><h3>Make the call</h3><p>The host dials, you do the bit. On an <b>All Call</b>, the whole room piles onto one line.</p></div></li>
+        <li class="hud"><span class="n">1</span><div><h3>Jack into the WOPC Discord</h3><p>Hop in the voice channel called <b>The Callective (Saturdays at 7pm EST)</b>. There's no separate Callective server. Stop looking for it.</p></div></li>
+        <li class="hud"><span class="n">2</span><div><h3>Drop a PLA bell</h3><p>Put the PLA bell emoji in the voice channel's text chat, or type <code>/join</code>. You're in line. Patrick Fucking Howard has his eye on you.</p></div></li>
+        <li class="hud"><span class="n">3</span><div><h3>Wait for your ticket</h3><p>The host runs <code>!next</code>, the bot pings whoever's up, and Patrick reminds everybody he's got a badge and a schedule. Keep your mic muted until then. Rule 1, baby.</p></div></li>
+        <li class="hud"><span class="n">4</span><div><h3>Make the call</h3><p>The host dials, you do the bit. If it dies, it dies. On an <b>All Call</b>, the whole room piles onto one line like a clown car. When it's over, tell them they just got buttslammed.</p></div></li>
       </ol>
       <div class="rail hud">
         <div class="rail-top"><h3>Practice line</h3><span class="status-pill" id="qstatus"><i aria-hidden="true"></i><span>Practice line</span></span></div>
@@ -83,7 +83,7 @@
           <button class="btn sm mustard" type="button" id="q-next">!next</button>
           <button class="btn sm red" type="button" id="q-all">All Call</button>
         </div>
-        <p class="rail-log" id="qlog" aria-live="polite">A practice line loaded with the real queue from 6/20/26. Get in line, run !next, start an All Call.</p>
+        <p class="rail-log" id="qlog" aria-live="polite">A practice line loaded with the real queue from 6/20/26. Get in line, run !next, start an All Call. No roycipients were harmed.</p>
       </div>
     </div>
   </div>
@@ -93,7 +93,7 @@
     <div class="sec-head">
       <p class="kicker">Patch somebody through</p>
       <h2 class="glitch" data-text="Patch bay">Patch bay</h2>
-      <p class="lede">Every jack is a real moment from the show. Patch a few at once for a conference call. Anything you like goes straight into the clip lab.</p>
+      <p class="lede">Every jack is a real moment ripped straight off the air. Patch a few at once for a conference call from hell. Anything you like goes straight into the clip lab.</p>
     </div>
     <div class="board hud" id="board">
       <div class="panel" id="panel">
@@ -119,7 +119,7 @@
     <div class="sec-head">
       <p class="kicker" id="ls-kicker">Callective Radio · 24/7</p>
       <h2 class="glitch" data-text="Listen">Listen</h2>
-      <p class="lede" id="ls-lede">Callective Radio plays the 10 newest shows around the clock, shuffled, and everybody hears the same moment together. Older shows live in the archive. When the show goes live on Saturday, the radio steps aside and the live show takes over. When the show signs off, the radio picks right back up. Hear something good? Clip it.</p>
+      <p class="lede" id="ls-lede">Callective Radio plays the 10 newest shows around the clock, shuffled, and everybody hears the same moment together, like a group chat for your ears. Older shows live in the archive. When the show goes live on Saturday, the radio shuts up and the live show takes over. When it signs off, the radio picks right back up like nothing happened. Hear something good? Clip it before it gets away.</p>
     </div>
     <div class="stage">
       <div class="screen hud" id="screen">
@@ -162,7 +162,7 @@
       <div class="hud upnext golive">
         <h3>Next live show</h3>
         <p class="big" id="ls-countdown">–</p>
-        <p class="ext">Saturdays at 7pm Eastern, from the World of Prank Calls Discord. Keep this page open and the live show starts playing on its own.</p>
+        <p class="ext">Saturdays at 7pm Eastern, from the World of Prank Calls Discord. Leave this tab open and the live show starts by itself, like a haunted radio.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm mustard" href="#bingo">Play Callective Bingo</a><a class="btn sm" href="#line">How to get on the phone</a></div>
       </div>
     </div>
@@ -177,7 +177,7 @@
     <div class="sec-head">
       <p class="kicker">Party line replay</p>
       <h2 class="glitch" data-text="Replay terminal">Replay terminal</h2>
-      <p class="lede">Play any of the 10 newest shows with the Prankcast chat scrolling along, right where people typed it. Hear something good? Hit Clip it, mark the start and end (up to 20 minutes, a whole call), and download it or post it.</p>
+      <p class="lede">Play any of the 10 newest shows with the Prankcast chat scrolling along, right where people typed it, typos and all. Hear something good? Hit Clip it, mark the start and end (up to 20 minutes, a whole call), and download it or post it.</p>
     </div>
     <div class="booth">
       <div class="deck hud">
@@ -213,7 +213,7 @@
     <div class="sec-head">
       <p class="kicker">Every show since 2024</p>
       <h2 class="glitch" data-text="The archive">The archive</h2>
-      <p class="lede">Every Callective ever. The 10 newest play right here in the replay terminal with the chat scrolling along. Everything older opens on Prankcast.</p>
+      <p class="lede">Every Callective ever, from the first nervous dial in December 2024 to last Saturday's crimes against hotel front desks. The 10 newest play right here. Everything older opens on Prankcast, right at the call. Click any show for the full call list.</p>
     </div>
     <div class="yp hud">
       <div class="yp-head"><h3>Night City Directory</h3><p>Every show · every host · since 2024</p></div>
@@ -235,7 +235,7 @@
     <div class="sec-head">
       <p class="kicker">Cut the tape</p>
       <h2 class="glitch" data-text="Clip lab">Clip lab</h2>
-      <p class="lede">Clips from the radio, the live show and the replay terminal land here. You can also load a patch bay clip, a song, or your own audio. Drag to select, trim it, run it through the phone, then download it or send it to the Callective.</p>
+      <p class="lede">Clips from the radio, the live show and the replay terminal land here. You can also load a patch bay clip, a song, or your own audio. Drag to select, trim it, run it through the phone, then download it or send it to the Callective. Want it to sound like it was recorded in a bathroom stall? There's a button for that.</p>
     </div>
     <div class="lab hud" id="labbox">
       <div class="lab-top">
@@ -302,7 +302,7 @@
               <button class="btn sm red solid" type="submit" id="s-go" data-dest="board" disabled>Post to the clip board</button>
               <button class="btn sm" type="submit" id="s-crew" data-dest="crew" disabled>Send to the crew only</button>
             </div>
-            <p class="ext" id="s-msg">Clips up to 60 seconds. Board posts go up after the crew gives them a listen. Crew-only clips stay private.</p>
+            <p class="ext" id="s-msg">Edited clips up to 2 minutes. Clean ones go straight on the board; anything that trips the filter waits for a crew member to sober up and listen. Crew-only clips stay private.</p>
           </form>
         </div>
       </div>
@@ -323,7 +323,7 @@
     <div class="sec-head">
       <p class="kicker">Clipped by the community</p>
       <h2 class="glitch" data-text="Clip board">Clip board</h2>
-      <p class="lede">Clips people pulled from the radio, the live show and the archive, checked by the crew. Play one, download it, jump to the moment it came from, or remix it in the clip lab.</p>
+      <p class="lede">Clips people pulled from the radio, the live show and the archive. Clean ones post themselves, and three reports from different people send one back to the crew. Play one, download it, jump to the moment it came from, or remix it until it's unrecognizable.</p>
     </div>
     <div class="cb-ctl">
       <label class="sr" for="cb-q">Search clips</label>
@@ -345,7 +345,7 @@
     <div class="sec-head">
       <p class="kicker">Play along with the show</p>
       <h2 class="glitch" data-text="Callective bingo">Callective bingo</h2>
-      <p class="lede">Keep a card open while you listen, live or on the radio. When it happens on the call, mark it. Five in a row wins. Blackout mode is for the people who stay until the farewell song.</p>
+      <p class="lede">Keep a card open while you listen, live or on the radio. When it happens on the call, mark it. Five in a row wins. Blackout mode is for the degenerates who stay until the farewell song.</p>
     </div>
     <div class="bingo-wrap">
       <div class="bingo hud" id="bingobox">
@@ -377,7 +377,7 @@
     <div class="sec-head">
       <p class="kicker">Game two</p>
       <h2 class="glitch" data-text="Name that caller">Name that caller</h2>
-      <p class="lede">Twelve seconds from the middle of a real call. Four names. Who's on the phone? Ten rounds, and streaks score extra.</p>
+      <p class="lede">Twelve seconds from the middle of a real call. Four names. Who's on the phone? Ten rounds, streaks score extra, and nobody has to know you guessed Buc-ee's Kansas City every single time.</p>
     </div>
     <div class="gx hud">
       <div class="gx-top"><span id="gx-score"></span><div class="gx-btns"><button class="btn sm ghost" type="button" id="gx-replay">▶ Replay snippet</button><button class="btn sm mustard" type="button" id="gx-start">New game</button></div></div>
@@ -391,7 +391,7 @@
     <div class="sec-head">
       <p class="kicker">Game three</p>
       <h2 class="glitch" data-text="Dial-a-premise">Dial-a-premise</h2>
-      <p class="lede">Stuck in the queue with no idea? Spin for one. The reels are stocked from what the Callective calls most: hotel front desks by a mile, then pizza places, Five Below and gas stations. Lock the ones you like and spin the rest.</p>
+      <p class="lede">Stuck in the queue with no idea and Patrick's already calling your name? Spin for one. The reels are stocked from what the Callective actually calls: hotel front desks by a country mile, then pizza places, Five Below and gas stations. Lock what you like, spin the rest.</p>
     </div>
     <div class="pm hud">
       <div class="pm-reels" id="pm-reels">
@@ -401,7 +401,7 @@
       </div>
       <p class="pm-line" id="pm-line" aria-live="polite"></p>
       <div class="gx-btns"><button class="btn red solid" type="button" id="pm-spin">Spin</button><button class="btn sm ghost" type="button" id="pm-copy">Copy it</button></div>
-      <p class="ext">Same rules as the show: no police, no threats, no slurs. Keep it light, and if it's not working, wrap it up.</p>
+      <p class="ext">Same rules as the show: no police, no threats, no slurs. Keep it light. If it's not working, buttslam and bail.</p>
     </div>
   </div>
 </section>
@@ -412,7 +412,7 @@
     <div class="sec-head">
       <p class="kicker">Take the Callective with you</p>
       <h2 class="glitch" data-text="Downloads">Downloads</h2>
-      <p class="lede">The show's songs and jingles, plus wallpapers for your desktop and phone. Play anything here first, or grab the file.</p>
+      <p class="lede">The show's songs and jingles, plus wallpapers for your desktop and phone so your coworkers know you're not okay. Play anything here first, or grab the file.</p>
     </div>
     <div class="dl-songs">
       <div class="holdcard hud">
@@ -446,7 +446,7 @@
     <div class="sec-head">
       <p class="kicker">Find anything</p>
       <h2 class="glitch" data-text="Search">Search</h2>
-      <p class="lede">Every call, show, clip and drop in one place. Type a caller, a premise, a date or a line. Nicknames and typos are fine.</p>
+      <p class="lede">Every call, show, clip and drop in one place. Type a caller, a premise, a date or a line. Nicknames, typos and 1am spelling all work.</p>
     </div>
     <div class="s-box hud">
       <label class="sr" for="sq">Search</label>
@@ -472,7 +472,7 @@
     <div class="sec-head">
       <p class="kicker">Say it like a regular</p>
       <h2 class="glitch" data-text="The glossary">The glossary</h2>
-      <p class="lede">Every running bit, inside joke and catchphrase the room has made since December 2024, pulled from two years of Saturday nights.</p>
+      <p class="lede">Every running bit, inside joke and catchphrase the room has made since December 2024. If you've ever wondered why everyone types "bathroom bathroom" at the same time, start here.</p>
     </div>
     <div class="gl-ctl"><label class="sr" for="gl-q">Look up a word</label><input id="gl-q" type="search" placeholder="> look up a word" autocomplete="off"></div>
     <div class="gl-grid" id="gl-grid"></div>
@@ -484,7 +484,7 @@
     <div class="sec-head">
       <p class="kicker">The year in numbers</p>
       <h2 class="glitch" data-text="Callective Wrapped">Callective Wrapped</h2>
-      <p class="lede">Who was on the phone the most, the longest turns, the busiest nights and everyone who made their first call. Tap a name to hear their calls.</p>
+      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every fresh fleshbag who made their first call. Tap a name to hear the evidence.</p>
     </div>
     <div class="yp-chips wr-years" id="wr-years" role="group" aria-label="Year"></div>
     <div id="wr-body" class="wr-body"></div>
@@ -495,7 +495,7 @@
     <div class="sec-head">
       <p class="kicker">The top of every show</p>
       <h2 class="glitch" data-text="Court is in session">Court is in session</h2>
-      <p class="lede">Ira reads the rules right after the theme. The chat considers this the best part of the show, and they are not joking.</p>
+      <p class="lede">Ira reads the rules right after the theme. The chat considers this the best part of the show, and they are not joking. Rule 5 exists because of someone in this room. You know who you are.</p>
     </div>
     <div class="court">
       <div class="bench" id="bench">
@@ -505,7 +505,7 @@
       <div class="tablet">
         <h3>The 10 Callmandments</h3>
         <ol id="callmandments"></ol>
-        <p>The rest are sealed. Show up Saturday at 7 and Ira will read them to you.</p>
+        <p>The rest are sealed. Show up Saturday at 7 and Ira will read them to you, slowly, with feeling.</p>
       </div>
     </div>
     <div class="transcript hud" aria-label="Quotes from the Prankcast chat">
@@ -522,7 +522,7 @@
     <div class="sec-head">
       <p class="kicker">The usual suspects</p>
       <h2 class="glitch" data-text="The lineup">The lineup</h2>
-      <p class="lede">Four cartoons hold down the stream. Pick one out of the lineup to pull their file.</p>
+      <p class="lede">Four cartoons hold down the stream. Pick one out of the lineup to pull their rap sheet. All charges are real. Mostly.</p>
     </div>
     <div class="lineup" id="lineupbox">
       <div class="scale" aria-hidden="true"><span>7'</span><span>6'</span><span>5'</span><span>4'</span><span>3'</span><span>2'</span></div>
@@ -538,7 +538,7 @@
     <div class="sec-head">
       <p class="kicker">Who's been dialing</p>
       <h2 class="glitch" data-text="Data bill">Data bill</h2>
-      <p class="lede">Every named host and how long they've kept the line open, added up from the Prankcast archive.</p>
+      <p class="lede">Every host and how long they've kept the line open, added up from the Prankcast archive. Nobody has ever paid this bill, and nobody ever will.</p>
     </div>
     <div class="billwrap">
       <div class="bill hud">
@@ -552,7 +552,7 @@
       </div>
       <div class="tomcard">
         <img src="img/tomman.webp" alt="Tom Man, a comic-book robot hero with spiral goggles, on a payphone" width="1200" height="675" loading="lazy">
-        <div><h3>Top caller: Tom Man</h3><p>Dr. Tom Servo has hosted more Callectives than anyone. His alter ego wears a cape. In a city that never hangs up, one robot dares to dial.</p>
+        <div><h3>Top caller: Tom Man</h3><p>Dr. Tom Servo has hosted more Callectives than anyone. His alter ego wears a cape. He owns the roof, the sky, and possibly you. In a city that never hangs up, one robot dares to dial.</p>
           <div><button class="btn sm mustard" type="button" data-dial="866626">Dial T-O-M-M-A-N</button></div></div>
       </div>
     </div>
@@ -563,7 +563,7 @@
     <div class="sec-head">
       <p class="kicker">Official-ish government business</p>
       <h2 class="glitch" data-text="Do Not Call Me registry">Do Not Call Me registry</h2>
-      <p class="lede">Tired of being called things? File a request with the Callective's Do Not Call <em>Me</em> Registry, and we'll take it under advisement.</p>
+      <p class="lede">Tired of being called things? Pig boy? Fleshbag? Roycipient? File a request with the Callective's Do Not Call <em>Me</em> Registry, and we'll take it under advisement.</p>
     </div>
     <div class="dnc">
       <form class="dnc-form hud" id="dnc-form" autocomplete="off">
