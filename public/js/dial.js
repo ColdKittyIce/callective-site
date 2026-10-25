@@ -166,7 +166,20 @@ const Dir = (() => {
     { word: "GEOCITIES", label: "Our old homepage", act() { location.href = "1998.html"; } },
     { word: "DNC", label: "Do Not Call Me registry", act() { go("dnc"); } },
     { word: "LIVE", label: "The live show", act() { go("listen"); Listen.tuneIn(); } },
-    { word: "MERCH", label: "Downloads", act() { go("downloads"); } }
+    { word: "MERCH", label: "Downloads", act() { go("downloads"); } },
+    { word: "BUTT", label: "101.1 The Butt", act() { SFX.thump(); go("glossary"); toast("You're listening to 101.1 The Butt. You just got buttslammed."); } },
+    { word: "CAW", label: "The crow", act() { go("glossary"); toast("CAW."); } },
+    { word: "QUACK", label: "Quackers", act() { location.hash = "search/" + encodeURIComponent("by:greenimp"); toast("Quackers has entered the chat."); } },
+    { word: "LUNK", label: "The lunk alarm", act() { SFX.ringback(2); toast("🚨 LUNK ALARM 🚨 Put the weights down and step away from the mic."); } },
+    { word: "BATHROOM", label: "Bathroom bathroom", act() { toast("BATHROOM! BATHROOM!"); setTimeout(() => toast("…bathroom."), 1600); } },
+    { word: "PATRICK", label: "Patrick Fucking Howard", act() { go("line"); toast("Patrick here. I got a badge and I'm usin' it. Get in line."); } },
+    { word: "FLESHBAG", label: "You, probably", act() { toast("Hello, fleshbag. Welcome to the Callective."); } },
+    { word: "PUMPKIN", label: "The Pumpkin Man", act() { location.hash = "search/pumpkin"; toast("He just wants someone to cover his shift."); } },
+    { word: "WRAPPED", label: "Callective Wrapped", act() { go("wrapped"); } },
+    { word: "GAMES", label: "Games", act() { go("guess"); } },
+    { word: "PREMISE", label: "Dial-a-premise", act() { go("premise"); } },
+    { word: "SEARCH", label: "Search", act() { go("search"); } },
+    { word: "LORE", label: "The glossary", act() { go("glossary"); } }
   ];
   E.forEach(e => { if (!e.num) e.num = W2N(e.word); });
   return {
