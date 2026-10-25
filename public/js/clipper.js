@@ -4,7 +4,7 @@
    - Start here / End here mark wherever the show is playing, so you can clip a whole call while it plays.
    - Auto-trim snaps both ends to the nearest quiet spot. "First 3s / last 3s" let you check the edges by ear.
    - Then download it, post it, send it to the crew, or open it in the clip lab for effects.
-   Clips from a show can be 10 minutes and are saved as "show X, from A to B" (no storage).
+   Clips from a show can be 20 minutes and are saved as "show X, from A to B" (no storage).
    Live, song and drop clips are recorded audio and top out at 2 minutes. */
 const Clipper = (() => {
   const MIN = 1, EDIT_MAX = 120, WAVE_MAX = 180, PPS = 40; // waveform loads when the close-up shows 3 minutes or less; 40 peaks a second
@@ -45,7 +45,7 @@ const Clipper = (() => {
   function episodeSource(el, ep, { radio = false, label } = {}) {
     if (C.api) fetch(`${C.api}/cut/${ep.id}?from=${Math.max(0, Math.floor(el.currentTime) - 1)}&to=${Math.max(1, Math.floor(el.currentTime))}`).catch(() => {}); // warm up the cutter
     return {
-      kind: "ep", max: 600, ep, title: label || `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, dur: ep.sec || el.duration || el.currentTime + 60, el,
+      kind: "ep", max: 1200, ep, title: label || `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, dur: ep.sec || el.duration || el.currentTime + 60, el,
       pos: () => el.currentTime, isPlaying: () => !el.paused,
       play(s) { el.currentTime = s; Media.claim(el); return el.play(); },
       resume(t) { if (radio) Listen.tuneIn(); else if (t != null) { el.currentTime = t; el.play().catch(() => {}); } },

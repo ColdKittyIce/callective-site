@@ -85,9 +85,9 @@ const Replay = (() => {
   function paintCalls() {
     const box = $("ep-calls"), L = callsFor(ep.id, dur), info = C.calls[ep.id]; curCall = null;
     box.hidden = !L.length; if (!L.length) { box.innerHTML = ""; return; }
-    box.innerHTML = `${info.desc ? `<p class="calls-desc">${esc(info.desc)}</p>` : ""}<div class="calls-head"><b>${L.filter(c => !c.skip).length} calls</b><span>Tap one to jump to it</span></div><ol>${L.map((c, i) => c.skip
-      ? `<li class="call skip"><time>${hms(c.t, true)}</time><span><b>${esc(c.by)}</b><em>skipped</em></span></li>`
-      : `<li class="call" data-i="${i}"><button type="button" class="call-go" data-t="${c.t}"><time>${hms(c.t, true)}</time><span><b>${esc(c.by)}</b><em>${esc(c.title)}</em></span><small>${fmtLen(c.end - c.t)}</small></button><button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button></li>`).join("")}</ol>`;
+    box.innerHTML = `${info.desc ? `<p class="calls-desc">${esc(info.desc)}</p>` : ""}<div class="calls-head"><b>${L.filter(c => !c.skip).length} calls</b><span>Tap to jump · ✂ clips the whole turn</span></div><ol>${L.map((c, i) => c.skip
+      ? `<li class="call skip"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b><em>skipped</em></span></li>`
+      : `<li class="call" data-i="${i}"><button type="button" class="call-go" data-t="${c.at}"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b><em>${esc(c.title)}</em></span><small>${fmtLen(c.end - c.t)}</small></button><button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button></li>`).join("")}</ol>`;
   }
   function paintCurCall(t) {
     const c = ep ? callAt(ep.id, t, dur) : null; if (curCall !== undefined && (c === curCall || (c && curCall && c.t === curCall.t))) return; curCall = c;
@@ -98,7 +98,7 @@ const Replay = (() => {
   function clipCall(i) {
     const c = callsFor(ep.id, dur)[i]; if (!c) return;
     if (!hasAudio || !C.api) { toast("Clipping works on the live site, where the episode audio plays."); return; }
-    if (c.end - c.t > 600) toast("Clips top out at 10 minutes, so this one starts with the first 10. Drag the end marker if you want a different part.");
+    if (c.end - c.t > 1200) toast("Clips top out at 20 minutes, so this one has the first 20. Drag the markers if you want a different part.");
     Clipper.open(Clipper.episodeSource(aud(), ep), 30, { from: c.t, to: c.end, name: `${c.by}: ${c.title}` });
   }
 

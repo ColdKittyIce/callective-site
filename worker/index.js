@@ -16,7 +16,7 @@
  *   GET  /api/episode/:id       audio URL and chat id for one Prankcast post
  *   GET  /api/chat/:cid         Prankcast chat replay for a broadcast, trimmed
  *   GET  /api/hls?u=            relays the live stream, only used if the browser can't read it directly
- *   GET  /api/cut/:id?from&to   a slice of a show as an MP3 (up to 10 min; &dl=1&name= to download; supports Range)
+ *   GET  /api/cut/:id?from&to   a slice of a show as an MP3 (up to 20 min; &dl=1&name= to download; supports Range)
  *
  *
  *   Clips
@@ -24,7 +24,7 @@
  *   GET  /api/clips/:id.mp3     an approved clip's audio (?dl=1 downloads it)
  *   POST /api/clips             send a clip: dest "board" or "crew" (private). Show slices with clean names post
  *                               straight to the board; anything flagged, and any uploaded audio, waits for the crew.
- *                               JSON {ep, from, to, ...} = a slice of a show (no upload, no storage, up to 10 min);
+ *                               JSON {ep, from, to, ...} = a slice of a show (no upload, no storage, up to 20 min);
  *                               a form with an MP3 = an edited clip (up to 2 min, stored in R2)
  *   GET  /api/mod/pending       clips waiting / sent to the crew          (ADMIN_TOKEN)
  *   GET  /api/mod/clip/:id.mp3  hear a waiting clip                       (ADMIN_TOKEN)
@@ -40,7 +40,7 @@
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
 const UA = { "user-agent": "CallectiveSite/2.0 (+thecallective site worker)" };
-const MAX_CLIP_BYTES = 2_600_000, MAX_CLIP_SEC = 122, MAX_REF_SEC = 600, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 4000;
+const MAX_CLIP_BYTES = 2_600_000, MAX_CLIP_SEC = 122, MAX_REF_SEC = 1200, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 4000;
 const RADIO_EPOCH = Date.UTC(2026, 0, 1);
 const RADIO_SHOWS = 10; // Callective Radio plays the newest 10 shows, from the site's own copies in R2
 
@@ -299,7 +299,7 @@ async function slice(env, ctx, request, id, from, to, extra = {}) {
 }
 async function cut(env, id, url, ctx, request) {
   const from = Math.max(0, +url.searchParams.get("from") || 0), to = +url.searchParams.get("to") || 0;
-  if (!(to > from) || to - from > MAX_REF_SEC + 10) return json({ error: "Pick a piece between 1 second and 10 minutes long" }, 400);
+  if (!(to > from) || to - from > MAX_REF_SEC + 10) return json({ error: "Pick a piece between 1 second and 20 minutes long" }, 400);
   const extra = url.searchParams.get("dl") ? { "content-disposition": `attachment; filename="${fileName(url.searchParams.get("name"))}"` } : {};
   return slice(env, ctx, request, id, from, to, extra);
 }
@@ -412,7 +412,7 @@ async function refPost(request, env, ctx, rl) {
   let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
   const ep = Number.isInteger(b.ep) ? b.ep : null, from = +b.from, to = +b.to;
   if (!ep || !(from >= 0) || !(to > from)) return json({ error: "That clip is missing its show or times" }, 400);
-  if (to - from > MAX_REF_SEC + 1) return json({ error: "Clips can be 10 minutes at most" }, 400);
+  if (to - from > MAX_REF_SEC + 1) return json({ error: "Clips can be 20 minutes at most" }, 400);
   const title = clean(b.title, 80); if (!title) return json({ error: "Give the clip a name" }, 400);
   const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 6), dest = b.dest === "crew" ? "crew" : "board";
   const md = { title, by: clean(b.by, 40), ep, at: Math.round(from), sec: +(to - from).toFixed(1), ref: { ep, from: +from.toFixed(2), to: +to.toFixed(2) }, created: Date.now(), dest, note: clean(b.note, 300) };
