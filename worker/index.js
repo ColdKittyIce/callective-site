@@ -64,7 +64,7 @@ async function route(request, env, ctx, url) {
       if (p === "/api/radio") return cached(request, ctx, 15, () => radio(env, url, ctx));
       if (p === "/api/latest") return json(await memo(ctx, "latest", 1800, latest), 200, 1800);
       if ((m = p.match(/^\/api\/episode\/(\d+)$/))) {
-        const ep = { ...(await memo(ctx, "ep" + m[1], 604800, () => episode(m[1]))) };
+        const ep = { ...(await memo(ctx, "ep2" + m[1], 604800, () => episode(m[1]))) };
         if ((await mirrored(env, ctx)).some(x => x.id === +m[1])) ep.mp3 = `/api/show/${m[1]}.mp3`;
         return json(ep, 200, 300);
       }
@@ -158,7 +158,7 @@ async function episode(id) {
   if (!po) throw new Error("Post not found");
   let mp3 = null; try { mp3 = first(parse(po.post_contents_json)).url || null; } catch (e) {}
   let b = null; try { b = first(parse(po.broadcast_contents_json)); } catch (e) {}
-  return { id: po.post_id, cid: po.content_id || null, mp3, title: po.post_title, sec: Math.round(secs(b)) || null };
+  return { id: po.post_id, cid: po.content_id || null, mp3, title: po.post_title, sec: Math.round(secs(b)) || null, st: (b && b.start_date) || null };
 }
 function chatRows(rows) {
   return (Array.isArray(rows) ? rows : [])
@@ -286,7 +286,7 @@ async function mp3Layout(env, id, mp3) {
 // Supports Range so long slices (whole calls) can be seeked. ?dl=1&name= makes it a download.
 const fileName = t => "callective-" + String(t || "clip").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) + ".mp3";
 async function slice(env, ctx, request, id, from, to, extra = {}) {
-  const ep = await memo(ctx, "ep" + id, 604800, () => episode(id)); if (!ep.mp3) return json({ error: "No audio for that show" }, 404);
+  const ep = await memo(ctx, "ep2" + id, 604800, () => episode(id)); if (!ep.mp3) return json({ error: "No audio for that show" }, 404);
   const lay = await memo(ctx, "lay" + id, 2592000, () => mp3Layout(env, id, ep.mp3));
   const a = Math.floor(lay.start + from * lay.bytesPerSec), z = Math.floor(lay.start + to * lay.bytesPerSec), size = z - a + 1;
   let s0 = 0, s1 = size - 1, status = 200;
