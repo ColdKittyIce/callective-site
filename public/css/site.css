@@ -776,3 +776,46 @@ body:not(.has-pbar) .clipper{bottom:calc(10px + env(safe-area-inset-bottom,0px))
 .ct-acts .ct-main{flex:1 1 100%;font-size:15px;padding:12px 16px}
 .ct-or{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 @media (max-width:560px){.ct-acts .ct-or{flex-basis:100%}}
+
+/* search */
+#nav .nav-search:not([aria-current="page"]){color:var(--cyan)}
+.s-box{display:flex;flex-direction:column;gap:12px;padding:16px}
+#sq{width:100%;font-family:var(--f-mono);font-size:clamp(17px,2.4vw,22px);background:#05040c;color:var(--text);border:1px solid var(--cyan);padding:14px 16px;box-shadow:0 0 18px #18f0ff22 inset;outline:none}
+#sq:focus{box-shadow:0 0 0 2px #18f0ff66,0 0 18px #18f0ff33 inset}
+.s-ctl{display:flex;flex-direction:column;gap:10px}
+.yp-chip i{font-style:normal;opacity:.75;margin-left:4px}
+.s-years{align-items:center}.s-years span{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-right:4px}
+.s-opts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.s-opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.s-opts select{background:#05040c;color:var(--text);border:1px solid var(--line);padding:5px 8px;font:inherit}
+.s-count{margin-left:auto;color:var(--volt)}
+.s-tips{margin:0;font-size:13.5px;color:var(--muted)}
+.s-tips button{background:none;border:0;border-bottom:1px dashed var(--cyan);color:var(--cyan);font:inherit;padding:0 2px;cursor:pointer}
+.s-tips kbd{font-family:var(--f-mono);border:1px solid var(--line);padding:0 5px}
+.s-who{margin-top:16px;padding:16px;display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}
+.s-who small{display:block;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--pink)}
+.s-who>div>b{font-family:var(--f-head);font-size:clamp(22px,3vw,30px);color:var(--text);text-transform:uppercase}
+.s-who dl{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0}
+.s-who dt{font-family:var(--f-mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+.s-who dd{margin:0;font-family:var(--f-mono);font-size:15px;color:var(--volt)}
+.s-who .ext{flex-basis:100%;margin:0}
+.s-res{margin-top:16px}
+.s-h{font-family:var(--f-head);font-size:18px;text-transform:uppercase;letter-spacing:.06em;color:var(--cyan);margin:20px 0 8px;display:flex;gap:10px;align-items:baseline}
+.s-h span{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.s-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.s-row{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;background:#0b0f1f;border:1px solid #18f0ff22;padding:10px 12px}
+.s-row:hover{border-color:#18f0ff55}
+.s-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--void);background:var(--cyan);padding:3px 6px;text-align:center}
+.s-row.show .s-k{background:var(--volt)}.s-row.clip .s-k{background:var(--pink)}.s-row.drop .s-k{background:var(--violet);color:#fff}.s-row.chat .s-k{background:#2a3350;color:var(--text)}
+.s-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.s-main b{color:var(--volt);font-weight:600;font-size:14.5px}
+.s-main em{font-style:normal;color:var(--text);font-size:15px;line-height:1.35}
+.s-main small{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.s-callers{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.s-callers button{background:#05040c;border:1px solid var(--line);color:var(--text);font:inherit;font-size:11.5px;padding:2px 6px;cursor:pointer}
+.s-callers button:hover{border-color:var(--cyan)}
+.s-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.s-res mark{background:#e9ff3b33;color:inherit;box-shadow:0 1px 0 var(--volt)}
+.s-all{margin-top:8px}
+#s-more{margin-top:12px}
+@media (max-width:560px){.s-row{grid-template-columns:1fr auto}.s-k{display:none}.s-count{margin-left:0;flex-basis:100%}}

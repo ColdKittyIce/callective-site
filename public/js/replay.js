@@ -178,5 +178,8 @@ const Replay = (() => {
     load(start.id);
   }
   return { init, load: (id, autoplay = true) => { if (!isRecent(id)) { window.open(PC_POST + id, "_blank", "noopener"); return; } load(id, autoplay); go("replay"); },
-    loadAt: async (id, t) => { if (!isRecent(id)) { window.open(PC_POST + id, "_blank", "noopener"); return; } await load(id, false); seek(t); go("replay"); } };
+    loadAt: async (id, t, autoplay) => { if (!isRecent(id)) { window.open(PC_POST + id, "_blank", "noopener"); return; } await load(id, false); seek(t); go("replay"); if (autoplay) play(); },
+    clipRange: async (id, from, to, name) => { if (!isRecent(id)) { window.open(PC_POST + id, "_blank", "noopener"); return; } await load(id, false); seek(from); go("replay");
+      if (!hasAudio || !C.api) { toast("Clipping works on the live site, where the episode audio plays."); return; }
+      Clipper.open(Clipper.episodeSource(aud(), ep), 30, { from, to, name }); } };
 })();

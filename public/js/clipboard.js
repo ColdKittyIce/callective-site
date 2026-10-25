@@ -41,7 +41,7 @@ const Board = (() => {
       clips = C.clips.slice(0, 9).map((c, i) => ({ id: c.k, title: c.line.replace(/[.”“]$/g, ""), by: "example", sec: c.sec, peaks: "3579864257986532468975324689", created: 9 - i }));
       $("cb-note").textContent = "These are examples from the patch bay. On the live site, this board fills with clips people send in.";
     }
-    render();
+    render(); document.dispatchEvent(new CustomEvent("board-changed"));
   }
   function init() {
     $("cb-q").addEventListener("input", render);
@@ -57,7 +57,7 @@ const Board = (() => {
     const a = aud(); a.addEventListener("ended", () => { cur = null; render(); });
     load();
   }
-  return { init, reload: load };
+  return { init, reload: load, play, get list() { return demo ? [] : clips; } };
 })();
 
 /* ---------- crew mod panel ---------- */
