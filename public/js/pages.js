@@ -67,7 +67,7 @@ const Lineup = (() => {
     { k: "dogs", name: "DespicableDogs", aka: "despicabledogs", role: "Crew", sign: "TOO LOUD ON MIC", no: "0003", host: "DespicableDogs", clip: "dogs-woo",
       imgs: [["Hype", "lineup-dogs.webp"]], priors: "Never seen without the sunglasses or the 101.1 The Butt hoodie. Will buttslam on sight. Hosted the Bonerhaus corporate takeover and somehow made quarterly targets." },
     { k: "tom", name: "Dr. Tom Servo", aka: "DrTomServo · Tom Man", role: "Crew", sign: "HACKED THE QUEUE SYSTEM", no: "0004", host: "Dr. Tom Servo", clip: "tom-yeaugh",
-      imgs: [["Servo", "lineup-tom.webp"], ["Tom Man", "tomman.webp"]], priors: "Hosts more Callectives than anyone. Has a cape. Owns the roof, the sky, and every shingle you call a liar about." }];
+      imgs: [["Servo", "lineup-tom.webp"], ["Tom Man", "tomman.webp"], ["Issue #42", "tomman-42.webp"]], priors: "Hosts more Callectives than anyone. Has a cape. Owns the roof, the sky, and every shingle you call a liar about." }];
   function stats(host) {
     const seen = new Map(); for (const e of C.episodes) if (e.h === host) seen.set(e.d || e.id, e);
     const list = [...seen.values()].filter(e => e.d).sort((a, b) => b.d.localeCompare(a.d));
@@ -195,7 +195,7 @@ const Glossary = (() => {
   const mon = ym => { if (!ym) return ""; const [y, m] = ym.split("-").map(Number); return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }); };
   function card(b) {
     const q = b.quote ? `<blockquote><p>“${esc(b.quote.text)}”</p><cite>${esc(b.quote.who)}${b.quote.d ? `, ${esc(b.quote.d)}` : ""}</cite></blockquote>` : "";
-    return `<article class="gl-card hud"><header><b>${esc(b.term)}</b><i>${esc(b.kind)}</i></header><p class="gl-def">${esc(b.def)}</p>${q}
+    return `<article class="gl-card hud"><header><b>${esc(b.term)}</b><i>${esc(b.kind)}</i></header>${b.img ? `<a class="gl-img" href="img/${b.img}" target="_blank" rel="noopener"><img src="img/${b.img}" alt="${esc(b.imgAlt || b.term)}" loading="lazy"></a>` : ""}<p class="gl-def">${esc(b.def)}</p>${q}
       <footer><span>Since ${esc(mon(b.since))}. ${esc(b.stat || "")}</span>${b.search ? `<a href="#search/${encodeURIComponent(b.search)}">Find the calls →</a>` : ""}</footer></article>`;
   }
   function render() {

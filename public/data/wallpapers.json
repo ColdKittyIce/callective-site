@@ -1,5 +1,85 @@
 [
 {
+"k": "halloween-intro",
+"t": "Spooky Smile",
+"kind": "desktop",
+"by": "icecat",
+"file": "halloween-intro.jpg",
+"w": 1408,
+"h": 736,
+"kb": 208
+},
+{
+"k": "halloween-break",
+"t": "Haunted Break Room",
+"kind": "desktop",
+"by": "icecat",
+"file": "halloween-break.jpg",
+"w": 1344,
+"h": 768,
+"kb": 186
+},
+{
+"k": "halloween-court",
+"t": "Spooky Court",
+"kind": "desktop",
+"by": "icecat",
+"file": "halloween-court.jpg",
+"w": 1344,
+"h": 768,
+"kb": 132
+},
+{
+"k": "snakes-and-pickles",
+"t": "We Smile To Make You Dial",
+"kind": "desktop",
+"by": "icecat",
+"file": "snakes-and-pickles.jpg",
+"w": 918,
+"h": 498,
+"kb": 97
+},
+{
+"k": "fancy-phones",
+"t": "Fancy Phones",
+"kind": "desktop",
+"by": "icecat",
+"file": "fancy-phones.jpg",
+"w": 2560,
+"h": 1429,
+"kb": 317
+},
+{
+"k": "tech-issues-2",
+"t": "Technical Difficulties",
+"kind": "desktop",
+"by": "icecat",
+"file": "tech-issues-2.jpg",
+"w": 2560,
+"h": 1440,
+"kb": 886
+},
+{
+"k": "taking-a-break",
+"t": "Backstage Break",
+"kind": "desktop",
+"by": "icecat",
+"file": "taking-a-break.jpg",
+"w": 1365,
+"h": 768,
+"kb": 252
+},
+{
+"k": "bathroom-bathroom",
+"t": "Bathroom Bathroom",
+"kind": "desktop",
+"by": "icecat",
+"file": "bathroom-bathroom.jpg",
+"w": 1920,
+"h": 1080,
+"kb": 361
+},
+{
 "k": "neon-night-shift-desktop",
 "t": "Night Shift",
 "kind": "desktop",

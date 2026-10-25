@@ -95,7 +95,9 @@
    "since": "2025-06",
    "stat": "Said by 18 different people, mostly yelling it.",
    "def": "A clip of a very angry man from a call that went a bit viral around the community and turned into a catchphrase. If someone types it in chat, everyone else types it back.",
-   "quote": null
+   "quote": null,
+   "img": "bathroom-bathroom.webp",
+   "imgAlt": "The robot holding the bathroom door shut on a desperate Ira while the dog and the cat watch"
   },
   {
    "term": "Patrick Fucking Howard",
@@ -116,7 +118,9 @@
    "stat": "Chanted by 11 different people.",
    "def": "Dr. Tom Servo's other self. When Tom Man gets on the phone, chat chants it. He has opinions about who owns the roof.",
    "quote": null,
-   "search": "by:tomservo"
+   "search": "by:tomservo",
+   "img": "tomman-42.webp",
+   "imgAlt": "Tom Man comic cover, issue 42, The Rooftop Showdown"
   },
   {
    "term": "Quackers",

@@ -17,6 +17,7 @@ const Router = (() => {
     document.body.dataset.page = key;
     if (changed) document.dispatchEvent(new CustomEvent("page", { detail: key }));
     if (!scroll) return;
+    if (hit.target && hit.target.tagName === "DETAILS") hit.target.open = true;
     if (hit.target && hit.target.id !== hit.page.querySelector("section")?.id) {
       requestAnimationFrame(() => hit.target.scrollIntoView({ behavior: changed || reduceMotion ? "auto" : "smooth" }));
     } else if (changed) window.scrollTo(0, 0);
