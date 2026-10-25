@@ -7,6 +7,11 @@
  *   GET  /api/status            is TheCallective live on Prankcast, plus the live stream address
  *   GET  /api/radio             what Callective Radio (the 24/7 player) is playing right now (the newest 10 shows)
  *   GET  /api/guestbook         the 1998 page's guestbook (POST signs it; flagged entries wait for the crew)
+ *   GET  /api/suggest           community title ideas for calls, with vote counts
+ *   POST /api/suggest           {ep, t, title} suggest a title (filtered, 12 actions an hour per person)
+ *   POST /api/suggest/vote      {ep, t, id}    +1 an idea (one vote per person per call)
+ *   POST /api/suggest/report    {ep, t, id}    3 reports hide it
+ *   POST /api/mod/suggest       {ep, t, id}    crew hides one                    (ADMIN_TOKEN)
  *   GET  /api/calls             crew fixes to the call lists (titles, callers, blurbs)
  *   POST /api/mod/calls         save one fix {ep, t, title, by} or {ep, desc}  (ADMIN_TOKEN)
  *   GET  /api/mod/guestbook     guestbook entries, posted and held        (ADMIN_TOKEN)
@@ -76,6 +81,8 @@ async function route(request, env, ctx, url) {
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
       if (p === "/api/hits") return hits(env, M === "POST");
+      if (p === "/api/suggest" && M === "GET") return cached(request, ctx, 30, () => sgAll(env));
+      if ((m = p.match(/^\/api\/suggest(?:\/(vote|report))?$/)) && M === "POST") return sgPost(request, env, m[1] || "add");
       if (p === "/api/calls" && M === "GET") return json(env.DB ? JSON.parse(await env.DB.get("callfix") || "{}") : {}, 200, 30);
       if (p === "/api/guestbook" && M === "GET") return cached(request, ctx, 20, () => gbList(env, "g:"));
       if (p === "/api/guestbook" && M === "POST") return gbPost(request, env);
@@ -88,6 +95,7 @@ async function route(request, env, ctx, url) {
         if (p === "/api/mod/pending") return clipsList(env, "p:");
         if (p === "/api/mod/public") return clipsList(env, "a:", true);
         if (p === "/api/mod/calls" && M === "POST") return callFix(request, env);
+        if (p === "/api/mod/suggest" && M === "POST") return sgPost(request, env, "remove", true);
         if (p === "/api/mod/guestbook") return json({ pub: (await gbList(env, "g:")).entries, held: (await gbList(env, "h:")).entries });
         if ((m = p.match(/^\/api\/mod\/gb\/([a-z0-9-]+)\/(approve|delete)$/)) && M === "POST") return gbAct(env, m[1], m[2]);
         if ((m = p.match(/^\/api\/mod\/clip\/([a-z0-9-]+)\.mp3$/))) return clipAudio(env, ctx, m[1], "p:", url, request);
@@ -319,6 +327,51 @@ async function callFix(request, env) {
     if (b.title != null) c.title = clean(b.title, 120); if (b.by != null) c.by = clean(b.by, 60); }
   await env.DB.put("callfix", JSON.stringify(all));
   return json({ ok: true, fix: show });
+}
+
+/* ---------- community title suggestions ----------
+   Anyone can suggest a title for a call that doesn't have one. It shows up right away if it passes the filter.
+   Others can +1 it or suggest a better one; the most votes wins. 3 reports from different people hide one.
+   A crew title (✎) always wins. One small KV document per show ("sg:<show id>"); voters are stored as short hashes, never IPs. */
+const SG_PER_CALL = 6, SG_ACTIONS_PER_HOUR = 12;
+async function sgAll(env) {
+  if (!env.DB) return {}; const out = {}; let cursor;
+  do { const pg = await env.DB.list({ prefix: "sg:", cursor }); for (const k of pg.keys) { const doc = JSON.parse(await env.DB.get(k.name) || "{}"), show = {};
+      for (const [t, L] of Object.entries(doc)) { const vis = L.filter(x => !x.hide).map(x => ({ id: x.id, title: x.title, v: x.v.length })); if (vis.length) show[t] = vis; }
+      if (Object.keys(show).length) out[k.name.slice(3)] = show; }
+    cursor = pg.list_complete ? null : pg.cursor; } while (cursor);
+  return out;
+}
+async function who(request, env) {
+  const ip = request.headers.get("cf-connecting-ip") || "unknown";
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ip + "|" + (env.ADMIN_TOKEN || "cx")));
+  return [...new Uint8Array(h)].slice(0, 6).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function sgPost(request, env, action, crew) {
+  if (!env.DB) return json({ error: "Storage isn't set up" }, 500);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
+  const ep = String(+b.ep || ""), t = String(Math.round(+b.t)); if (!ep || ep === "0" || !(+t >= 0)) return json({ error: "Which call?" }, 400);
+  const me = await who(request, env);
+  if (!crew) { const rl = `sgr:${me}:${new Date().toISOString().slice(0, 13)}`, used = +(await env.DB.get(rl) || 0);
+    if (used >= SG_ACTIONS_PER_HOUR) return json({ error: "Easy there. Try again in an hour" }, 429);
+    await env.DB.put(rl, String(used + 1), { expirationTtl: 3700 }); }
+  const key = "sg:" + ep, doc = JSON.parse(await env.DB.get(key) || "{}"), L = doc[t] || (doc[t] = []);
+  if (action === "add") {
+    const title = clean(b.title, 80); if (title.length < 3) return json({ error: "A few more words, please" }, 400);
+    if (screen(title)) return json({ error: "That one tripped the filter (no links, numbers or slurs)" }, 400);
+    const n = title.toLowerCase().replace(/[^a-z0-9]+/g, ""), same = L.find(x => x.title.toLowerCase().replace(/[^a-z0-9]+/g, "") === n);
+    for (const x of L) x.v = x.v.filter(v => v !== me); // one vote per person per call
+    if (same) { same.v.push(me); }
+    else { if (L.filter(x => !x.hide).length >= SG_PER_CALL) return json({ error: "This call has plenty of ideas already. Vote for one instead" }, 409);
+      L.push({ id: crypto.randomUUID().slice(0, 8), title, v: [me], r: [], ts: Date.now() }); }
+  } else {
+    const x = L.find(y => y.id === b.id); if (!x) return json({ error: "Not found" }, 404);
+    if (action === "vote") { for (const y of L) y.v = y.v.filter(v => v !== me); x.v.push(me); }
+    if (action === "report") { if (!x.r.includes(me)) x.r.push(me); if (x.r.length >= 3) x.hide = true; }
+    if (action === "remove") x.hide = true;
+  }
+  await env.DB.put(key, JSON.stringify(doc));
+  return json({ ok: true, call: L.filter(x => !x.hide).map(x => ({ id: x.id, title: x.title, v: x.v.length, mine: x.v.includes(me) })) });
 }
 
 /* ---------- the 1998 page's hit counter (each browser counts once a day) ---------- */

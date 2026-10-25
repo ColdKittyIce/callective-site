@@ -104,17 +104,36 @@ function callsFor(id, dur) {
   const end = dur || C.episodes.find(e => e.id === +id)?.sec;
   return L.map((c, i) => { const nx = L.slice(i + 1).find(x => !x.skip); return { ...c, n: i + 1, at: c.t, end: nx ? nx.t : (end || c.t + 600) }; });
 }
-// Crew fixes (typed in on the site) sit on top of the built-in lists.
-let CALLS_BASE = null;
-function applyCallFixes(fix) {
+// Crew fixes (typed in on the site) sit on top of the built-in lists; community title ideas fill in calls that still have no title.
+let CALLS_BASE = null, CALL_FIX = {}, CALL_SG = {};
+function rebuildCalls() {
   if (!CALLS_BASE) CALLS_BASE = JSON.parse(JSON.stringify(C.calls));
   const out = JSON.parse(JSON.stringify(CALLS_BASE));
-  for (const [ep, f] of Object.entries(fix || {})) { const s = out[ep]; if (!s) continue;
-    if (f.desc != null) s.desc = f.desc;
-    for (const c of s.calls) { const x = f.c?.[String(c.t)]; if (x) { if (x.title != null) c.title = x.title; if (x.by) c.by = x.by; } } }
+  for (const [ep, s] of Object.entries(out)) {
+    const f = CALL_FIX[ep], g = CALL_SG[ep] || {};
+    if (f?.desc != null) s.desc = f.desc;
+    for (const c of s.calls) {
+      const x = f?.c?.[String(c.t)]; if (x) { if (x.title != null) c.title = x.title; if (x.by) c.by = x.by; }
+      const ideas = (g[String(c.t)] || []).slice().sort((a, b) => b.v - a.v);
+      c.ideas = ideas;
+      if (!c.title && ideas.length) { c.title = ideas[0].title; c.community = true; }
+    }
+  }
   C.calls = out; document.dispatchEvent(new CustomEvent("calls-changed"));
 }
-async function loadCallFixes() { if (!C.api) return; try { applyCallFixes(await getJSON(C.api + "/calls", 6000)); } catch (e) {} }
+function applyCallFixes(fix) { CALL_FIX = fix || {}; rebuildCalls(); }
+function applySuggestions(sg) { CALL_SG = sg || {}; rebuildCalls(); }
+async function loadCallFixes() {
+  if (!C.api) return;
+  const [fix, sg] = await Promise.all([getJSON(C.api + "/calls", 6000).catch(() => null), getJSON(C.api + "/suggest", 6000).catch(() => null)]);
+  if (fix) CALL_FIX = fix; if (sg) CALL_SG = sg; if (fix || sg) rebuildCalls();
+}
+// Send a title idea, a +1, or a report. Returns the call's updated list of ideas.
+async function suggestAct(action, ep, t, extra) {
+  const r = await fetch(`${C.api}/suggest${action === "add" ? "" : "/" + action}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ep, t, ...extra }) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || "That didn't go through");
+  const show = CALL_SG[ep] || (CALL_SG[ep] = {}); show[String(t)] = j.call.map(({ mine, ...x }) => x); rebuildCalls(); return j.call;
+}
 const callLabel = c => c.title ? `${c.by}: ${c.title}` : `${c.by}'s call`;
 function callAt(id, t, dur) { const L = callsFor(id, dur).filter(c => !c.skip); for (let i = L.length - 1; i >= 0; i--) if (t >= L[i].t) return L[i]; return null; }
 async function mergeLatest() {

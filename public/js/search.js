@@ -31,7 +31,7 @@ const Search = (() => {
       const info = C.calls[e.id], calls = info ? callsFor(e.id, e.sec).filter(c => !c.skip) : [];
       R.push({ type: "show", ep: e.id, d: e.d, title: niceTitle(e), host: e.h || "", desc: info?.desc || e.n || "", n: calls.length,
         callers: [...new Set(calls.map(c => c.by))], text: `${niceTitle(e)} ${e.h || ""} ${info?.desc || e.n || ""} ${dateWords(e.d)}` });
-      for (const c of calls) R.push({ type: "call", ep: e.id, d: e.d, t: c.t, end: c.end, by: c.by, title: c.title || "", host: e.h || "", text: `${c.by} ${c.title || ""}` });
+      for (const c of calls) R.push({ type: "call", ep: e.id, d: e.d, t: c.t, end: c.end, by: c.by, title: c.title || "", community: !!c.community, host: e.h || "", text: `${c.by} ${c.title || ""}` });
     }
     for (const k of (typeof Board !== "undefined" ? Board.list : [])) {
       const e = eps[k.ep]; R.push({ type: "clip", id: k.id, ep: k.ep, at: k.at, d: e?.d || "", title: k.title, by: k.by || "", sec: k.sec, text: `${k.title} ${k.by || ""} ${e ? niceTitle(e) : ""}` });
@@ -61,9 +61,10 @@ const Search = (() => {
     return d + (a.length - i) + (b.length - j) <= 1;
   }
   function parse(q) {
-    const f = { terms: [], phrases: [], by: "", host: "", year: "", type: "" };
+    const f = { terms: [], phrases: [], by: "", host: "", year: "", type: "", untitled: false };
     q = q.replace(/"([^"]+)"/g, (_, p) => { const n = norm(p); if (n) f.phrases.push(n); return " "; });
     for (const raw of q.split(/\s+/).filter(Boolean)) {
+      if (/^(is:)?untitled$/i.test(raw) || /^is:(notitle|missing)$/i.test(raw)) { f.untitled = true; f.type = "call"; continue; }
       const m = raw.match(/^(by|host|year|in|from):(.+)$/i);
       if (m) { const k = m[1].toLowerCase(), v = m[2]; if (k === "by" || k === "from") f.by = squash(v); else if (k === "host") f.host = squash(v); else if (k === "year") f.year = v.slice(0, 4); else f.type = v.toLowerCase().replace(/s$/, ""); continue; }
       if (/^(19|20)\d\d$/.test(raw)) { f.year = raw; continue; }
@@ -95,12 +96,13 @@ const Search = (() => {
       if (yr && !(r.d || "").startsWith(yr)) continue;
       if (f.by && !(r.who_ || "").includes(ALIAS[f.by] || f.by)) continue;
       if (f.host && !squash(r.host || "").includes(ALIAS[f.host] || f.host)) continue;
+      if (f.untitled && (r.type !== "call" || r.title)) continue;
       let s = 0, ok = true;
       for (const p of f.phrases) { if (r.n_.includes(p)) s += 4; else { ok = false; break; } }
       if (!ok) continue;
       for (const t of f.terms) { const v = termScore(r, t); if (!v) { ok = false; break; } s += v; }
       if (!ok) continue;
-      if (!f.terms.length && !f.phrases.length && !f.by && !f.host && !yr) continue;
+      if (!f.terms.length && !f.phrases.length && !f.by && !f.host && !yr && !f.untitled) continue;
       s += { call: .4, show: .3, clip: .5, drop: .1, chat: 0 }[r.type] || 0;
       hits.push({ r, s });
     }
@@ -138,7 +140,7 @@ const Search = (() => {
   const when = r => r.d ? esc(fmtDate(r.d)) : "";
   function row(h, f) {
     const r = h.r, rec = r.ep && isRecent(r.ep);
-    if (r.type === "call") return `<li class="s-row call"><span class="s-k">Call</span><div class="s-main"><b>${mark(r.by, f)}</b>${r.title ? `<em>${mark(r.title, f)}</em>` : ""}<small>${when(r)}${r.host ? ` · hosted by ${esc(r.host)}` : ""} · at ${hms(r.t, true)} · ${fmtLen(r.end - r.t)}</small></div>
+    if (r.type === "call") return `<li class="s-row call"><span class="s-k">Call</span><div class="s-main"><b>${mark(r.by, f)}</b>${r.title ? `<em>${mark(r.title, f)}${r.community ? ` <i class="cm">community</i>` : ""}</em>` : rec ? `<em class="s-untitled">No title yet. Heard it? ▶ Play, then tap 💡+ to name it.</em>` : ""}<small>${when(r)}${r.host ? ` · hosted by ${esc(r.host)}` : ""} · at ${hms(r.t, true)} · ${fmtLen(r.end - r.t)}</small></div>
       <div class="s-acts">${rec ? `<button class="btn sm" type="button" data-play="${r.ep}" data-t="${r.t}">▶ Play</button><button class="btn sm ghost" type="button" data-clip="${r.ep}" data-t="${r.t}" data-end="${r.end}" data-name="${esc(callLabel(r))}">✂</button>` : `<a class="btn sm ghost" href="${PC_POST}${r.ep}" target="_blank" rel="noopener" title="Jump to ${hms(r.t, true)} on Prankcast">Prankcast ↗</a>`}</div></li>`;
     if (r.type === "show") return `<li class="s-row show"><span class="s-k">Show</span><div class="s-main"><b>${mark(r.title, f)}</b>${r.desc ? `<em>${mark(r.desc, f)}</em>` : ""}<small>${when(r)}${r.host ? ` · hosted by ${mark(r.host, f)}` : ""}${r.n ? ` · ${r.n} calls` : ""}</small>${r.callers.length ? `<small class="s-callers">${r.callers.map(n => `<button type="button" data-sq="by:${esc(n.replace(/\s+/g, ""))}">${mark(n, f)}</button>`).join("")}</small>` : ""}</div>
       <div class="s-acts">${rec ? `<button class="btn sm" type="button" data-show="${r.ep}">▶ Play here</button>` : `<a class="btn sm ghost" href="${PC_POST}${r.ep}" target="_blank" rel="noopener">Prankcast ↗</a>`}</div></li>`;

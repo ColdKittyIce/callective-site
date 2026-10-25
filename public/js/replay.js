@@ -39,7 +39,7 @@ const Replay = (() => {
     $("rp-note").textContent = hasAudio ? "Audio streams straight from Prankcast. The chat is the real Prankcast chat replay."
       : "The episode audio plays on the live site. Here the chat replays on its own, so crank it to 60× and watch a whole night go by.";
     $("feed-count").textContent = chat.length ? `${chat.length} messages` : "No chat saved for this one";
-    paintCalls(); buildBins(); drawHeat(); renderFeed(true); tick();
+    ideasOpen = null; paintCalls(); buildBins(); drawHeat(); renderFeed(true); tick();
     if (autoplay) play();
   }
 
@@ -81,7 +81,17 @@ const Replay = (() => {
   }
 
   /* The call list: who's on, jump to a call, clip a whole call. */
-  let curCall = null;
+  let curCall = null, ideasOpen = null;
+  function ideasPanel(c) {
+    const ideas = c.ideas || [];
+    return `<div class="ideas" data-t="${c.t}">${ideas.length ? `<ol>${ideas.map(x => `<li><button type="button" class="idea-v" data-vote="${esc(x.id)}" title="+1 this title">▲ ${x.v}</button><span>${esc(x.title)}</span><button type="button" class="idea-r" data-rep="${esc(x.id)}" title="Report this one">⚑</button>${crew() ? `<button type="button" class="idea-r" data-crewrm="${esc(x.id)}" title="Crew: remove this idea">✕</button>` : ""}</li>`).join("")}</ol>` : `<p>No ideas yet. What was this call?</p>`}
+      <form class="idea-f"><label class="sr" for="idea-in">Suggest a title</label><input id="idea-in" maxlength="80" placeholder="Suggest a title, e.g. The Pumpkin Man" autocomplete="off"><button class="btn sm" type="submit">Suggest</button></form>
+      <small>One vote per person per call. No phone numbers, links or slurs. The crew can still change any title.</small></div>`;
+  }
+  async function ideaAct(t, action, extra) {
+    try { await suggestAct(action, ep.id, t, extra); toast(action === "add" ? "Thanks! Your title is up." : action === "vote" ? "Voted." : "Reported. Thanks."); }
+    catch (e) { toast(e.message); }
+  }
   const crew = () => { try { return sessionStorage.getItem("cx-mod") || ""; } catch (e) { return ""; } };
   function paintCalls() {
     const box = $("ep-calls"), L = callsFor(ep.id, dur), info = C.calls[ep.id], ed = !!crew() && !!C.api; curCall = null;
@@ -89,7 +99,8 @@ const Replay = (() => {
     const pen = (attr, what) => ed ? `<button type="button" class="call-ed" ${attr} title="Edit ${what}" aria-label="Edit ${what}">✎</button>` : "";
     box.innerHTML = `${info.desc || ed ? `<p class="calls-desc">${esc(info.desc || "No show blurb yet.")} ${pen('data-desc="1"', "the show blurb")}</p>` : ""}<div class="calls-head"><b>${L.filter(c => !c.skip).length} calls</b><span>${ed ? "Crew mode: ✎ fixes a title or name" : "Tap to jump · ✂ clips the whole turn"}</span></div><ol>${L.map((c, i) => c.skip
       ? `<li class="call skip"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b><em>skipped</em></span></li>`
-      : `<li class="call" data-i="${i}"><button type="button" class="call-go" data-t="${c.at}"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b>${c.title ? `<em>${esc(c.title)}</em>` : ""}</span><small>${fmtLen(c.end - c.t)}</small></button>${pen(`data-i="${i}"`, `${esc(c.by)}'s call`)}<button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button></li>`).join("")}</ol>`;
+      : `<li class="call${ideasOpen === c.t ? " open" : ""}" data-i="${i}"><button type="button" class="call-go" data-t="${c.at}"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b>${c.title ? `<em>${esc(c.title)}${c.community ? ` <i class="cm" title="Title suggested by listeners">community</i>` : ""}</em>` : ""}</span><small>${fmtLen(c.end - c.t)}</small></button>${pen(`data-i="${i}"`, `${esc(c.by)}'s call`)}${C.api && (!c.title || c.community) ? `<button type="button" class="call-idea" data-idea="${c.t}" title="${c.title ? "Vote on the title or suggest a better one" : "Know what this call was? Name it"}" aria-label="Name this call">${c.title ? "💡" : "💡+"}</button>` : ""}<button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button>${ideasOpen === c.t ? ideasPanel(c) : ""}</li>`).join("")}</ol>
+      ${C.api && L.some(c => !c.skip && !c.title) ? `<p class="calls-help">💡+ = no title yet. Heard the call? Name it. Titles show up right away, and the one with the most votes wins.</p>` : ""}`;
   }
   async function editCall(i, desc) {
     const tok = crew(); if (!tok) return; const body = { ep: ep.id };
@@ -148,7 +159,16 @@ const Replay = (() => {
   function init() {
     fillSelect();
     $("cl-quick").addEventListener("click", () => clip());
+    $("ep-calls").addEventListener("submit", e => { const f = e.target.closest(".idea-f"); if (!f) return; e.preventDefault(); const v = f.querySelector("input").value.trim(); if (v) ideaAct(+f.closest(".ideas").dataset.t, "add", { title: v }); });
     $("ep-calls").addEventListener("click", e => {
+      const idea = e.target.closest("[data-idea]"); if (idea) { ideasOpen = ideasOpen === +idea.dataset.idea ? null : +idea.dataset.idea; paintCalls(); curCall = undefined; tick(); if (ideasOpen != null) $("idea-in")?.focus(); return; }
+      const vt = e.target.closest("[data-vote]"); if (vt) { ideaAct(+vt.closest(".ideas").dataset.t, "vote", { id: vt.dataset.vote }); return; }
+      const rp = e.target.closest("[data-rep]"); if (rp) { if (confirm("Report this title as spam or nasty?")) ideaAct(+rp.closest(".ideas").dataset.t, "report", { id: rp.dataset.rep }); return; }
+      const cr = e.target.closest("[data-crewrm]"); if (cr) { const t = +cr.closest(".ideas").dataset.t;
+        fetch(`${C.api}/mod/suggest`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${crew()}` }, body: JSON.stringify({ ep: ep.id, t, id: cr.dataset.crewrm }) })
+          .then(r => r.ok ? r.json() : Promise.reject()).then(j => { const sh = CALL_SG[ep.id] || (CALL_SG[ep.id] = {}); sh[String(t)] = j.call.map(({ mine, ...x }) => x); rebuildCalls(); toast("Removed."); }).catch(() => toast("Wrong crew password, or it didn't go through."));
+        return; }
+      if (e.target.closest(".ideas")) return;
       const go = e.target.closest(".call-go"), cl = e.target.closest(".call-clip"), ed = e.target.closest(".call-ed");
       if (ed) editCall(+ed.dataset.i, !!ed.dataset.desc); else if (go) { seek(+go.dataset.t); play(); } else if (cl) clipCall(+cl.dataset.i);
     });
