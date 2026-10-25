@@ -7,7 +7,7 @@
    Clips from a show can be 20 minutes and are saved as "show X, from A to B" (no storage).
    Live, song and drop clips are recorded audio and top out at 2 minutes. */
 const Clipper = (() => {
-  const MIN = 1, EDIT_MAX = 120, WAVE_MAX = 180, PPS = 40; // waveform loads when the close-up shows 3 minutes or less; 40 peaks a second
+  const MIN = 1, EDIT_MAX = 120, LAB_MAX = 600, WAVE_MAX = 180, PPS = 40; // waveform loads when the close-up shows 3 minutes or less; 40 peaks a second
   let src = null, w0 = 0, w1 = 0, v0 = 0, v1 = 0, a = 0, b = 0, busy = false;
   let previewing = false, pvEnd = 0, resumeAt = null, raf = null, follow = false;
   let wave = null, waveTimer = null, waveToken = 0, heat = null;
@@ -141,13 +141,14 @@ const Clipper = (() => {
     sel.style.left = (Math.max(0, L) * 100) + "%"; sel.style.width = (Math.max(0, Math.min(1, R) - Math.max(0, L)) * 100) + "%";
     sel.classList.toggle("off-a", L < 0); sel.classList.toggle("off-b", R > 1);
     ticks();
-    const len = b - a, canEdit = len <= EDIT_MAX + .05;
+    const len = b - a, canEdit = len <= LAB_MAX + .05;
     $("ct-a").textContent = hms(a, true) + "." + Math.floor((a % 1) * 10); $("ct-b").textContent = hms(b, true) + "." + Math.floor((b % 1) * 10);
     $("ct-len").textContent = mmss(len); $("ct-max").textContent = `max ${src.max / 60} min`;
     $("ct-span").textContent = `Close-up: ${mmss(v1 - v0)}${v1 - v0 > WAVE_MAX && src.kind === "ep" ? " · zoom in to see the waveform" : ""}`;
     $("ct-dl").disabled = busy || (src.kind === "ep" && !C.api); $("ct-post").disabled = busy || !C.api; $("ct-crew").disabled = busy || !C.api;
     $("ct-edit").disabled = busy || !canEdit || (src.kind === "ep" && !C.api); $("ct-auto").disabled = busy || (src.kind === "ep" && !C.api);
-    $("ct-edit").title = canEdit ? "Open it in the clip lab for effects" : "Effects work on clips up to 2 minutes. Download or post longer ones as they are.";
+    $("ct-edit").title = canEdit ? "Fine-tune it in the clip editor: trim, fades, effects, then post or download" : "The clip editor takes up to 10 minutes. Trim it down, or download or post the whole piece as it is.";
+    $("ct-edit").textContent = canEdit ? "✂ Send to the clip editor" : "Clip editor: 10 min max";
   }
 
   /* ---------- the real waveform for the close-up ---------- */
@@ -298,10 +299,10 @@ const Clipper = (() => {
     busy = false; paintAll();
   }
   async function edit() {
-    if (!src || busy || b - a > EDIT_MAX + .05) return; stopPreview(); busy = true; paintAll();
+    if (!src || busy || b - a > LAB_MAX + .05) return; stopPreview(); busy = true; paintAll();
     msg("> Pulling this piece into the clip lab…");
     try {
-      const buf = await src.get(a, b), m = src.meta(a), label = `${src.title} @ ${hms(a, true)}`;
+      const buf = await src.get(a, b), m = src.meta(a), label = $("ct-name").value.trim() || `${src.title} @ ${hms(a, true)}`;
       close(); Lab.loadBuffer(buf, label, m); SFX.shutter(); go("lab");
     } catch (e) { busy = false; paintAll(); msg("> That piece didn't come through. Try again in a moment."); }
   }

@@ -772,3 +772,7 @@ body:not(.has-pbar) .clipper{bottom:calc(10px + env(safe-area-inset-bottom,0px))
 .call-ed:hover,.call-ed:focus-visible{border-color:var(--volt)}
 .calls-desc .call-ed{display:inline-block;width:30px;height:26px;margin-left:6px;vertical-align:middle}
 .mod-play{display:flex;align-items:center;gap:8px}
+.ct-acts{align-items:center}
+.ct-acts .ct-main{flex:1 1 100%;font-size:15px;padding:12px 16px}
+.ct-or{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+@media (max-width:560px){.ct-acts .ct-or{flex-basis:100%}}

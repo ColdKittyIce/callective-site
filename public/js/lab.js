@@ -3,7 +3,7 @@ const Lab = (() => {
   let meta = null, buf = null, name = "", undo = [], sel = null, cursor = 0, loop = false, src = null, startedAt = 0, playFrom = 0, playLen = 0, raf = null, dl = null;
   const fx = { phone: false, robot: false, echo: false, stall: false };
   let speed = 1, vol = 1, impulse = null;
-  const MAX_SEC = 300;
+  const MAX_SEC = 600;
 
   /* ---------- loading ---------- */
   async function decode(arr) { const a = ac(); if (!a) throw new Error("no audio"); return await a.decodeAudioData(arr); }

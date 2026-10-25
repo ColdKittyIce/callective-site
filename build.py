@@ -19,5 +19,13 @@ html = f"""<!doctype html>
 </body>
 </html>
 """
-(pathlib.Path(__file__).parent / "public" / "index.html").write_text(html, encoding="utf-8")
+# Cache-bust scripts and styles so a new deploy shows up without a hard refresh.
+import hashlib
+pub = pathlib.Path(__file__).parent / "public"
+def bust(m):
+    f = pub / m.group(2)
+    v = hashlib.md5(f.read_bytes()).hexdigest()[:8] if f.exists() else "0"
+    return f'{m.group(1)}{m.group(2)}?v={v}"'
+html = re.sub(r'((?:src|href)=")((?:js|css)/[^"?]+)"', bust, html)
+(pub / "index.html").write_text(html, encoding="utf-8")
 print("built public/index.html")
