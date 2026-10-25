@@ -930,3 +930,4 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .pm-reel button{align-self:flex-start;background:none;border:1px solid var(--line);color:var(--muted);font-family:var(--f-mono);font-size:12px;padding:3px 8px;cursor:pointer}
 .pm-reel.locked button{color:var(--void);background:var(--volt);border-color:var(--volt)}
 .pm-line{margin:0;font-size:17px;line-height:1.5;color:var(--volt)}
+.sp-call .sp-ideas{grid-column:1/-1}
