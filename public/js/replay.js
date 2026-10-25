@@ -90,7 +90,7 @@ const Replay = (() => {
       : `<li class="call" data-i="${i}"><button type="button" class="call-go" data-t="${c.t}"><time>${hms(c.t, true)}</time><span><b>${esc(c.by)}</b><em>${esc(c.title)}</em></span><small>${fmtLen(c.end - c.t)}</small></button><button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button></li>`).join("")}</ol>`;
   }
   function paintCurCall(t) {
-    const c = ep ? callAt(ep.id, t, dur) : null; if (c === curCall || (c && curCall && c.t === curCall.t)) return; curCall = c;
+    const c = ep ? callAt(ep.id, t, dur) : null; if (curCall !== undefined && (c === curCall || (c && curCall && c.t === curCall.t))) return; curCall = c;
     $("ep-calls").querySelectorAll(".call.on").forEach(x => x.classList.remove("on"));
     if (c) { const li = $("ep-calls").querySelector(`.call[data-i="${c.n - 1}"]`); li?.classList.add("on"); const ol = li?.parentElement; if (ol) ol.scrollTop = li.offsetTop - ol.offsetTop - ol.clientHeight / 3; }
     if (Player.current?.kind === "ep" && ep) Player.update({ title: c ? `${c.by}: ${c.title}` : `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}` });
@@ -117,7 +117,7 @@ const Replay = (() => {
   function play() {
     if (!ep) return;
     if (hasAudio) { Media.claim(aud()); aud().play().catch(() => { toast("Couldn't start the audio. Try again or open it on Prankcast."); });
-      Player.set({ kind: "ep", el: aud(), title: `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, page: "replay", seek: true, clip: () => clip() }); }
+      Player.set({ kind: "ep", el: aud(), title: `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, page: "replay", seek: true, clip: () => clip() }); curCall = undefined; paintCurCall(now()); }
     else { if (vt >= dur) vt = 0; vplaying = true; vlast = 0; }
     if (!raf) raf = requestAnimationFrame(loop);
   }
