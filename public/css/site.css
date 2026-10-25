@@ -837,3 +837,19 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .ideas small{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
 .calls-help{margin:4px 0 0;font-size:13px;color:var(--muted)}
 .s-untitled{color:var(--muted)!important;font-size:13.5px!important}
+/* glossary */
+.gl-ctl{margin-bottom:14px}.gl-ctl input{width:100%;max-width:420px;font-family:var(--f-mono);font-size:15px;background:#05040c;color:var(--text);border:1px solid var(--line);padding:10px 12px}
+.gl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;align-items:start}
+.gl-card{padding:16px;display:flex;flex-direction:column;gap:10px}
+.gl-card header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gl-card header b{font-family:var(--f-head);font-size:22px;text-transform:uppercase;color:var(--volt);letter-spacing:.02em}
+.gl-card header i{font-family:var(--f-mono);font-size:12.5px;color:var(--pink)}
+.gl-def{margin:0;line-height:1.5}
+.gl-card blockquote{margin:0;border-left:3px solid var(--cyan);padding:4px 0 4px 12px}
+.gl-card blockquote p{margin:0 0 4px;font-family:var(--f-mono);font-size:14px;color:var(--text)}
+.gl-card blockquote cite{font-style:normal;font-size:12.5px;color:var(--muted)}
+.gl-card footer{margin-top:auto;display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.gl-card footer a{color:var(--cyan)}
+.gl-rules{margin-top:18px;padding:14px 16px}
+.gl-rules summary{cursor:pointer;font-family:var(--f-mono);color:var(--cyan)}
+.gl-rules ol{margin:12px 0;padding-left:22px;display:flex;flex-direction:column;gap:8px;line-height:1.5}

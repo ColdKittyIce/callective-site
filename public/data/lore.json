@@ -1,0 +1,240 @@
+{
+ "bits": [
+  {
+   "term": "PLA bell",
+   "kind": "noun",
+   "since": "2024-12",
+   "stat": "Dropped in chat about 2,700 times by 135 different people.",
+   "def": "Your ticket to the phone. Drop the PLA bell emoji in chat and you're in line, and the bot calls your name when it's your turn.",
+   "quote": {
+    "text": "If you want to make a call, put a PLA bell emoji in chat.",
+    "who": "Ira, the rules",
+    "d": "2026"
+   }
+  },
+  {
+   "term": "Buttslam",
+   "kind": "verb",
+   "since": "2024-12",
+   "stat": "Said by 43 different people. Written into the very first rules.",
+   "def": "The reveal. When a call has gone as far as it can go, you tell them who they've been talking to: 101.1 The Butt. They have just been buttslammed.",
+   "quote": {
+    "text": "Do a buttslam at the end. Cut them loose.",
+    "who": "iregretjumping",
+    "d": "Feb 2026"
+   }
+  },
+  {
+   "term": "101.1 The Butt",
+   "kind": "noun",
+   "since": "2024-12",
+   "stat": "The station behind every reveal since night one.",
+   "def": "The fake radio station the Callective claims to be when it's time to come clean. Nobody has ever asked for the frequency to be checked.",
+   "quote": {
+    "text": "If you want to reveal that it's a prank, we are 101.1 The Butt and \"You just got buttslammed\".",
+    "who": "The original rules, rule 7",
+    "d": "Dec 2024"
+   }
+  },
+  {
+   "term": "Drunk and abusive",
+   "kind": "rule 5",
+   "since": "2024-12",
+   "stat": "Still in the rules two years later.",
+   "def": "The one rule that has never needed rewording. If you're drunk and abusive, you're off the phone.",
+   "quote": {
+    "text": "If you don't know why I have to put this here, YOU are why I have to put this here.",
+    "who": "The original rules, rule 5",
+    "d": "Dec 2024"
+   }
+  },
+  {
+   "term": "Roycipient",
+   "kind": "noun",
+   "since": "2025-08",
+   "stat": "Also: Callectivecipient, Icecipient, and any other -cipient you can make up.",
+   "def": "Whoever answers the phone. Every person on the other end of a call is a roycipient, and a few of the best ones have become legends.",
+   "quote": {
+    "text": "This is a history making moment in the Callective. we recruited a roycipient to be a prank caller",
+    "who": "AndyAnderson",
+    "d": "Aug 2026"
+   }
+  },
+  {
+   "term": "Dings & Dingtember",
+   "kind": "noun",
+   "since": "2025-01",
+   "stat": "Brought up by 69 different people. Peaks every September.",
+   "def": "Notes left on parked cars saying \"sorry, I dinged your car, call me.\" The number rings the crew, who answer live. September is Dingtember, the whole month is dings, and somehow there are always goat calls.",
+   "quote": {
+    "text": "From a ding recipient to a prank caller... Thats great lol",
+    "who": "maxxymax88, after starry joined the queue",
+    "d": "Sep 2026"
+   }
+  },
+  {
+   "term": "Five Below list",
+   "kind": "noun",
+   "since": "2025-11",
+   "stat": "Peaked in December 2025 with 43 mentions in one month.",
+   "def": "Before a Five Below call, chat posts a shopping list in spoiler tags. The caller clicks one blind and asks the store for whatever it says, with a straight face.",
+   "quote": {
+    "text": "Book: How To Fool A Five Below Employee To Stay On The Phone",
+    "who": "Dr Tom Servo, adding to the list",
+    "d": "Sep 2026"
+   }
+  },
+  {
+   "term": "Lunk Alarm",
+   "kind": "noun",
+   "since": "2025-02",
+   "stat": "29 different people have hit it.",
+   "def": "The gym alarm that goes off when someone grunts too loud. A Callective premise, an emoji, and a sound the chat reaches for whenever something gets too intense.",
+   "quote": {
+    "text": "IRJ posting the rules is like when the gym hits the lunk alarm button",
+    "who": "Arbee",
+    "d": "Jul 2026"
+   }
+  },
+  {
+   "term": "Yo Ghost",
+   "kind": "artist",
+   "since": "2025-03",
+   "stat": "Mentioned by 28 different people. A regular in the queue.",
+   "def": "The official mumble rapper of the Callective. Yo Ghost turns up in the queue, on calls, and in chat requests for one more verse.",
+   "quote": {
+    "text": "When the nightime fall / See me creepin down da hall / My rhymes in yo walls",
+    "who": "Yo Ghost",
+    "d": "Aug 2025"
+   },
+   "search": "yo ghost"
+  },
+  {
+   "term": "Bathroom bathroom",
+   "kind": "phrase",
+   "since": "2025-06",
+   "stat": "Said by 18 different people, mostly yelling it.",
+   "def": "From a June 2025 call, and the room never let it go. If someone types it in chat, everyone else types it back.",
+   "quote": {
+    "text": "I love that this show is getting it's own inside jokes, Patrick fucking howard, yup yup, bathroom bathroom etc",
+    "who": "IceCat",
+    "d": "Jul 2025"
+   }
+  },
+  {
+   "term": "Patrick Fucking Howard",
+   "kind": "person, sort of",
+   "since": "2025-04",
+   "stat": "Started as PackTrick Howard, a call character. Now he runs the queue.",
+   "def": "First a character in calls by RBCP and CrieFaux. Now the name of the bot that runs the queue, greets everyone who joins voice, and moves the line along like a mall cop with a schedule.",
+   "quote": {
+    "text": "Alright, Cyber's finished. I got a badge and I'm usin' it — NEXT.",
+    "who": "Patrick Fucking Howard (the bot)",
+    "d": "Oct 2026"
+   }
+  },
+  {
+   "term": "Tom Man",
+   "kind": "alter ego",
+   "since": "2026-02",
+   "stat": "Chanted by 11 different people.",
+   "def": "Dr. Tom Servo's other self. When Tom Man gets on the phone, chat chants it. He has opinions about who owns the roof.",
+   "quote": {
+    "text": "Tom man tom man tom man",
+    "who": "Tiff, and everyone else",
+    "d": "Oct 2026"
+   },
+   "search": "by:tomservo"
+  },
+  {
+   "term": "Quackers",
+   "kind": "duck",
+   "since": "2026-04",
+   "stat": "Quacked about 85 times.",
+   "def": "GreenImp's duck. Quacks along on calls and has a fan club in chat.",
+   "quote": {
+    "text": "lol I love quackers! He’s so cheeky!",
+    "who": "asha",
+    "d": "Jun 2026"
+   },
+   "search": "by:greenimp"
+  },
+  {
+   "term": "The crow",
+   "kind": "bird",
+   "since": "2025-01",
+   "stat": "Cawed by 30 different people.",
+   "def": "Any time a crow comes up, on a call or in chat, the room answers with \"caw.\" It started in January 2025 and it has not stopped.",
+   "quote": {
+    "text": "Holy shit theres another crow in this room",
+    "who": "IceCat",
+    "d": "Jan 2025"
+   }
+  },
+  {
+   "term": "Fleshbag",
+   "kind": "noun",
+   "since": "2026-05",
+   "stat": "Picked up by 11 different people in one week.",
+   "def": "What the room has been calling everyone since May 2026. Affectionate, mostly.",
+   "quote": {
+    "text": "bye fleshbags",
+    "who": "Arbee",
+    "d": "May 2026"
+   }
+  },
+  {
+   "term": "Boner Haus",
+   "kind": "the group",
+   "since": "2026-01",
+   "stat": "In October 2026, half the Discord renamed itself as Boner Haus middle management.",
+   "def": "A crew of regulars with its own emoji and a habit of group calls. For one week in October 2026 the whole chat became Boner Haus corporate: quarterly targets, memos to the team, and a lot of CCs.",
+   "quote": {
+    "text": "Boner Haus does group call quite often",
+    "who": "IceCat",
+    "d": "Jan 2026"
+   }
+  },
+  {
+   "term": "Carrot Top",
+   "kind": "celebrity",
+   "since": "2024-12",
+   "stat": "Has come up with 14 different people.",
+   "def": "Every so often, chat breaks the sad news that Carrot Top has died. He has not.",
+   "quote": null
+  },
+  {
+   "term": "The Snow Plow Show",
+   "kind": "the other show",
+   "since": "2025-01",
+   "stat": "Brought up by 19 different people.",
+   "def": "The prank show a lot of Callective regulars also listen to. The ding number turns up in every episode, and its listeners turn up in chat on Saturdays.",
+   "quote": {
+    "text": "For my first ever callective session ever, I'm having a great time 🤣 i usually listen to the snowplow show at work every day",
+    "who": "Michael!",
+    "d": "Sep 2025"
+   }
+  },
+  {
+   "term": "The Pumpkin Man",
+   "kind": "seasonal figure",
+   "since": "2026-10",
+   "stat": "Halloween 2026.",
+   "def": "Born on the 10/17/26 show, delivered on 10/24 when wild-one called a store about a pumpkin-suited man with allergies who just wanted someone to cover his shift.",
+   "quote": null,
+   "search": "pumpkin"
+  }
+ ],
+ "oldrules": {
+  "d": "December 2024",
+  "lines": [
+   "The host will be the only person permitted to speak initially. Everybody else is muted (including the soundboard, you scamp). So, no yelling things from the sidelines.",
+   "The host will unmute people one at a time to do a prank call. Prank calls will be done purely on a voluntary basis, so you'll only go when you feel you are ready.",
+   "When making calls, we follow the rules of prank calling and the server. Calls should be wacky and fun, not abusive to the people we call.",
+   "Remember, sometimes calls just don't work out and it's nobody's fault. Let's all be supportive.",
+   "If you're just drunk and abusive, you will be removed from calls and/or timed out in chat. If you don't know why I have to put this here, YOU are why I have to put this here.",
+   "Efforts will be made to make things as fair as possible when it comes to turns.",
+   "No leaking the source of the call to the people we're calling. If you want to reveal that it's a prank, we are 101.1 The Butt and \"You just got buttslammed\"."
+  ]
+ }
+}

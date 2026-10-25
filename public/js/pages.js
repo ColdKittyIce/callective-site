@@ -171,3 +171,24 @@ const DNC = {
     });
   }
 };
+
+/* ---------- the glossary: running bits, from the show's own history ---------- */
+const Glossary = (() => {
+  let bits = [];
+  const mon = ym => { if (!ym) return ""; const [y, m] = ym.split("-").map(Number); return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }); };
+  function card(b) {
+    const q = b.quote ? `<blockquote><p>“${esc(b.quote.text)}”</p><cite>${esc(b.quote.who)}${b.quote.d ? `, ${esc(b.quote.d)}` : ""}</cite></blockquote>` : "";
+    return `<article class="gl-card hud"><header><b>${esc(b.term)}</b><i>${esc(b.kind)}</i></header><p class="gl-def">${esc(b.def)}</p>${q}
+      <footer><span>Since ${esc(mon(b.since))}. ${esc(b.stat || "")}</span>${b.search ? `<a href="#search/${encodeURIComponent(b.search)}">Find the calls →</a>` : ""}</footer></article>`;
+  }
+  function render() {
+    const q = $("gl-q").value.trim().toLowerCase();
+    const L = bits.filter(b => !q || `${b.term} ${b.kind} ${b.def} ${b.quote?.text || ""}`.toLowerCase().includes(q));
+    $("gl-grid").innerHTML = L.map(card).join("") || `<p class="feed-empty">Not in the glossary yet. Try the <a href="#search/${encodeURIComponent(q)}">search</a>.</p>`;
+  }
+  async function init() {
+    try { const d = await getJSON("data/lore.json"); bits = d.bits || []; $("gl-rules").innerHTML = (d.oldrules?.lines || []).map(l => `<li>${esc(l)}</li>`).join(""); } catch (e) { bits = []; }
+    render(); $("gl-q").addEventListener("input", render);
+  }
+  return { init };
+})();
