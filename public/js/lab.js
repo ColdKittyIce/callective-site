@@ -232,7 +232,7 @@ const Lab = (() => {
   };
 
   function init() {
-    const songs = (window.Hold?.TRACKS || []);
+    const songs = (window.Hold?.TRACKS || []).filter(t => !t.src); // the hour-long mix is too big to edit in a browser
     $("lab-pick").innerHTML = `<option value="">Load a clip…</option><optgroup label="Switchboard clips">${C.clips.map(c => `<option value="clip:${c.k}">${esc(c.who)}: ${esc(c.line)}</option>`).join("")}</optgroup>` +
       (songs.length ? `<optgroup label="Hold line">${songs.map(t => `<option value="song:${t.k}">${esc(t.t)}</option>`).join("")}</optgroup>` : "");
     $("lab-pick").addEventListener("change", e => { const [kind, k] = e.target.value.split(":"); if (!k) return; kind === "clip" ? loadClip(k) : loadUrl(`audio/${k}.mp3`, songs.find(t => t.k === k)?.t || k); });

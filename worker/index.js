@@ -81,6 +81,7 @@ async function route(request, env, ctx, url) {
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
       if ((m = p.match(/^\/api\/g98\/([a-z0-9]+)\.gif$/))) return gif98(env, m[1]);
+      if ((m = p.match(/^\/api\/media\/([a-z0-9-]+)\.mp3$/))) return mediaAudio(env, m[1], request);
       if (p === "/api/hits") return hits(env, M === "POST");
       if (p === "/api/suggest" && M === "GET") return cached(request, ctx, 30, () => sgAll(env));
       if ((m = p.match(/^\/api\/suggest(?:\/(vote|report))?$/)) && M === "POST") return sgPost(request, env, m[1] || "add");
@@ -271,6 +272,33 @@ async function showAudio(env, id, request) {
   const obj = await env.CLIPS.get(`shows/${id}.mp3`, { range: request.headers });
   if (!obj) return json({ error: "Not found" }, 404);
   const h = new Headers({ "content-type": "audio/mpeg", "accept-ranges": "bytes", "cache-control": "public, max-age=86400", etag: obj.httpEtag, ...cors() });
+  if (obj.range && request.headers.get("range")) {
+    const off = obj.range.offset ?? (obj.size - obj.range.suffix), len = obj.range.length ?? (obj.size - off);
+    h.set("content-range", `bytes ${off}-${off + len - 1}/${obj.size}`); h.set("content-length", String(len));
+    return new Response(obj.body, { status: 206, headers: h });
+  }
+  h.set("content-length", String(obj.size));
+  return new Response(obj.body, { headers: h });
+}
+
+/* ---------- big audio files (over the 25 MB static limit) ----------
+   They live in the repo's media/ folder (not deployed as static files). The first request copies the file
+   from GitHub into R2 (media/<name>-<version>.mp3); after that it streams from R2 with Range support. */
+const MEDIA = { "phone-book-megamix-full": "1" };
+async function mediaAudio(env, name, request) {
+  if (!MEDIA[name]) return json({ error: "Not found" }, 404);
+  if (!env.CLIPS) return json({ error: "Storage not set up" }, 500);
+  const key = `media/${name}-${MEDIA[name]}.mp3`;
+  if (!(await env.CLIPS.head(key))) {
+    const r = await fetch(`https://raw.githubusercontent.com/ColdKittyIce/callective-site/main/media/${name}.mp3`);
+    const len = +r.headers.get("content-length");
+    if (!r.ok || !len) return json({ error: "Couldn't fetch the file" }, 502);
+    const fl = new FixedLengthStream(len); r.body.pipeTo(fl.writable);
+    await env.CLIPS.put(key, fl.readable, { httpMetadata: { contentType: "audio/mpeg" } });
+  }
+  const obj = await env.CLIPS.get(key, { range: request.headers });
+  if (!obj) return json({ error: "Not found" }, 404);
+  const h = new Headers({ "content-type": "audio/mpeg", "accept-ranges": "bytes", "cache-control": "public, max-age=604800", etag: obj.httpEtag, ...cors() });
   if (obj.range && request.headers.get("range")) {
     const off = obj.range.offset ?? (obj.size - obj.range.suffix), len = obj.range.length ?? (obj.size - off);
     h.set("content-range", `bytes ${off}-${off + len - 1}/${obj.size}`); h.set("content-length", String(len));

@@ -20,7 +20,8 @@ const Hold = (() => {
     { k: "cheers-to-ira", t: "Cheers to Ira the Governor", s: "A toast to the show runner, who is muting you right now", d: "3:18" },
     { k: "be-quiet", t: "Be Quiet, the Callective Is On", s: "Drop", d: "0:05" },
     { k: "callectives-cousin", t: "The Callective's Cousin", s: "By IceCat and Suno · a.k.a. the background music", d: "1:38" },
-    { k: "phone-book-megamix", g: "Fresh mix", t: "The Phone Book Megamix", s: "Seven of IceCat's phone songs, rotary dial, ringing, crew drops, one busy signal", d: "3:44" },
+    { k: "phone-book-megamix-full", g: "The Phone Book Megamix", src: "api/media/phone-book-megamix-full.mp3", t: "The Phone Book Megamix (Full)", s: "All 15 of IceCat's phone songs back to back, with real Callective calls and crew drops between every one. 56 minutes. Hit play and go about your night.", d: "56:09" },
+    { k: "phone-book-megamix", g: "The Phone Book Megamix", t: "The Phone Book Megamix (Radio Edit)", s: "The short version: seven songs, rotary dial, ringing, crew drops, one busy signal", d: "3:44" },
     { k: "dialtone-dialtone", g: "IceCat's phone songs", t: "Dialtone Dialtone", s: "By IceCat and Suno", d: "4:27" },
     { k: "please-deposit-25-cents", g: "IceCat's phone songs", t: "Please Deposit 25 Cents", s: "By IceCat and Suno", d: "2:52" },
     { k: "the-blue-phone", g: "IceCat's phone songs", t: "The Blue Phone", s: "By IceCat and Suno", d: "3:03" },
@@ -36,6 +37,7 @@ const Hold = (() => {
     { k: "music-for-dialing", g: "IceCat's phone songs", t: "Music for Dialing", s: "By IceCat and Suno", d: "1:42" },
     { k: "stalling", g: "IceCat's phone songs", t: "Stalling", s: "By IceCat and Suno · for when the roycipient says hold on", d: "2:06" }];
   const T = Object.fromEntries(TRACKS.map(t => [t.k, t]));
+  const url = t => t.src || `audio/${t.k}.mp3`;
   let cur = null; const aud = () => $("holdaud");
   function sync() {
     const on = cur && !aud().paused;
@@ -46,12 +48,12 @@ const Hold = (() => {
   function play(k) {
     if (!T[k]) return;
     if (cur === k) { aud().paused ? (Media.claim(aud()), aud().play().catch(() => {})) : aud().pause(); return; }
-    cur = k; aud().src = `audio/${k}.mp3`; Media.claim(aud()); aud().play().catch(() => {});
-    Player.set({ kind: "song", el: aud(), title: T[k].t, page: "downloads", seek: true, clip: () => Player.clipFrom(aud(), `audio/${k}.mp3`, T[k].t) });
+    cur = k; aud().src = url(T[k]); Media.claim(aud()); aud().play().catch(() => {});
+    Player.set({ kind: "song", el: aud(), title: T[k].t, page: "downloads", seek: true, clip: () => Player.clipFrom(aud(), url(T[k]), T[k].t) });
     $("callerno").textContent = Math.max(1, TRACKS.length - TRACKS.findIndex(t => t.k === k) - 1);
   }
   function init() {
-    $("tracks").innerHTML = TRACKS.map((t, i) => `${t.g && t.g !== TRACKS[i - 1]?.g ? `<li class="track-group" aria-hidden="true">${esc(t.g)}</li>` : ""}<li class="track" data-k="${t.k}"><button type="button" data-hold="${t.k}" aria-label="Play ${esc(t.t)}"><span class="tri" aria-hidden="true"></span></button><span class="ln">LINE ${i + 1}</span><div class="tt"><b>${esc(t.t)}</b><span>${esc(t.s)}</span></div><span class="d">${t.d}</span><a class="dl" href="audio/${t.k}.mp3" download="callective-${t.k}.mp3" aria-label="Download ${esc(t.t)}">MP3 ↓</a></li>`).join("");
+    $("tracks").innerHTML = TRACKS.map((t, i) => `${t.g && t.g !== TRACKS[i - 1]?.g ? `<li class="track-group" aria-hidden="true">${esc(t.g)}</li>` : ""}<li class="track" data-k="${t.k}"><button type="button" data-hold="${t.k}" aria-label="Play ${esc(t.t)}"><span class="tri" aria-hidden="true"></span></button><span class="ln">LINE ${i + 1}</span><div class="tt"><b>${esc(t.t)}</b><span>${esc(t.s)}</span></div><span class="d">${t.d}</span><a class="dl" href="${url(t)}" download="callective-${t.k}.mp3" aria-label="Download ${esc(t.t)}">MP3 ↓</a></li>`).join("");
     document.addEventListener("click", e => { const b = e.target.closest("[data-hold]"); if (b) play(b.dataset.hold); });
     document.addEventListener("player-stopped", () => { if (aud().paused) { cur = null; sync(); } });
     const a = aud();
