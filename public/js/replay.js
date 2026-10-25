@@ -22,7 +22,7 @@ const Replay = (() => {
     $("ep-select").value = ep.id;
     dur = ep.sec || 0; vt = 0; shown = 0; chat = []; hasAudio = false;
     $("ep-title").textContent = niceTitle(ep);
-    $("ep-meta").innerHTML = [`<span>${esc(fmtDate(ep.d))}</span>`, ep.h ? `<span>Host <b>${esc(ep.h)}</b></span>` : "", `<span>${fmtLen(dur)}</span>`,
+    $("ep-meta").innerHTML = [`<span>${esc(fmtDate(ep.d))}</span>`, ep.h ? `<span>Host <b>${esc(ep.h)}</b>${ep.hq ? ` (${esc(ep.hq)})` : ""}</span>` : "", `<span>${fmtLen(dur)}</span>`,
       `<a href="${PC_POST}${ep.id}" target="_blank" rel="noopener">Open on Prankcast ↗</a>`].join("");
     $("rp-dur").textContent = hms(dur, true); $("msgs").innerHTML = `<li class="feed-empty">Loading the chat…</li>`;
     let src = null, cid = null;
