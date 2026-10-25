@@ -39,7 +39,7 @@ const Replay = (() => {
     $("rp-note").textContent = hasAudio ? "Audio streams straight from Prankcast. The chat is the real Prankcast chat replay."
       : "The episode audio plays on the live site. Here the chat replays on its own, so crank it to 60× and watch a whole night go by.";
     $("feed-count").textContent = chat.length ? `${chat.length} messages` : "No chat saved for this one";
-    buildBins(); drawHeat(); renderFeed(true); tick();
+    paintCalls(); buildBins(); drawHeat(); renderFeed(true); tick();
     if (autoplay) play();
   }
 
@@ -56,6 +56,7 @@ const Replay = (() => {
     cv.width = w * dpr; cv.height = h * dpr; const g = cv.getContext("2d"); g.scale(dpr, dpr); g.clearRect(0, 0, w, h);
     const max = Math.max(1, ...bins), bw = w / bins.length, peak = bins.indexOf(max);
     g.fillStyle = "#18f0ff18"; for (let y = h - 1; y > 0; y -= h / 4) g.fillRect(0, Math.round(y), w, 1);
+    g.fillStyle = "#ffffff30"; for (const c of callsFor(ep?.id, dur)) if (!c.skip) g.fillRect(Math.round(c.t / dur * w), 0, 1, h);
     bins.forEach((v, i) => { const bh = v / max * (h - 8); g.fillStyle = i === peak ? "#ff2bd6" : (v / max > .6 ? "#e9ff3b" : "#18f0ff"); g.shadowColor = g.fillStyle; g.shadowBlur = 6; g.fillRect(i * bw + .5, h - bh, Math.max(1, bw - 1), bh); });
   }
 
@@ -79,13 +80,35 @@ const Replay = (() => {
     shown = idx; list.scrollTop = list.scrollHeight;
   }
 
+  /* The call list: who's on, jump to a call, clip a whole call. */
+  let curCall = null;
+  function paintCalls() {
+    const box = $("ep-calls"), L = callsFor(ep.id, dur), info = C.calls[ep.id]; curCall = null;
+    box.hidden = !L.length; if (!L.length) { box.innerHTML = ""; return; }
+    box.innerHTML = `${info.desc ? `<p class="calls-desc">${esc(info.desc)}</p>` : ""}<div class="calls-head"><b>${L.filter(c => !c.skip).length} calls</b><span>Tap one to jump to it</span></div><ol>${L.map((c, i) => c.skip
+      ? `<li class="call skip"><time>${hms(c.t, true)}</time><span><b>${esc(c.by)}</b><em>skipped</em></span></li>`
+      : `<li class="call" data-i="${i}"><button type="button" class="call-go" data-t="${c.t}"><time>${hms(c.t, true)}</time><span><b>${esc(c.by)}</b><em>${esc(c.title)}</em></span><small>${fmtLen(c.end - c.t)}</small></button><button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button></li>`).join("")}</ol>`;
+  }
+  function paintCurCall(t) {
+    const c = ep ? callAt(ep.id, t, dur) : null; if (c === curCall || (c && curCall && c.t === curCall.t)) return; curCall = c;
+    $("ep-calls").querySelectorAll(".call.on").forEach(x => x.classList.remove("on"));
+    if (c) { const li = $("ep-calls").querySelector(`.call[data-i="${c.n - 1}"]`); li?.classList.add("on"); const ol = li?.parentElement; if (ol) ol.scrollTop = li.offsetTop - ol.offsetTop - ol.clientHeight / 3; }
+    if (Player.current?.kind === "ep" && ep) Player.update({ title: c ? `${c.by}: ${c.title}` : `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}` });
+  }
+  function clipCall(i) {
+    const c = callsFor(ep.id, dur)[i]; if (!c) return;
+    if (!hasAudio || !C.api) { toast("Clipping works on the live site, where the episode audio plays."); return; }
+    if (c.end - c.t > 600) toast("Clips top out at 10 minutes, so this one starts with the first 10. Drag the end marker if you want a different part.");
+    Clipper.open(Clipper.episodeSource(aud(), ep), 30, { from: c.t, to: c.end, name: `${c.by}: ${c.title}` });
+  }
+
   function tick() {
     const t = now();
     $("rp-now").textContent = hms(t, true);
     $("heat-ph").style.left = (dur ? clamp(t / dur, 0, 1) * 100 : 0) + "%";
     $("heat").setAttribute("aria-valuenow", Math.round(t)); $("heat").setAttribute("aria-valuemax", Math.round(dur));
     $("rp-play").classList.toggle("is-playing", playing()); $("rp-play").setAttribute("aria-label", playing() ? "Pause episode" : "Play episode");
-    renderFeed(false);
+    renderFeed(false); paintCurCall(t);
   }
   function loop(ts) {
     if (!hasAudio && vplaying) { const dt = vlast ? (ts - vlast) / 1000 : 0; vt = Math.min(dur, vt + dt * SPEEDS_VIRT[speedI]); if (vt >= dur) vplaying = false; }
@@ -111,6 +134,10 @@ const Replay = (() => {
   function init() {
     fillSelect();
     $("cl-quick").addEventListener("click", () => clip());
+    $("ep-calls").addEventListener("click", e => {
+      const go = e.target.closest(".call-go"), cl = e.target.closest(".call-clip");
+      if (go) { seek(+go.dataset.t); play(); } else if (cl) clipCall(+cl.dataset.i);
+    });
     $("ep-select").addEventListener("change", e => load(e.target.value));
     $("rp-play").addEventListener("click", () => playing() ? pause() : play());
     $("rp-back").addEventListener("click", () => seek(now() - 30));

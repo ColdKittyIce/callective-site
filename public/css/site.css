@@ -744,3 +744,27 @@ body:not(.has-pbar) .clipper{bottom:calc(10px + env(safe-area-inset-bottom,0px))
 .dnc-big{font-family:var(--f-neon);font-size:clamp(28px,5vw,44px);color:var(--cyan);text-shadow:var(--glow-c);margin:6px 0;word-break:break-word}
 .dnc-cert b{color:var(--volt)}
 .dnc-stamp{display:inline-block;margin:12px auto;padding:6px 14px;border:3px solid var(--red);color:var(--red);font-family:var(--f-head);font-weight:700;font-size:20px;letter-spacing:.08em;transform:rotate(-6deg)}
+
+/* call lists */
+.scr-now .ls-call{color:var(--text)}
+.scr-now .ls-call b{color:var(--pink)}
+.calls{display:flex;flex-direction:column;gap:8px;border-top:1px solid #18f0ff22;padding-top:12px}
+.calls-desc{margin:0;color:var(--text);font-size:15px;line-height:1.45}
+.calls-head{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.calls-head b{color:var(--volt);font-weight:400}
+.calls ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:420px;overflow:auto}
+.call{display:flex;align-items:stretch;gap:4px}
+.call-go{flex:1;min-width:0;display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;text-align:left;background:#0b0f1f;border:1px solid #18f0ff22;border-radius:6px;padding:8px 10px;color:var(--text);cursor:pointer;font:inherit}
+.call-go:hover,.call-go:focus-visible{border-color:var(--cyan)}
+.call-go time,.call.skip time{font-family:var(--f-mono);font-size:12.5px;color:var(--cyan)}
+.call-go span,.call.skip span{display:flex;flex-direction:column;min-width:0}
+.call-go b,.call.skip b{font-weight:600;font-size:13px;color:var(--volt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.call-go em{font-style:normal;font-size:14.5px;line-height:1.25}
+.call-go small{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.call-clip{flex:0 0 42px;background:#0b0f1f;border:1px solid #ff2bd644;border-radius:6px;color:var(--pink);cursor:pointer;font-size:16px}
+.call-clip:hover,.call-clip:focus-visible{border-color:var(--pink);background:#ff2bd61a}
+.call.on .call-go{border-color:var(--pink);box-shadow:0 0 12px #ff2bd644;background:#1a0b1f}
+.call.skip{display:grid;grid-template-columns:64px 1fr;gap:10px;padding:4px 11px;opacity:.55}
+.call.skip em{font-style:normal;font-size:13px;color:var(--muted)}
+.lst .n.cl{color:var(--cyan)}
+@media (max-width:560px){.call-go{grid-template-columns:52px 1fr}.call-go small{display:none}}

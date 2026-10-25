@@ -154,17 +154,26 @@ const Listen = (() => {
     $("nc-label").textContent = live ? "On the air right now" : playing ? "You're tuned in" : "Callective Radio is playing";
     $("nc-title").textContent = live ? "The Callective is live. Watch it here." : e ? radioTitle(e) : "The newest shows, around the clock";
     if (Player.current?.kind === "radio" && e) Player.update({ title: radioTitle(e) });
+    lastCall = undefined;
   }
   function paintNext() {
     if (!sched) return;
     const fmt = t => new Date(t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     $("ls-next").innerHTML = sched.next.map(n => `<li><time>${fmt(n.at)}</time><span><b>${esc(fmtDate(n.d))}</b>${n.h ? ` · ${esc(n.h)}` : ""}</span><em>${fmtLen(n.sec)}</em></li>`).join("");
   }
+  let lastCall;
+  function paintCall(p) {
+    const c = mode === "radio" && sched ? callAt(sched.ep.id, p, sched.ep.sec) : null, key = c ? sched.ep.id + ":" + c.t : "";
+    if (key === lastCall) return; lastCall = key;
+    $("ls-call").hidden = !c; $("ls-call").innerHTML = c ? `On the line: <b>${esc(c.by)}</b> · ${esc(c.title)}` : "";
+    if (Player.current?.kind === "radio" && sched) Player.update({ title: c ? `${c.by}: ${c.title}` : radioTitle(sched.ep) });
+    if (c && !$("nowcard").classList.contains("live")) $("nc-title").textContent = `${c.by}: ${c.title}`;
+  }
   function paintClock() {
     $("ls-clock").textContent = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     $("ls-countdown").textContent = mode === "live" ? "On right now" : ($("next-time")?.textContent || "–");
-    if (mode === "live") { $("ls-pos").textContent = "LIVE"; $("ls-left").textContent = ""; $("ls-prog").style.width = "100%"; return; }
-    if (!sched) return; const p = pos();
+    if (mode === "live") { paintCall(0); $("ls-pos").textContent = "LIVE"; $("ls-left").textContent = ""; $("ls-prog").style.width = "100%"; return; }
+    if (!sched) return; const p = pos(); paintCall(p);
     $("ls-pos").textContent = hms(p, true); $("ls-left").textContent = `-${hms(sched.ep.sec - p, true)}`;
     $("ls-prog").style.width = (p / sched.ep.sec * 100).toFixed(2) + "%";
   }

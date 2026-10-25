@@ -307,15 +307,18 @@ const Clipper = (() => {
   }
 
   /* ---------- open / close ---------- */
-  function open(source, len = 30) {
+  function open(source, len = 30, range) {
     if (!source) return; if (src) close();
     src = source; busy = false; previewing = false; wave = null; heat = null; waveToken++;
-    const now = src.pos();
+    const now = range ? range.from : src.pos();
     if (src.whole || src.dur <= 1200) { w0 = 0; w1 = Math.max(src.dur, MIN * 2); }
+    else if (range) { w0 = Math.max(0, range.from - 60); w1 = Math.min(src.dur, Math.max(range.to + 60, w0 + 300)); }
     else { w1 = Math.min(src.dur, Math.max(now + 300, 1200)); w0 = Math.max(0, w1 - 1200); }
-    const end = clamp(now, MIN, src.dur); a = Math.max(0, end - Math.min(len, src.max)); b = end;
+    if (range) { a = clamp(range.from, 0, src.dur - MIN); b = clamp(Math.min(range.to, a + src.max), a + MIN, src.dur); }
+    else { const end = clamp(now, MIN, src.dur); a = Math.max(0, end - Math.min(len, src.max)); b = end; }
     $("ct-title").textContent = src.title;
     try { $("ct-by").value = localStorage.getItem("cx-by") || ""; } catch (e) {}
+    if (range?.name) $("ct-name").value = range.name;
     $("ct-here").hidden = src.kind === "live"; $("ct-end-here").hidden = src.kind === "live";
     $("clipper").hidden = false; document.body.classList.add("clipping");
     if (typeof Listen !== "undefined") Listen.hold = true;

@@ -6,7 +6,7 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const PC_POST = "https://prankcast.com/thecallective/posts/";
 const CREW = new Set(["iregretjumping","icecat","despicabledogs","drtomservo","thecallective","andyanderson","criefaux","phonelosers","milkbox"]);
 
-const C = { episodes: [], clips: [], api: null, live: null };
+const C = { episodes: [], clips: [], calls: {}, api: null, live: null };
 
 function hms(s, forceH) {
   s = Math.max(0, Math.floor(s || 0));
@@ -94,9 +94,15 @@ function recentIds() { return new Set(C.episodes.filter(e => e.sec > 600).sort((
 const isRecent = id => recentIds().has(+id);
 
 async function loadData() {
-  const [eps, clips] = await Promise.all([getJSON("data/episodes.json"), getJSON("data/clips.json")]);
-  C.episodes = eps.sort((a, b) => b.id - a.id); C.clips = clips;
+  const [eps, clips, calls] = await Promise.all([getJSON("data/episodes.json"), getJSON("data/clips.json"), getJSON("data/calls.json").catch(() => ({}))]);
+  C.episodes = eps.sort((a, b) => b.id - a.id); C.clips = clips; C.calls = calls || {};
 }
+/* Call lists (who made each call, and when it starts). Built from the Discord queue bot's handoffs, checked by the crew. */
+function callsFor(id, dur) {
+  const L = C.calls[id]?.calls; if (!L) return [];
+  return L.map((c, i) => ({ ...c, n: i + 1, end: L[i + 1] ? L[i + 1].t : (dur || C.episodes.find(e => e.id === +id)?.sec || c.t + 600) }));
+}
+function callAt(id, t, dur) { const L = callsFor(id, dur).filter(c => !c.skip); for (let i = L.length - 1; i >= 0; i--) if (t >= L[i].t) return L[i]; return null; }
 async function mergeLatest() {
   if (!C.api) return;
   try {
