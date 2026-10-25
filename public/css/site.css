@@ -919,3 +919,14 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .sp-call small{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .sp-a{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 @media (max-width:560px){.sp-call{grid-template-columns:62px 1fr;}.sp-n{display:none}.sp-a{grid-column:1/-1;justify-content:flex-start}}
+/* dial-a-premise */
+.pm{padding:18px;display:flex;flex-direction:column;gap:14px}
+.pm-reels{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.pm-reel{border:1px solid var(--line);background:#05040c;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:130px}
+.pm-reel small{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--pink)}
+.pm-reel b{font-family:var(--f-head);font-size:20px;line-height:1.2;color:var(--text);flex:1}
+.pm-reel.spin b{color:var(--cyan);filter:blur(.6px)}
+.pm-reel.locked{border-color:var(--volt);box-shadow:0 0 12px #e9ff3b33}
+.pm-reel button{align-self:flex-start;background:none;border:1px solid var(--line);color:var(--muted);font-family:var(--f-mono);font-size:12px;padding:3px 8px;cursor:pointer}
+.pm-reel.locked button{color:var(--void);background:var(--volt);border-color:var(--volt)}
+.pm-line{margin:0;font-size:17px;line-height:1.5;color:var(--volt)}
