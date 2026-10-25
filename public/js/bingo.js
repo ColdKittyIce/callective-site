@@ -1,16 +1,19 @@
 /* Callective bingo. Cards are dealt from a seed, so a card link gives a friend the same squares. Marks stay in this browser. */
 const Bingo = (() => {
+  // Squares are things the person on the other end does, or that just happen on a call.
+  // Nothing here can be forced by the chat or by a caller who wants to win.
   const POOL = [
-    "Someone asks “is this a prank call?”", "They hang up in under 10 seconds", "All Call!", "A pizza order call", "A hotel call",
-    "Group singing call", "PLA bell storm in chat", "The Technical Issues song plays", "The host has to pee", "Somebody's mic is way too loud",
-    "They threaten to call the cops", "They call back", "Fart noise on the line", "Sexy Fartman shows up", "101.1 The Butt gets a mention",
-    "Tom Servo robot voice", "“Who is this?”", "They play along the whole time", "Caller cracks up and breaks character", "Straight to voicemail, so we leave a message",
-    "Hold music on their end", "Chat begs Ira to read the rules again", "Three “hello?”s before anyone talks", "“Let me get my manager”", "A call goes over 10 minutes",
-    "Dead air", "Somebody forgets to unmute", "Discord echo / feedback", "Host runs !next", "Somebody gets skipped in the queue",
-    "Gif storm in chat", "Fake accent", "A soundboard drop", "A drive-thru call", "They curse everyone out",
-    "A call to the same number twice", "Someone says “Callective” to the victim", "Chat says “LMAO” 5 times in a row", "Host's internet dies", "A birthday song",
-    "Someone gets hired (or fired) on the call", "A kid answers, so we hang up", "Call to a business that's closed", "Someone orders something absurd", "Recipient asks for our name",
-    "Someone does a Tom Man voice", "A dog barks on somebody's mic", "The farewell song plays"];
+    // what the person who answers does
+    "“Is this a prank call?”", "They hang up in under 10 seconds", "They hang up mid-sentence", "They threaten to call the cops", "They call back",
+    "They play along the whole time", "“Who is this?”", "Someone says “Duwhat?”", "Three “hello?”s before anyone talks", "“Let me get my manager”",
+    "They put us on hold", "They put us on speaker", "Somebody in the background yells", "They curse everyone out", "They ask for our name",
+    "“How did you get this number?”", "“You have the wrong number”", "“Stop calling me”", "“I'm recording this”", "They laugh along",
+    "“Are you serious?”", "They transfer the call", "“We're closed”", "“Where are you calling from?”", "“Get a life”",
+    "They know it's a prank and stay on anyway", "They call us the wrong name", "A dog barks on their end", "A kid answers, so we hang up", "They try to sell us something",
+    "Straight to voicemail", "Number disconnected or busy", "They sigh before they answer",
+    // things that just happen during a show
+    "Dead air", "A call goes over 10 minutes", "Caller cracks up and breaks character", "Somebody forgets to unmute", "Discord echo / feedback",
+    "Host's internet dies", "Somebody gets skipped in the queue", "The Technical Issues song plays", "The farewell song plays"];
   const FREE = "FREE: Ira reads the rules";
   let seed = 0, marks = new Set(), blackout = false, won = false, squares = [];
   function rng(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -19,7 +22,7 @@ const Bingo = (() => {
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     const card = a.slice(0, 24); card.splice(12, 0, FREE); return card;
   }
-  const key = () => `cx-bingo-${seed}`;
+  const key = () => `cx-bingo2-${seed}`;
   function save() { try { localStorage.setItem(key(), JSON.stringify([...marks])); localStorage.setItem("cx-bingo-seed", seed); localStorage.setItem("cx-bingo-mode", blackout ? "1" : ""); } catch (e) {} }
   function load(s) {
     seed = s; squares = deal(seed); marks = new Set([12]); won = false;

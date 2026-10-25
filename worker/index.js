@@ -18,13 +18,17 @@
  *   Clips
  *   GET  /api/clips             approved community clips
  *   GET  /api/clips/:id.mp3     an approved clip's audio (?dl=1 downloads it)
- *   POST /api/clips             send a clip: dest "board" (public after approval) or "crew" (private to the crew).
+ *   POST /api/clips             send a clip: dest "board" or "crew" (private). Show slices with clean names post
+ *                               straight to the board; anything flagged, and any uploaded audio, waits for the crew.
  *                               JSON {ep, from, to, ...} = a slice of a show (no upload, no storage, up to 10 min);
  *                               a form with an MP3 = an edited clip (up to 2 min, stored in R2)
  *   GET  /api/mod/pending       clips waiting / sent to the crew          (ADMIN_TOKEN)
  *   GET  /api/mod/clip/:id.mp3  hear a waiting clip                       (ADMIN_TOKEN)
  *   POST /api/mod/:id/approve   put it on the board                       (ADMIN_TOKEN)
  *   POST /api/mod/:id/reject    remove it                                 (ADMIN_TOKEN)
+ *   GET  /api/mod/public        everything on the board                   (ADMIN_TOKEN)
+ *   POST /api/mod/:id/remove    take a clip off the board                 (ADMIN_TOKEN)
+ *   POST /api/clips/:id/report  a listener reports a clip (3 reports sends it back to the crew)
  *
  * Storage: KV namespace DB (clip records, rate limits), R2 bucket CLIPS (clip audio).
  * Nothing here writes to Prankcast or Discord, except the optional DISCORD_WEBHOOK heads-up for new clips.
@@ -67,12 +71,14 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
       if (p === "/api/clips" && M === "GET") return clipsList(env);
       if (p === "/api/clips" && M === "POST") return clipsPost(request, env, ctx);
+      if ((m = p.match(/^\/api\/clips\/([a-z0-9-]+)\/report$/)) && M === "POST") return report(env, m[1], request);
       if ((m = p.match(/^\/api\/clips\/([a-z0-9-]+)\.mp3$/)) && M === "GET") return clipAudio(env, ctx, m[1], "a:", url, request);
       if (p.startsWith("/api/mod/")) {
         if (!env.ADMIN_TOKEN || (request.headers.get("authorization") || "") !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: "Wrong crew password" }, 401);
         if (p === "/api/mod/pending") return clipsList(env, "p:");
+        if (p === "/api/mod/public") return clipsList(env, "a:", true);
         if ((m = p.match(/^\/api\/mod\/clip\/([a-z0-9-]+)\.mp3$/))) return clipAudio(env, ctx, m[1], "p:", url, request);
-        if ((m = p.match(/^\/api\/mod\/([a-z0-9-]+)\/(approve|reject)$/)) && M === "POST") return modAct(env, m[1], m[2]);
+        if ((m = p.match(/^\/api\/mod\/([a-z0-9-]+)\/(approve|reject|remove)$/)) && M === "POST") return modAct(env, m[1], m[2]);
       }
       return json({ error: "Not found" }, 404);
 }
@@ -292,12 +298,12 @@ async function cut(env, id, url, ctx, request) {
 /* ---------- clip board ---------- */
 // Records live in KV as "p:<id>" (waiting, or sent privately to the crew) or "a:<id>" (approved, public).
 // Metadata carries the card data so one list() fills the board.
-async function clipsList(env, prefix = "a:") {
+async function clipsList(env, prefix = "a:", fresh = false) {
   if (!env.DB) return json({ clips: [] });
   const out = []; let cursor;
   do { const page = await env.DB.list({ prefix, cursor, limit: 1000 }); for (const k of page.keys) if (k.metadata) out.push({ id: k.name.slice(2), ...k.metadata }); cursor = page.list_complete ? null : page.cursor; } while (cursor && out.length < 3000);
   out.sort((a, b) => (b.created || 0) - (a.created || 0));
-  return json({ clips: out }, 200, prefix === "a:" ? 30 : 0);
+  return json({ clips: out }, 200, prefix === "a:" && !fresh ? 30 : 0);
 }
 async function clipAudio(env, ctx, id, prefix, url, request) {
   if (!env.DB || !env.CLIPS) return json({ error: "Storage not set up" }, 500);
@@ -332,7 +338,8 @@ async function clipsPost(request, env, ctx) {
   const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 6);
   const dest = meta.dest === "crew" ? "crew" : "board";
   const md = { title, by: clean(meta.by, 40), ep: Number.isInteger(meta.ep) ? meta.ep : null, at: Number.isFinite(+meta.at) && meta.at !== null ? Math.round(+meta.at) : null,
-    live: !!meta.live, sec: +sec.toFixed(1), peaks: String(meta.peaks || "").replace(/[^0-9]/g, "").slice(0, 48), created: Date.now(), dest, note: clean(meta.note, 300) };
+    live: !!meta.live, sec: +sec.toFixed(1), peaks: String(meta.peaks || "").replace(/[^0-9]/g, "").slice(0, 48), created: Date.now(), dest, note: clean(meta.note, 300),
+    flag: screen(title, meta.by) || (dest === "board" ? "recorded audio" : undefined) };
   await env.CLIPS.put(`clips/${id}.mp3`, bytes, { httpMetadata: { contentType: "audio/mpeg" } });
   await env.DB.put("p:" + id, "1", { metadata: md });
   await env.DB.put(rlKey, String(used + 1), { expirationTtl: 3700 });
@@ -341,6 +348,19 @@ async function clipsPost(request, env, ctx) {
   if (env.DISCORD_WEBHOOK) ctx.waitUntil(notify(env.DISCORD_WEBHOOK, md, bytes));
   return json({ ok: true, id, status: dest === "crew" ? "sent to the crew" : "waiting" });
 }
+/* ---------- the auto-post filter ----------
+   Clips cut from a show go straight onto the board unless the words people typed trip this.
+   It looks for slurs, phone numbers (prank calls involve real people), emails and links. Anything flagged waits for the crew. */
+const SLURS = /\b(n+[i1!]+g+(?:[e3]+r+|a+h?|u+h)s?|f+[a@4]+g+(?:[o0]+t+)?s?|k+[i1]+k+[e3]+s?|ch+[i1]+n+k+s?|sp+[i1]+c+k?s?|tr+[a@4]+n+n+(?:y|[i1]+e+)s?|r+[e3]+t+[a@4]+r+d+s?|w+[e3]+t+b+[a@4]+c+k+s?|g+[o0]+[o0]+k+s?|c+[o0]+[o0]+n+s?|d+y+k+[e3]+s?)\b/i;
+function screen(...texts) {
+  const t = texts.filter(Boolean).join(" ");
+  if (SLURS.test(t)) return "language";
+  if (/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(t)) return "phone number";
+  if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(t)) return "email";
+  if (/https?:\/\/|www\.|\b[\w-]+\.(?:com|net|org|io|gg|tv|me|ly)\b/i.test(t)) return "link";
+  return null;
+}
+
 // A clip that's a slice of a show: no audio upload, so it takes no storage.
 async function refPost(request, env, ctx, rl) {
   let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
@@ -350,23 +370,43 @@ async function refPost(request, env, ctx, rl) {
   const title = clean(b.title, 80); if (!title) return json({ error: "Give the clip a name" }, 400);
   const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 6), dest = b.dest === "crew" ? "crew" : "board";
   const md = { title, by: clean(b.by, 40), ep, at: Math.round(from), sec: +(to - from).toFixed(1), ref: { ep, from: +from.toFixed(2), to: +to.toFixed(2) }, created: Date.now(), dest, note: clean(b.note, 300) };
-  await env.DB.put("p:" + id, "1", { metadata: md });
+  const flag = screen(md.title, md.by);
+  if (flag) md.flag = flag;
+  const auto = dest === "board" && !flag; // clean show clips go straight to the board
+  await env.DB.put((auto ? "a:" : "p:") + id, "1", { metadata: auto ? { ...md, note: "" } : md });
   await env.DB.put(rl.rlKey, String(rl.used + 1), { expirationTtl: 3700 });
   await env.DB.put(rl.dayKey, String(rl.today + 1), { expirationTtl: 90000 });
-  if (env.DISCORD_WEBHOOK) ctx.waitUntil(notify(env.DISCORD_WEBHOOK, md, null));
-  return json({ ok: true, id, status: dest === "crew" ? "sent to the crew" : "waiting" });
+  if (env.DISCORD_WEBHOOK) ctx.waitUntil(notify(env.DISCORD_WEBHOOK, { ...md, auto }, null));
+  return json({ ok: true, id, status: dest === "crew" ? "sent to the crew" : auto ? "posted" : "held", flag: flag || null });
 }
 async function notify(hook, md, bytes) {
-  const what = md.dest === "crew" ? `📨 Clip sent to the crew` : `📼 New clip waiting for approval`;
+  const what = md.dest === "crew" ? `📨 Clip sent to the crew` : md.auto ? `📼 New clip on the board` : `🚩 Clip held for a look${md.flag ? ` (${md.flag})` : ""}`;
   const fd = new FormData();
-  fd.append("payload_json", JSON.stringify({ content: `${what}: **${md.title}** by ${md.by || "anonymous"} (${md.sec}s)${md.live ? " from the live show" : md.ep ? ` from show ${md.ep}` : ""}${md.ref ? ` (${Math.floor(md.sec / 60)}m ${Math.round(md.sec % 60)}s slice)` : ""}.${md.note ? `\n> ${md.note}` : ""}\nDial M-O-D on the site to see it.`, allowed_mentions: { parse: [] } }));
+  fd.append("payload_json", JSON.stringify({ content: `${what}: **${md.title}** by ${md.by || "anonymous"} (${md.sec}s)${md.live ? " from the live show" : md.ep ? ` from show ${md.ep}` : ""}${md.ref ? ` (${Math.floor(md.sec / 60)}m ${Math.round(md.sec % 60)}s slice)` : ""}.${md.note ? `\n> ${md.note}` : ""}\n${md.auto ? "Dial M-O-D on the site if it needs to come down." : "Dial M-O-D on the site to see it."}`, allowed_mentions: { parse: [] } }));
   if (bytes) fd.append("files[0]", new Blob([bytes], { type: "audio/mpeg" }), "clip.mp3");
   try { await fetch(hook, { method: "POST", body: fd }); } catch (e) {}
 }
+// Three different listeners reporting a clip pulls it off the board and back to the crew.
+async function report(env, id, request) {
+  const k = await env.DB.getWithMetadata("a:" + id); if (!k.value) return json({ ok: true });
+  const ip = request.headers.get("cf-connecting-ip") || "unknown", mine = `rp:${id}:${ip}`;
+  if (await env.DB.get(mine)) return json({ ok: true, already: true });
+  await env.DB.put(mine, "1", { expirationTtl: 60 * 60 * 24 * 30 });
+  const n = +(await env.DB.get("rc:" + id) || 0) + 1;
+  if (n >= 3) { await env.DB.put("p:" + id, "1", { metadata: { ...k.metadata, flag: "reported by listeners" } }); await env.DB.delete("a:" + id); await env.DB.delete("rc:" + id); }
+  else await env.DB.put("rc:" + id, String(n), { expirationTtl: 60 * 60 * 24 * 30 });
+  return json({ ok: true });
+}
 async function modAct(env, id, action) {
+  if (action === "remove") {
+    const pub = await env.DB.getWithMetadata("a:" + id); if (!pub.value) return json({ error: "Not on the board" }, 404);
+    await env.DB.delete("a:" + id);
+    if (!pub.metadata?.ref) { await env.CLIPS.delete(`clips/${id}.mp3`); await env.DB.put("count", String(Math.max(0, (+(await env.DB.get("count")) || 1) - 1))); }
+    return json({ ok: true });
+  }
   const k = await env.DB.getWithMetadata("p:" + id);
   if (!k.value) return json({ error: "Not in the queue" }, 404);
-  if (action === "approve") { await env.DB.put("a:" + id, "1", { metadata: { ...k.metadata, note: "" } }); await env.DB.delete("p:" + id); }
+  if (action === "approve") { const md = { ...k.metadata, note: "" }; delete md.flag; await env.DB.put("a:" + id, "1", { metadata: md }); await env.DB.delete("p:" + id); }
   else {
     await env.DB.delete("p:" + id);
     if (!k.metadata?.ref) { await env.CLIPS.delete(`clips/${id}.mp3`); await env.DB.put("count", String(Math.max(0, (+(await env.DB.get("count")) || 1) - 1))); }

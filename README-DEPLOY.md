@@ -74,23 +74,31 @@ npx wrangler deploy
 
 ## Clips
 
-Anything playing on the site can be clipped: the radio, the live show, archive episodes, songs, clip board clips and patch bay drops.
-Hit **Clip it** in the bar at the bottom, or press **C**.
+Anything playing on the site can be clipped: hit **✂ Clip it** in the player bar (or press **C**). The clip editor opens above the player.
 
-- **Radio and archive episodes:** the Worker cuts the piece out of the episode's MP3.
-- **The live show:** the browser keeps the last minute of what it has played and clips from that.
-- **Songs and drops:** the clip comes from the file itself.
-
-The clip opens in the **clip lab**. From there people can trim it, add effects, then:
-- **Download MP3** (or WAV).
-- **Post to the clip board.** It waits for the crew, then goes public.
-- **Send to the crew only.** It's private. There's an optional note for the crew.
-
-To review clips, dial **M-O-D** (or click **Crew login**) and enter the crew password. The inbox shows both kinds:
-- **Board posts:** approve or reject.
-- **Crew-only clips:** download, delete, or put on the board.
-
-Rejected and deleted clips are removed from the site's own storage. Nothing on Prankcast is ever touched. Each person can send 6 clips an hour.
+- **Overview bar:** the stretch you can clip from. Pink and yellow spikes show where the chat was busiest. Drag the yellow box to move the close-up.
+- **Close-up:**
+  - Zoom with **− / +**, the mouse wheel, or two fingers. **Fit clip** and **Show all** jump around.
+  - Zoomed to 3 minutes or less, it shows the real waveform.
+  - Drag the pink markers, drag the box, or drag on empty space to draw a new selection.
+- **Marking:**
+  - **Start here / End here** mark wherever the show is playing.
+  - **±1s / ±.1** nudge each end.
+  - **Auto-trim** snaps both ends to the nearest quiet spot.
+  - **▶ first 3s / ▶ last 3s** let you check the edges by ear.
+- **Lengths:**
+  - Clips from a show can be up to **10 minutes** (a whole call). They're saved as "show X, from A to B", so they take no storage.
+  - Live, song and drop clips are recorded audio, up to 2 minutes.
+- **Posting:**
+  - **Post to the clip board:** show clips with a clean name go straight up. The filter holds back names with slurs, phone numbers, emails or links. Recorded or edited audio always waits for the crew.
+  - **Send to the crew:** private, with an optional note.
+  - **Download MP3** saves the clip. **Effects (clip lab)** opens clips up to 2 minutes in the editor.
+- **Reports and takedowns:** every clip on the board has a **Report** button. Three reports from different people pull it back for review.
+- **Crew inbox** (dial **M-O-D** or click **Crew login**, then enter the crew password) has three parts:
+  - **Waiting for a look:** approve or reject.
+  - **Sent to the crew.**
+  - **On the board:** take anything down.
+- **Limits:** each person can send 6 clips an hour. The whole site takes at most 200 a day and stores at most 4,000 recorded clips.
 
 ## What the live features use
 

@@ -12,7 +12,7 @@ const Board = (() => {
     return `<article class="cb-card hud${cur === c.id ? " playing" : ""}" data-id="${esc(c.id)}">
       <button class="cb-play" type="button" data-cbplay="${esc(c.id)}" aria-label="Play ${esc(c.title)}"><span class="tri" aria-hidden="true"></span></button>
       <div class="cb-body"><b>${esc(c.title)}</b><span class="cb-by">clipped by ${esc(c.by || "an anonymous caller")} · ${(+c.sec || 0) >= 60 ? `${Math.floor(c.sec / 60)}m ${Math.round(c.sec % 60)}s` : (+c.sec || 0).toFixed(1) + "s"}${c.live ? " · from a live show" : ""}</span>${wave(c.peaks)}${src}</div>
-      <div class="cb-acts">${(+c.sec || 0) <= 122 ? `<button class="btn sm ghost cb-remix" type="button" data-remix="${esc(c.id)}">Remix</button>` : ""}<a class="btn sm ghost" href="${dlUrl(c)}" download="callective-${esc(String(c.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}.mp3">Download</a></div></article>`;
+      <div class="cb-acts">${(+c.sec || 0) <= 122 ? `<button class="btn sm ghost cb-remix" type="button" data-remix="${esc(c.id)}">Remix</button>` : ""}<button class="cb-rep" type="button" data-report="${esc(c.id)}" title="Report this clip">⚑ Report</button><a class="btn sm ghost" href="${dlUrl(c)}" download="callective-${esc(String(c.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}.mp3">Download</a></div></article>`;
   }
   function render() {
     const q = $("cb-q").value.trim().toLowerCase();
@@ -20,7 +20,7 @@ const Board = (() => {
     if (sort === "new") L.sort((a, b) => (b.created || 0) - (a.created || 0));
     if (sort === "short") L.sort((a, b) => a.sec - b.sec);
     if (sort === "show") L.sort((a, b) => (b.ep || 0) - (a.ep || 0) || (a.at || 0) - (b.at || 0));
-    $("cbgrid").innerHTML = L.map(card).join("") || `<p class="feed-empty">${clips.length ? "No clips match that." : "No clips yet. Be the first: tune in to the radio and hit Clip it."}</p>`;
+    $("cbgrid").innerHTML = L.map(card).join("") || `<p class="feed-empty">${clips.length ? "No clips match that." : "No clips yet. Be the first: tune in to the radio and hit ✂ Clip it."}</p>`;
   }
   const url = c => demo ? `clips/${c.id}.mp3` : `${C.api}/clips/${encodeURIComponent(c.id)}.mp3`;
   const dlUrl = c => demo ? url(c) : url(c) + "?dl=1";
@@ -49,6 +49,9 @@ const Board = (() => {
     $("cbgrid").addEventListener("click", e => {
       const p = e.target.closest("[data-cbplay]"); if (p) { play(p.dataset.cbplay); return; }
       const g = e.target.closest("[data-goto]"); if (g) { Replay.loadAt(+g.dataset.goto, +g.dataset.at || 0); return; }
+      const rp = e.target.closest("[data-report]");
+      if (rp) { if (demo) { toast("Reporting works on the live site."); return; } if (!confirm("Report this clip to the crew?")) return;
+        fetch(`${C.api}/clips/${encodeURIComponent(rp.dataset.report)}/report`, { method: "POST" }).then(() => { toast("Thanks. The crew will take a look."); rp.disabled = true; rp.textContent = "Reported"; }).catch(() => toast("That didn't go through.")); return; }
       const r = e.target.closest("[data-remix]"); if (r) { const c = clips.find(x => x.id === r.dataset.remix); if (c) { Lab.loadUrl(url(c), c.title); go("lab"); } }
     });
     const a = aud(); a.addEventListener("ended", () => { cur = null; render(); });
@@ -72,27 +75,36 @@ const Mod = (() => {
     $("mod-list").addEventListener("click", act);
     if (token) list();
   }
+  const row = (c, kind) => {
+    const crew = c.dest === "crew", tag = kind === "pub" ? "On the board" : crew ? "Sent to the crew" : `Held${c.flag ? ": " + c.flag : ""}`;
+    const len = (+c.sec || 0) >= 60 ? `${Math.floor(c.sec / 60)}m ${Math.round(c.sec % 60)}s` : `${(+c.sec || 0).toFixed(1)}s`;
+    const btns = kind === "pub" ? `<button class="btn sm red" type="button" data-mod="remove">Take down</button>`
+      : `<button class="btn sm solid" type="button" data-mod="approve">${crew ? "Put on the board" : "Approve"}</button><button class="btn sm red" type="button" data-mod="reject">${crew ? "Delete" : "Reject"}</button>`;
+    return `<div class="mod-row${crew ? " crew" : ""}${kind === "pub" ? " pub" : ""}" data-id="${esc(c.id)}"><div style="min-width:0"><span class="mod-tag">${esc(tag)}</span><b>${esc(c.title)}</b><span class="ext">${esc(c.by || "anonymous")} · ${len}${c.live ? " · live show" : c.ep ? ` · show ${c.ep} at ${hms(c.at || 0, true)}` : " · uploaded or remixed"}</span>${c.note ? `<p class="mod-note">“${esc(c.note)}”</p>` : ""}<audio controls preload="none" data-src="${esc(c.id)}" data-pub="${kind === "pub" ? 1 : ""}"></audio></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${btns}<button class="btn sm" type="button" data-moddl="${esc(c.id)}" data-title="${esc(c.title)}" data-pub="${kind === "pub" ? 1 : ""}">Download</button></div></div>`;
+  };
   async function list() {
     const box = $("mod-list"); box.innerHTML = `<p class="ext">Loading…</p>`; blobs.forEach(u => URL.revokeObjectURL(u)); blobs = [];
     try {
       const r = await fetch(`${C.api}/mod/pending`, { headers: hdr() }); if (r.status === 401) { box.innerHTML = `<p class="ext">Wrong password.</p>`; return; }
-      const { clips } = await r.json();
-      if (!clips.length) { box.innerHTML = `<p class="ext">Nothing in the inbox.</p>`; return; }
-      box.innerHTML = clips.map(c => { const crew = c.dest === "crew";
-        return `<div class="mod-row${crew ? " crew" : ""}" data-id="${esc(c.id)}"><div style="min-width:0"><span class="mod-tag">${crew ? "Sent to the crew" : "For the clip board"}</span><b>${esc(c.title)}</b><span class="ext">${esc(c.by || "anonymous")} · ${(+c.sec).toFixed(1)}s${c.live ? " · live show" : c.ep ? ` · show ${c.ep} at ${hms(c.at || 0, true)}` : " · uploaded or remixed"}</span>${c.note ? `<p class="mod-note">“${esc(c.note)}”</p>` : ""}<audio controls preload="none" data-src="${esc(c.id)}"></audio></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm solid" type="button" data-mod="approve">${crew ? "Put on the board" : "Approve"}</button><button class="btn sm" type="button" data-moddl="${esc(c.id)}" data-title="${esc(c.title)}">Download</button><button class="btn sm red" type="button" data-mod="reject">${crew ? "Delete" : "Reject"}</button></div></div>`; }).join("");
+      const { clips } = await r.json(); const pub = (await (await fetch(`${C.api}/mod/public`, { headers: hdr() })).json()).clips || [];
+      const held = clips.filter(c => c.dest !== "crew"), crew = clips.filter(c => c.dest === "crew");
+      box.innerHTML = `<h4 class="mod-sec">Waiting for a look (${held.length})</h4>${held.map(c => row(c, "held")).join("") || `<p class="ext">Nothing held. Clean clips from shows post on their own.</p>`}
+        <h4 class="mod-sec">Sent to the crew (${crew.length})</h4>${crew.map(c => row(c, "crew")).join("") || `<p class="ext">Nothing sent privately.</p>`}
+        <h4 class="mod-sec">On the board (${pub.length})</h4>${pub.map(c => row(c, "pub")).join("") || `<p class="ext">The board is empty.</p>`}`;
       for (const el of box.querySelectorAll("audio[data-src]")) {
-        el.addEventListener("play", async () => { if (el.src) return; const r2 = await fetch(`${C.api}/mod/clip/${encodeURIComponent(el.dataset.src)}.mp3`, { headers: hdr() }); const u = URL.createObjectURL(await r2.blob()); blobs.push(u); el.src = u; el.play(); }, { once: true });
+        el.addEventListener("play", async () => { if (el.src) return; const u0 = el.dataset.pub ? `${C.api}/clips/${encodeURIComponent(el.dataset.src)}.mp3` : `${C.api}/mod/clip/${encodeURIComponent(el.dataset.src)}.mp3`;
+          const r2 = await fetch(u0, { headers: hdr() }); const u = URL.createObjectURL(await r2.blob()); blobs.push(u); el.src = u; el.play(); }, { once: true });
       }
-    } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the queue.</p>`; }
+    } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the inbox.</p>`; }
   }
   async function act(e) {
     const d = e.target.closest("[data-moddl]");
-    if (d) { const r = await fetch(`${C.api}/mod/clip/${encodeURIComponent(d.dataset.moddl)}.mp3`, { headers: hdr() }); const u = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = u; a.download = `callective-${d.dataset.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50)}.mp3`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); return; }
+    if (d) { const r = await fetch(d.dataset.pub ? `${C.api}/clips/${encodeURIComponent(d.dataset.moddl)}.mp3` : `${C.api}/mod/clip/${encodeURIComponent(d.dataset.moddl)}.mp3`, { headers: hdr() }); const u = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = u; a.download = `callective-${d.dataset.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50)}.mp3`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); return; }
     const b = e.target.closest("[data-mod]"); if (!b) return; const row = b.closest(".mod-row"), id = row.dataset.id;
     b.disabled = true;
     const r = await fetch(`${C.api}/mod/${encodeURIComponent(id)}/${b.dataset.mod}`, { method: "POST", headers: hdr() });
-    if (r.ok) { row.remove(); toast(b.dataset.mod === "approve" ? "Approved. It's on the board." : "Rejected and removed."); Board.reload(); } else { b.disabled = false; toast("That didn't go through."); }
+    if (r.ok) { row.remove(); toast(b.dataset.mod === "approve" ? "Approved. It's on the board." : b.dataset.mod === "remove" ? "Taken down." : "Rejected and removed."); Board.reload(); } else { b.disabled = false; toast("That didn't go through."); }
   }
   return { open };
 })();
