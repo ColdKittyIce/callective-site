@@ -11,8 +11,8 @@ const Board = (() => {
     const src = c.ep ? (isRecent(c.ep) ? `<button class="cb-src" type="button" data-goto="${c.ep}" data-at="${c.at || 0}">${from}</button>` : `<a class="cb-src" href="${PC_POST}${c.ep}" target="_blank" rel="noopener">${from}</a>`) : "";
     return `<article class="cb-card hud${cur === c.id ? " playing" : ""}" data-id="${esc(c.id)}">
       <button class="cb-play" type="button" data-cbplay="${esc(c.id)}" aria-label="Play ${esc(c.title)}"><span class="tri" aria-hidden="true"></span></button>
-      <div class="cb-body"><b>${esc(c.title)}</b><span class="cb-by">clipped by ${esc(c.by || "an anonymous caller")} · ${(+c.sec || 0).toFixed(1)}s${c.live ? " · from a live show" : ""}</span>${wave(c.peaks)}${src}</div>
-      <div class="cb-acts"><button class="btn sm ghost cb-remix" type="button" data-remix="${esc(c.id)}">Remix</button><a class="btn sm ghost" href="${dlUrl(c)}" download="callective-${esc(String(c.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}.mp3">Download</a></div></article>`;
+      <div class="cb-body"><b>${esc(c.title)}</b><span class="cb-by">clipped by ${esc(c.by || "an anonymous caller")} · ${(+c.sec || 0) >= 60 ? `${Math.floor(c.sec / 60)}m ${Math.round(c.sec % 60)}s` : (+c.sec || 0).toFixed(1) + "s"}${c.live ? " · from a live show" : ""}</span>${wave(c.peaks)}${src}</div>
+      <div class="cb-acts">${(+c.sec || 0) <= 122 ? `<button class="btn sm ghost cb-remix" type="button" data-remix="${esc(c.id)}">Remix</button>` : ""}<a class="btn sm ghost" href="${dlUrl(c)}" download="callective-${esc(String(c.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}.mp3">Download</a></div></article>`;
   }
   function render() {
     const q = $("cb-q").value.trim().toLowerCase();

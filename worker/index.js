@@ -12,13 +12,15 @@
  *   GET  /api/episode/:id       audio URL and chat id for one Prankcast post
  *   GET  /api/chat/:cid         Prankcast chat replay for a broadcast, trimmed
  *   GET  /api/hls?u=            relays the live stream, only used if the browser can't read it directly
- *   GET  /api/cut/:id?from&to   a piece of an episode's MP3 (for clipping), max 75s
+ *   GET  /api/cut/:id?from&to   a slice of a show as an MP3 (up to 10 min; &dl=1&name= to download; supports Range)
  *
  *
  *   Clips
  *   GET  /api/clips             approved community clips
  *   GET  /api/clips/:id.mp3     an approved clip's audio (?dl=1 downloads it)
- *   POST /api/clips             send a clip: dest "board" (public after approval) or "crew" (private to the crew)
+ *   POST /api/clips             send a clip: dest "board" (public after approval) or "crew" (private to the crew).
+ *                               JSON {ep, from, to, ...} = a slice of a show (no upload, no storage, up to 10 min);
+ *                               a form with an MP3 = an edited clip (up to 2 min, stored in R2)
  *   GET  /api/mod/pending       clips waiting / sent to the crew          (ADMIN_TOKEN)
  *   GET  /api/mod/clip/:id.mp3  hear a waiting clip                       (ADMIN_TOKEN)
  *   POST /api/mod/:id/approve   put it on the board                       (ADMIN_TOKEN)
@@ -30,7 +32,7 @@
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
 const UA = { "user-agent": "CallectiveSite/2.0 (+thecallective site worker)" };
-const MAX_CLIP_BYTES = 2_000_000, MAX_CLIP_SEC = 62, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 4000;
+const MAX_CLIP_BYTES = 2_600_000, MAX_CLIP_SEC = 122, MAX_REF_SEC = 600, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 4000;
 const RADIO_EPOCH = Date.UTC(2026, 0, 1);
 const RADIO_SHOWS = 10; // Callective Radio plays the newest 10 shows, from the site's own copies in R2
 
@@ -62,14 +64,14 @@ async function route(request, env, ctx, url) {
       if (p === "/api/shows") return json({ radio: RADIO_SHOWS, copies: await mirrored(env, ctx, true) }, 200, 60);
       if ((m = p.match(/^\/api\/chat\/(\d+)$/))) return cached(request, ctx, 604800, () => chat(m[1]));
       if (p === "/api/hls") return env.HLS_RELAY === "on" ? hls(url, ctx) : json({ error: "Relay is off" }, 404);
-      if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(m[1], url, ctx, request);
+      if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
       if (p === "/api/clips" && M === "GET") return clipsList(env);
       if (p === "/api/clips" && M === "POST") return clipsPost(request, env, ctx);
-      if ((m = p.match(/^\/api\/clips\/([a-z0-9-]+)\.mp3$/)) && M === "GET") return clipAudio(env, m[1], "a:", url);
+      if ((m = p.match(/^\/api\/clips\/([a-z0-9-]+)\.mp3$/)) && M === "GET") return clipAudio(env, ctx, m[1], "a:", url, request);
       if (p.startsWith("/api/mod/")) {
         if (!env.ADMIN_TOKEN || (request.headers.get("authorization") || "") !== `Bearer ${env.ADMIN_TOKEN}`) return json({ error: "Wrong crew password" }, 401);
         if (p === "/api/mod/pending") return clipsList(env, "p:");
-        if ((m = p.match(/^\/api\/mod\/clip\/([a-z0-9-]+)\.mp3$/))) return clipAudio(env, m[1], "p:", url);
+        if ((m = p.match(/^\/api\/mod\/clip\/([a-z0-9-]+)\.mp3$/))) return clipAudio(env, ctx, m[1], "p:", url, request);
         if ((m = p.match(/^\/api\/mod\/([a-z0-9-]+)\/(approve|reject)$/)) && M === "POST") return modAct(env, m[1], m[2]);
       }
       return json({ error: "Not found" }, 404);
@@ -265,18 +267,26 @@ async function mp3Layout(env, id, mp3) {
   }
   return { start: off, bytesPerSec: kbps * 1000 / 8 };
 }
-async function cut(id, url, ctx, request) {
-  const from = Math.max(0, +url.searchParams.get("from") || 0), to = +url.searchParams.get("to") || 0;
-  if (!(to > from) || to - from > 75) return json({ error: "Pick a piece between 1 and 75 seconds long" }, 400);
-  const cache = caches.default, key = new Request(new URL(request.url).toString(), { method: "GET" });
-  const hit = await cache.match(key); if (hit) return hit;
+// A slice of a show as its own MP3: just the bytes for that stretch, read from the site's copy (or Prankcast as a fallback).
+// Supports Range so long slices (whole calls) can be seeked. ?dl=1&name= makes it a download.
+const fileName = t => "callective-" + String(t || "clip").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) + ".mp3";
+async function slice(env, ctx, request, id, from, to, extra = {}) {
   const ep = await memo(ctx, "ep" + id, 604800, () => episode(id)); if (!ep.mp3) return json({ error: "No audio for that show" }, 404);
   const lay = await memo(ctx, "lay" + id, 2592000, () => mp3Layout(env, id, ep.mp3));
-  const a = Math.floor(lay.start + from * lay.bytesPerSec), z = Math.floor(lay.start + to * lay.bytesPerSec);
-  let body; try { body = await readPiece(env, id, ep.mp3, a, z); } catch (e) { return json({ error: "Couldn't read that part of the show" }, 502); }
-  const res = new Response(body, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400", ...cors() } });
-  ctx.waitUntil(cache.put(key, res.clone()));
-  return res;
+  const a = Math.floor(lay.start + from * lay.bytesPerSec), z = Math.floor(lay.start + to * lay.bytesPerSec), size = z - a + 1;
+  let s0 = 0, s1 = size - 1, status = 200;
+  const rg = (request.headers.get("range") || "").match(/bytes=(\d*)-(\d*)/);
+  if (rg && (rg[1] || rg[2])) { if (rg[1]) { s0 = +rg[1]; s1 = rg[2] ? Math.min(+rg[2], size - 1) : size - 1; } else { s0 = Math.max(0, size - +rg[2]); } if (s0 > s1) return new Response(null, { status: 416, headers: { "content-range": `bytes */${size}` } }); status = 206; }
+  let body; try { body = await readPiece(env, id, ep.mp3, a + s0, a + s1); } catch (e) { return json({ error: "Couldn't read that part of the show" }, 502); }
+  const h = { "content-type": "audio/mpeg", "accept-ranges": "bytes", "content-length": String(s1 - s0 + 1), "cache-control": "public, max-age=86400", ...cors(), ...extra };
+  if (status === 206) h["content-range"] = `bytes ${s0}-${s1}/${size}`;
+  return new Response(body, { status, headers: h });
+}
+async function cut(env, id, url, ctx, request) {
+  const from = Math.max(0, +url.searchParams.get("from") || 0), to = +url.searchParams.get("to") || 0;
+  if (!(to > from) || to - from > MAX_REF_SEC + 10) return json({ error: "Pick a piece between 1 second and 10 minutes long" }, 400);
+  const extra = url.searchParams.get("dl") ? { "content-disposition": `attachment; filename="${fileName(url.searchParams.get("name"))}"` } : {};
+  return slice(env, ctx, request, id, from, to, extra);
 }
 
 /* ---------- clip board ---------- */
@@ -289,16 +299,14 @@ async function clipsList(env, prefix = "a:") {
   out.sort((a, b) => (b.created || 0) - (a.created || 0));
   return json({ clips: out }, 200, prefix === "a:" ? 30 : 0);
 }
-async function clipAudio(env, id, prefix, url) {
+async function clipAudio(env, ctx, id, prefix, url, request) {
   if (!env.DB || !env.CLIPS) return json({ error: "Storage not set up" }, 500);
   const rec = await env.DB.getWithMetadata(prefix + id); if (!rec.value) return json({ error: "Not found" }, 404);
+  const md = rec.metadata || {}, extra = url.searchParams.get("dl") ? { "content-disposition": `attachment; filename="${fileName(md.title || id)}"` } : {};
+  // A clip from a show is just "show X, from A to B": play that slice. Nothing extra is stored.
+  if (md.ref) return slice(env, ctx, request, md.ref.ep, md.ref.from, md.ref.to, { ...extra, "cache-control": prefix === "a:" ? "public, max-age=86400" : "no-store" });
   const obj = await env.CLIPS.get(`clips/${id}.mp3`); if (!obj) return json({ error: "Not found" }, 404);
-  const h = { "content-type": "audio/mpeg", "cache-control": prefix === "a:" ? "public, max-age=604800" : "no-store", ...cors() };
-  if (url.searchParams.get("dl")) {
-    const name = "callective-" + String(rec.metadata?.title || id).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) + ".mp3";
-    h["content-disposition"] = `attachment; filename="${name}"`;
-  }
-  return new Response(obj.body, { headers: h });
+  return new Response(obj.body, { headers: { "content-type": "audio/mpeg", "cache-control": prefix === "a:" ? "public, max-age=604800" : "no-store", ...cors(), ...extra } });
 }
 function looksLikeMp3(b) { return (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33) || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0); }
 async function clipsPost(request, env, ctx) {
@@ -312,14 +320,15 @@ async function clipsPost(request, env, ctx) {
   if (today >= UPLOADS_PER_DAY) return json({ error: "The clip inbox is full for today. Try again tomorrow" }, 429);
   const stored = +(await env.DB.get("count") || 0);
   if (stored >= MAX_STORED_CLIPS) return json({ error: "The clip board is full right now. The crew has been told" }, 507);
+  if ((request.headers.get("content-type") || "").includes("application/json")) return refPost(request, env, ctx, { rlKey, used, dayKey, today });
   let form; try { form = await request.formData(); } catch (e) { return json({ error: "Send the clip as a form" }, 400); }
   const file = form.get("file"); let meta = {}; try { meta = JSON.parse(form.get("meta") || "{}"); } catch (e) {}
   if (!file || typeof file === "string") return json({ error: "No audio attached" }, 400);
-  if (file.size > MAX_CLIP_BYTES) return json({ error: "Clip is too big. Keep it under a minute" }, 413);
+  if (file.size > MAX_CLIP_BYTES) return json({ error: "Edited clips can be 2 minutes at most" }, 413);
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!looksLikeMp3(bytes)) return json({ error: "That isn't an MP3" }, 415);
   const title = clean(meta.title, 80); if (!title) return json({ error: "Give the clip a name" }, 400);
-  const sec = Math.min(MAX_CLIP_SEC, Math.max(0, +meta.sec || 0)); if (sec > MAX_CLIP_SEC - 0.5) return json({ error: "Clips can be 60 seconds at most" }, 400);
+  const sec = Math.min(MAX_CLIP_SEC, Math.max(0, +meta.sec || 0)); if (sec > MAX_CLIP_SEC - 0.5) return json({ error: "Edited clips can be 2 minutes at most" }, 400);
   const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 6);
   const dest = meta.dest === "crew" ? "crew" : "board";
   const md = { title, by: clean(meta.by, 40), ep: Number.isInteger(meta.ep) ? meta.ep : null, at: Number.isFinite(+meta.at) && meta.at !== null ? Math.round(+meta.at) : null,
@@ -332,11 +341,26 @@ async function clipsPost(request, env, ctx) {
   if (env.DISCORD_WEBHOOK) ctx.waitUntil(notify(env.DISCORD_WEBHOOK, md, bytes));
   return json({ ok: true, id, status: dest === "crew" ? "sent to the crew" : "waiting" });
 }
+// A clip that's a slice of a show: no audio upload, so it takes no storage.
+async function refPost(request, env, ctx, rl) {
+  let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
+  const ep = Number.isInteger(b.ep) ? b.ep : null, from = +b.from, to = +b.to;
+  if (!ep || !(from >= 0) || !(to > from)) return json({ error: "That clip is missing its show or times" }, 400);
+  if (to - from > MAX_REF_SEC + 1) return json({ error: "Clips can be 10 minutes at most" }, 400);
+  const title = clean(b.title, 80); if (!title) return json({ error: "Give the clip a name" }, 400);
+  const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 6), dest = b.dest === "crew" ? "crew" : "board";
+  const md = { title, by: clean(b.by, 40), ep, at: Math.round(from), sec: +(to - from).toFixed(1), ref: { ep, from: +from.toFixed(2), to: +to.toFixed(2) }, created: Date.now(), dest, note: clean(b.note, 300) };
+  await env.DB.put("p:" + id, "1", { metadata: md });
+  await env.DB.put(rl.rlKey, String(rl.used + 1), { expirationTtl: 3700 });
+  await env.DB.put(rl.dayKey, String(rl.today + 1), { expirationTtl: 90000 });
+  if (env.DISCORD_WEBHOOK) ctx.waitUntil(notify(env.DISCORD_WEBHOOK, md, null));
+  return json({ ok: true, id, status: dest === "crew" ? "sent to the crew" : "waiting" });
+}
 async function notify(hook, md, bytes) {
   const what = md.dest === "crew" ? `📨 Clip sent to the crew` : `📼 New clip waiting for approval`;
   const fd = new FormData();
-  fd.append("payload_json", JSON.stringify({ content: `${what}: **${md.title}** by ${md.by || "anonymous"} (${md.sec}s)${md.live ? " from the live show" : md.ep ? ` from show ${md.ep}` : ""}.${md.note ? `\n> ${md.note}` : ""}\nDial M-O-D on the site to see it.`, allowed_mentions: { parse: [] } }));
-  fd.append("files[0]", new Blob([bytes], { type: "audio/mpeg" }), "clip.mp3");
+  fd.append("payload_json", JSON.stringify({ content: `${what}: **${md.title}** by ${md.by || "anonymous"} (${md.sec}s)${md.live ? " from the live show" : md.ep ? ` from show ${md.ep}` : ""}${md.ref ? ` (${Math.floor(md.sec / 60)}m ${Math.round(md.sec % 60)}s slice)` : ""}.${md.note ? `\n> ${md.note}` : ""}\nDial M-O-D on the site to see it.`, allowed_mentions: { parse: [] } }));
+  if (bytes) fd.append("files[0]", new Blob([bytes], { type: "audio/mpeg" }), "clip.mp3");
   try { await fetch(hook, { method: "POST", body: fd }); } catch (e) {}
 }
 async function modAct(env, id, action) {
@@ -344,8 +368,8 @@ async function modAct(env, id, action) {
   if (!k.value) return json({ error: "Not in the queue" }, 404);
   if (action === "approve") { await env.DB.put("a:" + id, "1", { metadata: { ...k.metadata, note: "" } }); await env.DB.delete("p:" + id); }
   else {
-    await env.DB.delete("p:" + id); await env.CLIPS.delete(`clips/${id}.mp3`);
-    await env.DB.put("count", String(Math.max(0, (+(await env.DB.get("count")) || 1) - 1)));
+    await env.DB.delete("p:" + id);
+    if (!k.metadata?.ref) { await env.CLIPS.delete(`clips/${id}.mp3`); await env.DB.put("count", String(Math.max(0, (+(await env.DB.get("count")) || 1) - 1))); }
   }
   return json({ ok: true });
 }

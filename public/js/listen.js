@@ -99,7 +99,7 @@ const Listen = (() => {
     if (wasOn) { toast("That's the show. Back to Callective Radio."); refresh().then(() => { if (want) startRadio(); }); }
   }
 
-  /* Live clipping: the last minute of the live audio is kept in memory, in the browser, while you watch. */
+  /* Live clipping: the last two minutes of the live audio are kept in memory, in the browser, while you watch. */
   const Cap = (() => {
     const RING = `class R extends AudioWorkletProcessor{constructor(o){super();this.n=o.processorOptions.n;this.b=new Float32Array(this.n);this.i=0;this.f=false;
       this.port.onmessage=e=>{const n=this.f?this.n:this.i,o=new Float32Array(n);if(this.f){o.set(this.b.subarray(this.i));o.set(this.b.subarray(0,this.i),this.n-this.i)}else o.set(this.b.subarray(0,this.i));this.port.postMessage(o,[o.buffer])}}
@@ -110,7 +110,7 @@ const Listen = (() => {
       busy = true;
       try {
         await a.audioWorklet.addModule(URL.createObjectURL(new Blob([RING], { type: "text/javascript" })));
-        const src = a.createMediaElementSource(el); node = new AudioWorkletNode(a, "cx-ring", { processorOptions: { n: Math.round(a.sampleRate * 62) }, numberOfOutputs: 1, outputChannelCount: [1] });
+        const src = a.createMediaElementSource(el); node = new AudioWorkletNode(a, "cx-ring", { processorOptions: { n: Math.round(a.sampleRate * 125) }, numberOfOutputs: 1, outputChannelCount: [1] });
         const mute = a.createGain(); mute.gain.value = 0; src.connect(a.destination); src.connect(node); node.connect(mute).connect(a.destination);
       } catch (e) { node = null; }
       busy = false; return !!node;

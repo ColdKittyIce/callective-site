@@ -31,7 +31,7 @@ const Lab = (() => {
     stopPlay(); buf = b; name = label; meta = m || null; undo = []; sel = null; cursor = 0;
     $("wempty").hidden = true; $("lab-save").disabled = false; $("lab-mp3").disabled = false; $("s-go").disabled = $("s-crew").disabled = !C.api;
     $("li-src").textContent = meta?.live ? "From the live show" : meta?.ep ? `From the show at ${hms(meta.at, true)}` : "";
-    $("s-msg").textContent = C.api ? "Clips up to 60 seconds. Board posts go up after the crew gives them a listen. Crew-only clips stay private." : "Sending works on the live site. You can still download it here.";
+    $("s-msg").textContent = C.api ? "Edited clips up to 2 minutes. Board posts go up after the crew gives them a listen. Crew-only clips stay private." : "Sending works on the live site. You can still download it here.";
     draw(); info();
     msg(`> ${label} loaded. Drag across the waveform to pick a piece.`);
   }
@@ -210,7 +210,7 @@ const Lab = (() => {
     if (!title) { $("s-title").focus(); $("s-msg").textContent = "Give it a name first."; return; }
     $("s-go").disabled = $("s-crew").disabled = true; $("s-msg").textContent = "Rendering and sending…";
     try {
-      const out = await render(); if (out.duration > 62) { $("s-msg").textContent = `That's ${Math.round(out.duration)} seconds. Trim it to 60 or less.`; $("s-go").disabled = $("s-crew").disabled = false; return; }
+      const out = await render(); if (out.duration > 122) { $("s-msg").textContent = `That's ${Math.round(out.duration)} seconds. Edited clips can be 2 minutes at most.`; $("s-go").disabled = $("s-crew").disabled = false; return; }
       const fd = new FormData(); fd.append("file", await mp3Blob(out), "clip.mp3");
       fd.append("meta", JSON.stringify({ title, by, note, dest, live: !!meta?.live, ep: meta?.ep || null, at: meta?.at ?? null, sec: +out.duration.toFixed(1), peaks: peaks(out) }));
       const r = await fetch(`${C.api}/clips`, { method: "POST", body: fd }); const j = await r.json().catch(() => ({}));
@@ -268,5 +268,5 @@ const Lab = (() => {
     draw();
   }
   function loadClip(k) { const c = C.clips.find(x => x.k === k); $("lab-pick").value = `clip:${k}`; loadUrl(`clips/${k}.mp3`, c ? `${c.who}, “${c.line}”` : k); }
-  return { init, loadClip, loadEpisodeCut, loadBuffer, loadUrl };
+  return { init, loadClip, loadEpisodeCut, loadBuffer, loadUrl, mp3Blob, peaks };
 })();
