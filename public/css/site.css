@@ -771,3 +771,4 @@ body:not(.has-pbar) .clipper{bottom:calc(10px + env(safe-area-inset-bottom,0px))
 .call-ed{flex:0 0 36px;background:#0b0f1f;border:1px solid #e9ff3b44;border-radius:6px;color:var(--volt);cursor:pointer;font-size:15px}
 .call-ed:hover,.call-ed:focus-visible{border-color:var(--volt)}
 .calls-desc .call-ed{display:inline-block;width:30px;height:26px;margin-left:6px;vertical-align:middle}
+.mod-play{display:flex;align-items:center;gap:8px}

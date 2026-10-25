@@ -80,7 +80,7 @@ const Mod = (() => {
     const len = (+c.sec || 0) >= 60 ? `${Math.floor(c.sec / 60)}m ${Math.round(c.sec % 60)}s` : `${(+c.sec || 0).toFixed(1)}s`;
     const btns = kind === "pub" ? `<button class="btn sm red" type="button" data-mod="remove">Take down</button>`
       : `<button class="btn sm solid" type="button" data-mod="approve">${crew ? "Put on the board" : "Approve"}</button><button class="btn sm red" type="button" data-mod="reject">${crew ? "Delete" : "Reject"}</button>`;
-    return `<div class="mod-row${crew ? " crew" : ""}${kind === "pub" ? " pub" : ""}" data-id="${esc(c.id)}"><div style="min-width:0"><span class="mod-tag">${esc(tag)}</span><b>${esc(c.title)}</b><span class="ext">${esc(c.by || "anonymous")} · ${len}${c.live ? " · live show" : c.ep ? ` · show ${c.ep} at ${hms(c.at || 0, true)}` : " · uploaded or remixed"}</span>${c.note ? `<p class="mod-note">“${esc(c.note)}”</p>` : ""}<audio controls preload="none" data-src="${esc(c.id)}" data-pub="${kind === "pub" ? 1 : ""}"></audio></div>
+    return `<div class="mod-row${crew ? " crew" : ""}${kind === "pub" ? " pub" : ""}" data-id="${esc(c.id)}"><div style="min-width:0"><span class="mod-tag">${esc(tag)}</span><b>${esc(c.title)}</b><span class="ext">${esc(c.by || "anonymous")} · ${len}${c.live ? " · live show" : c.ep ? ` · show ${c.ep} at ${hms(c.at || 0, true)}` : " · uploaded or remixed"}</span>${c.note ? `<p class="mod-note">“${esc(c.note)}”</p>` : ""}<div class="mod-play"><button class="btn sm" type="button" data-modplay="${esc(c.id)}" data-pub="${kind === "pub" ? 1 : ""}">▶ Listen</button><audio controls preload="none" hidden></audio></div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">${btns}<button class="btn sm" type="button" data-moddl="${esc(c.id)}" data-title="${esc(c.title)}" data-pub="${kind === "pub" ? 1 : ""}">Download</button></div></div>`;
   };
   async function list() {
@@ -94,10 +94,6 @@ const Mod = (() => {
         <h4 class="mod-sec">On the board (${pub.length})</h4>${pub.map(c => row(c, "pub")).join("") || `<p class="ext">The board is empty.</p>`}
         <h4 class="mod-sec">1998 guestbook</h4><div id="mod-gb"><p class="ext">Loading…</p></div>`;
       gbList();
-      for (const el of box.querySelectorAll("audio[data-src]")) {
-        el.addEventListener("play", async () => { if (el.src) return; const u0 = el.dataset.pub ? `${C.api}/clips/${encodeURIComponent(el.dataset.src)}.mp3` : `${C.api}/mod/clip/${encodeURIComponent(el.dataset.src)}.mp3`;
-          const r2 = await fetch(u0, { headers: hdr() }); const u = URL.createObjectURL(await r2.blob()); blobs.push(u); el.src = u; el.play(); }, { once: true });
-      }
     } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the inbox.</p>`; }
   }
   async function gbList() {
@@ -112,6 +108,14 @@ const Mod = (() => {
   async function act(e) {
     const ga = e.target.closest("[data-gbact]");
     if (ga) { const r0 = ga.closest("[data-gb]"); ga.disabled = true; const r = await fetch(`${C.api}/mod/gb/${encodeURIComponent(r0.dataset.gb)}/${ga.dataset.gbact}`, { method: "POST", headers: hdr() }); if (r.ok) { toast(ga.dataset.gbact === "approve" ? "Approved." : "Deleted."); gbList(); } else { ga.disabled = false; toast("That didn't go through."); } return; }
+    // Clips waiting for a look need the crew password, which an <audio> tag can't send, so fetch the file first and play it from memory.
+    const pl = e.target.closest("[data-modplay]");
+    if (pl) { const el = pl.parentElement.querySelector("audio"); pl.disabled = true; pl.textContent = "Loading…";
+      try { const r = await fetch(pl.dataset.pub ? `${C.api}/clips/${encodeURIComponent(pl.dataset.modplay)}.mp3` : `${C.api}/mod/clip/${encodeURIComponent(pl.dataset.modplay)}.mp3`, { headers: hdr() });
+        if (!r.ok) throw new Error(r.status); const u = URL.createObjectURL(await r.blob()); blobs.push(u);
+        el.src = u; el.hidden = false; pl.remove(); Media.claim(el); el.play().catch(() => {});
+      } catch (err) { pl.disabled = false; pl.textContent = "▶ Listen"; toast("That clip didn't load. Try again."); }
+      return; }
     const d = e.target.closest("[data-moddl]");
     if (d) { const r = await fetch(d.dataset.pub ? `${C.api}/clips/${encodeURIComponent(d.dataset.moddl)}.mp3` : `${C.api}/mod/clip/${encodeURIComponent(d.dataset.moddl)}.mp3`, { headers: hdr() }); const u = URL.createObjectURL(await r.blob()); const a = document.createElement("a"); a.href = u; a.download = `callective-${d.dataset.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50)}.mp3`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); return; }
     const b = e.target.closest("[data-mod]"); if (!b) return; const row = b.closest(".mod-row"), id = row.dataset.id;
