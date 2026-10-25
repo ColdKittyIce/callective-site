@@ -1,6 +1,5 @@
 /* One page per show (#show/<id>): title, date, host, blurb, the call order with timestamps and titles.
-   Newest 10 shows play right here. Older ones live on Prankcast: Prankcast's player can't be told where to start,
-   so a timestamp opens the show there and copies the time to skip to. */
+   Newest 10 shows play right here. Older ones open on Prankcast at the call: post links take ?t=<seconds>. */
 const ShowPage = (() => {
   let id = null;
   const order = () => C.episodes.filter(e => e.d).slice().sort((a, b) => a.d.localeCompare(b.d) || a.id - b.id);
@@ -12,7 +11,7 @@ const ShowPage = (() => {
     const desc = info?.desc || e.n || "";
     const act = c => rec
       ? `<button class="btn sm" type="button" data-go="${c.t}" title="Play from ${hms(c.t, true)}">▶ Play</button><button class="btn sm ghost" type="button" data-clip="${c.t}" data-end="${c.end}" data-name="${esc(callLabel(c))}" title="Clip this whole call">✂</button>`
-      : `<button class="btn sm ghost" type="button" data-pc="${c.t}" title="Opens the show on Prankcast and copies the time to skip to">Prankcast ↗</button>`;
+      : `<a class="btn sm" href="${PC_POST}${e.id}?t=${Math.round(c.t)}" target="_blank" rel="noopener" title="Opens on Prankcast at ${hms(c.t, true)}">▶ Prankcast ↗</a>`;
     box.innerHTML = `
       <nav class="sp-nav"><a href="#directory">← All shows</a><span>${prev ? `<a href="#show/${prev.id}">‹ ${esc(fmtDate(prev.d))}</a>` : ""}${next ? `<a href="#show/${next.id}">${esc(fmtDate(next.d))} ›</a>` : ""}</span></nav>
       <div class="sp-head hud">
@@ -21,7 +20,7 @@ const ShowPage = (() => {
         ${desc ? `<p class="sp-desc">${esc(desc)}</p>` : ""}
         <p class="sp-meta"><span>${fmtLen(e.sec || 0)}</span>${real.length ? `<span>${real.length} calls</span>` : ""}${real.length ? `<span>${[...new Set(real.map(c => c.by))].length} callers</span>` : ""}</p>
         <div class="sp-acts">${rec ? `<button class="btn red solid" type="button" data-go="0">▶ Play this show here</button>` : ""}<a class="btn sm${rec ? " ghost" : ""}" href="${PC_POST}${e.id}" target="_blank" rel="noopener">Open on Prankcast ↗</a><button class="btn sm ghost" type="button" id="sp-share">Copy link to this show</button></div>
-        ${!rec && real.length ? `<p class="sp-note">This show plays on Prankcast. Their player can't be told where to start, so a call's <b>Prankcast ↗</b> button opens the show there and copies the time. Skip to it and hit play.</p>` : ""}
+        ${!rec && real.length ? `<p class="sp-note">This show plays on Prankcast. Each call's <b>▶ Prankcast</b> button opens it there with the marker on that call. Just hit play.</p>` : ""}
       </div>
       ${real.length ? `<ol class="sp-calls">${L.map((c, n) => c.skip
         ? `<li class="sp-call skip"><time>${hms(c.t, true)}</time><div><b>${esc(c.by)}</b><em>skipped</em></div></li>`
@@ -35,7 +34,6 @@ const ShowPage = (() => {
     $("sp-body").addEventListener("click", async ev => {
       const g = ev.target.closest("[data-go]"); if (g) { Replay.loadAt(id, +g.dataset.go, true); return; }
       const c = ev.target.closest("[data-clip]"); if (c) { Replay.clipRange(id, +c.dataset.clip, +c.dataset.end, c.dataset.name); return; }
-      const p = ev.target.closest("[data-pc]"); if (p) { const t = hms(+p.dataset.pc, true), ok = await copy(t); window.open(PC_POST + id, "_blank", "noopener"); toast(`Opening Prankcast. Skip to ${t}${ok ? " (copied)" : ""}.`); return; }
       if (ev.target.closest("#sp-share")) { const ok = await copy(location.href.split("#")[0] + "#show/" + id); toast(ok ? "Link copied." : location.href); }
     });
     addEventListener("hashchange", fromHash);
