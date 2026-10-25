@@ -36,7 +36,7 @@ const Guess = (() => {
   }
   function pick(name, btn) {
     if (locked) return; locked = true; const ok = name === cur.c.by, c = cur.c;
-    if (ok) { score += 10 + Math.min(streak, 5) * 2; streak++; SFX.pickup(); } else { streak = 0; SFX.hangup(); }
+    if (ok) { score += 10 + Math.min(streak, 5) * 2; streak++; SFX.coin(); } else { streak = 0; SFX.hangup(); }
     $("gx-q").querySelectorAll("[data-pick]").forEach(b => { b.disabled = true; if (b.dataset.pick === c.by) b.classList.add("right"); else if (b === btn) b.classList.add("wrong"); });
     $("gx-after").innerHTML = `<p><b>${ok ? pick2(["Got it.", "Correct. Nerd.", "Nailed it.", "That's the one."]) : pick2(["Nope.", "Buttslammed.", "Wrong line.", "Not even close, pig boy."])}</b> That was ${esc(c.by)}${c.title ? `: “${esc(c.title)}”` : ""}, ${hms(c.t, true)} into the show.</p>
       <div class="gx-btns"><button class="btn red solid" type="button" id="gx-next">${round >= ROUNDS ? "See your score" : "Next caller →"}</button><button class="btn sm ghost" type="button" data-whole="${c.e.id}" data-t="${c.t}">▶ Hear the whole call</button>${!c.title ? `<button class="btn sm ghost" type="button" data-whole="${c.e.id}" data-t="${c.t}">💡 It needs a title</button>` : ""}</div>`;

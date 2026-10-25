@@ -74,9 +74,12 @@ const Dial = (() => {
     svg.addEventListener("pointermove", move); svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up);
   }
 
-  function release(digit) {
-    const from = rot, dur = reduceMotion ? 0.15 : Math.max(.25, from / 380), pulses = digit == null ? 0 : (digit || 10);
-    for (let i = 0; i < pulses; i++) click(dur * (.15 + .8 * i / Math.max(1, pulses)));
+  function release(digit, fast) {
+    const from = rot, pulses = digit == null ? 0 : (digit || 10);
+    // a real rotary recording for hand-dialed digits; quick synth clicks when dialing a typed word
+    const real = digit != null && !fast && !reduceMotion ? SFX.rotary(digit) : 0;
+    const dur = real ? Math.max(.4, real * .85) : reduceMotion ? 0.15 : Math.max(.25, from / 380);
+    if (!real) for (let i = 0; i < pulses; i++) click(dur * (.15 + .8 * i / Math.max(1, pulses)));
     const t0 = performance.now();
     const step = now => { const p = Math.min(1, (now - t0) / (dur * 1000)); setRot(from * (1 - p)); if (p < 1) requestAnimationFrame(step); else { setRot(0); busy = false; if (digit != null) addDigit(digit); next(); } };
     requestAnimationFrame(step);
@@ -84,7 +87,7 @@ const Dial = (() => {
 
   function autoDial(digit, fast) {
     busy = true; const k = DIGITS.indexOf(digit), max = need(k), dur = reduceMotion ? .1 : (fast ? max / 900 : max / 520), t0 = performance.now();
-    const step = now => { const p = Math.min(1, (now - t0) / (dur * 1000)); setRot(max * p); if (p < 1) requestAnimationFrame(step); else release(digit); };
+    const step = now => { const p = Math.min(1, (now - t0) / (dur * 1000)); setRot(max * p); if (p < 1) requestAnimationFrame(step); else release(digit, fast); };
     requestAnimationFrame(step);
   }
   function enqueue(ds, fast) { queue.push(...ds.map(d => ({ d, fast }))); if (!busy) next(); }

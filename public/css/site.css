@@ -448,7 +448,7 @@ section.band{padding-block:96px 8px;position:relative}
 .viz{width:100%;height:120px;display:block;border:1px solid #18f0ff44;background:#020204}
 .holdcard p{font-size:13.5px;color:var(--muted);font-family:var(--f-mono)}
 .tracks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.track{display:grid;grid-template-columns:44px 52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 14px 8px 8px;background:#0a091999;border:1px solid var(--line)}
+.track{display:grid;grid-template-columns:44px 66px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 14px 8px 8px;background:#0a091999;border:1px solid var(--line)}
 .track.cur{border-color:var(--pink);box-shadow:var(--glow-p)}
 .track button{width:44px;height:44px;border-radius:50%;border:1px solid var(--cyan);background:#05040c;color:var(--cyan);display:grid;place-items:center;box-shadow:0 0 10px #18f0ff55}
 .track button:hover,.track.cur button{background:var(--cyan);color:var(--void)}
@@ -1016,3 +1016,4 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .gl-img{display:block;border:1px solid var(--line);margin:-2px 0 0}
 .gl-img img{display:block;width:100%;height:auto;max-height:240px;object-fit:cover}
 .gl-img img{object-position:50% 0}
+.track-group{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--pink);margin:14px 0 2px;padding-left:4px}

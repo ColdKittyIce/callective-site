@@ -59,13 +59,30 @@ function click(when = 0, vol = .35) {
   const s = a.createBufferSource(); s.buffer = b; const f = a.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 1800; f.Q.value = .8;
   const g = a.createGain(); g.gain.value = vol; s.connect(f).connect(g).connect(a.destination); s.start(t0);
 }
+/* Real phone recordings (Adobe Audition sound effects, from IceCat's sound library). Each falls back to the synth if it hasn't loaded. */
+const SAMPLES = {}, SAMPLE_KEYS = ["pickup", "hangup", "slam", "setdown", "coin", "page", "ring", "drop", ...Array.from({ length: 10 }, (_, i) => "rotary-" + i)];
+let samplesAsked = false;
+function loadSamples() {
+  if (samplesAsked) return; samplesAsked = true; const a = ac(); if (!a) return;
+  SAMPLE_KEYS.forEach(k => fetch(`sfx/${k}.mp3`).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => a.decodeAudioData(b)).then(buf => { SAMPLES[k] = buf; }).catch(() => {}));
+}
+function sample(k, vol = .8, when = 0) {
+  const a = ac(); loadSamples(); const buf = SAMPLES[k]; if (!a || !buf) return 0;
+  const s = a.createBufferSource(), g = a.createGain(); s.buffer = buf; g.gain.value = vol; s.connect(g).connect(a.destination); s.start(a.currentTime + when);
+  return buf.duration;
+}
+["pointerdown", "keydown"].forEach(ev => addEventListener(ev, () => loadSamples(), { once: true, passive: true }));
 const SFX = {
   ringback(n = 1) { for (let i = 0; i < n; i++) tone([440, 480], 1.4, .08, i * 2.4); return n * 2.4 - 1; },
   sit() { tone(913.8, .27, .1, 0); tone(1370.6, .27, .1, .29); tone(1776.7, .38, .1, .58); return 1.1; },
   busy() { for (let i = 0; i < 4; i++) tone([480, 620], .25, .09, i * .5); },
-  pickup() { click(0, .5); click(.06, .3); },
-  hangup() { click(0, .6); tone(120, .08, .2, 0, "square"); },
-  thump() { const a = ac(); if (!a) return; const o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .25);
+  pickup() { if (!sample("pickup", .9)) { click(0, .5); click(.06, .3); } },
+  hangup() { if (!sample("hangup", .8)) { click(0, .6); tone(120, .08, .2, 0, "square"); } },
+  coin() { if (!sample("coin", .8)) click(0, .5); },
+  page() { sample("page", .5); },
+  ring() { if (!sample("ring", .6)) tone([440, 480], .8, .08); },
+  rotary(d) { return sample("rotary-" + d, .75); },
+  thump() { if (sample("slam", .9)) return; const a = ac(); if (!a) return; const o = a.createOscillator(), g = a.createGain(); o.frequency.setValueAtTime(140, a.currentTime); o.frequency.exponentialRampToValueAtTime(40, a.currentTime + .25);
     g.gain.setValueAtTime(.6, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .3); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + .32); click(0, .6); },
   shutter() { click(0, .5); click(.09, .4); }
 };

@@ -3,7 +3,7 @@
 /* ---------- hold line + player bar ---------- */
 const Hold = (() => {
   const TRACKS = [
-    { k: "theme", t: "The Callective Theme", s: "By IceCat and Suno · the opener", d: "1:19" },
+    { k: "theme", g: "The Callective", t: "The Callective Theme", s: "By IceCat and Suno · the opener", d: "1:19" },
     { k: "ira-rules", t: "Ira Reads the Rules", s: "The best part of the show, per the chat. Not a bit.", d: "2:28" },
     { k: "farewell", t: "The Callective Farewell", s: "By IceCat and Suno · the closer", d: "3:20" },
     { k: "theme-2026", t: "The Callective Theme, 2026 take", s: "Newer cut of the opener", d: "1:19" },
@@ -18,7 +18,23 @@ const Hold = (() => {
     { k: "doglective", t: "The Doglective", s: "Dial D-O-G", d: "1:35" },
     { k: "hellective", t: "Hellective Theme", s: "Dial H-E-L-L", d: "1:59" },
     { k: "cheers-to-ira", t: "Cheers to Ira the Governor", s: "A toast to the show runner, who is muting you right now", d: "3:18" },
-    { k: "be-quiet", t: "Be Quiet, the Callective Is On", s: "Drop", d: "0:05" }];
+    { k: "be-quiet", t: "Be Quiet, the Callective Is On", s: "Drop", d: "0:05" },
+    { k: "callectives-cousin", t: "The Callective's Cousin", s: "By IceCat and Suno · a.k.a. the background music", d: "1:38" },
+    { k: "phone-book-megamix", g: "Fresh mix", t: "The Phone Book Megamix", s: "Seven of IceCat's phone songs, rotary dial, ringing, crew drops, one busy signal", d: "3:44" },
+    { k: "dialtone-dialtone", g: "IceCat's phone songs", t: "Dialtone Dialtone", s: "By IceCat and Suno", d: "4:27" },
+    { k: "please-deposit-25-cents", g: "IceCat's phone songs", t: "Please Deposit 25 Cents", s: "By IceCat and Suno", d: "2:52" },
+    { k: "the-blue-phone", g: "IceCat's phone songs", t: "The Blue Phone", s: "By IceCat and Suno", d: "3:03" },
+    { k: "here-come-the-prank-callers", g: "IceCat's phone songs", t: "Here Come the Prank Callers", s: "By IceCat and Suno", d: "3:59" },
+    { k: "prank-call-me-back", g: "IceCat's phone songs", t: "Prank Call Me Back", s: "By IceCat and Suno", d: "3:48" },
+    { k: "the-day-the-telephones-took-over", g: "IceCat's phone songs", t: "The Day the Telephones Took Over", s: "By IceCat and Suno", d: "3:19" },
+    { k: "telephone-blues", g: "IceCat's phone songs", t: "Telephone Blues", s: "By IceCat and Suno", d: "3:17" },
+    { k: "finger-ringer", g: "IceCat's phone songs", t: "Finger Ringer", s: "By IceCat and Suno", d: "4:00" },
+    { k: "dead-air-line", g: "IceCat's phone songs", t: "Dead Air Line", s: "By IceCat and Suno", d: "4:53" },
+    { k: "signal-bouncing", g: "IceCat's phone songs", t: "Signal Bouncing", s: "By IceCat and Suno", d: "3:02" },
+    { k: "operator-connect-me", g: "IceCat's phone songs", t: "Operator, Connect Me Please", s: "By IceCat and Suno", d: "2:26" },
+    { k: "this-should-be-hold-music", g: "IceCat's phone songs", t: "This Should Be Hold Music", s: "By IceCat and Suno · it should", d: "1:41" },
+    { k: "music-for-dialing", g: "IceCat's phone songs", t: "Music for Dialing", s: "By IceCat and Suno", d: "1:42" },
+    { k: "stalling", g: "IceCat's phone songs", t: "Stalling", s: "By IceCat and Suno · for when the roycipient says hold on", d: "2:06" }];
   const T = Object.fromEntries(TRACKS.map(t => [t.k, t]));
   let cur = null; const aud = () => $("holdaud");
   function sync() {
@@ -35,7 +51,7 @@ const Hold = (() => {
     $("callerno").textContent = Math.max(1, TRACKS.length - TRACKS.findIndex(t => t.k === k) - 1);
   }
   function init() {
-    $("tracks").innerHTML = TRACKS.map((t, i) => `<li class="track" data-k="${t.k}"><button type="button" data-hold="${t.k}" aria-label="Play ${esc(t.t)}"><span class="tri" aria-hidden="true"></span></button><span class="ln">LINE ${i + 1}</span><div class="tt"><b>${esc(t.t)}</b><span>${esc(t.s)}</span></div><span class="d">${t.d}</span><a class="dl" href="audio/${t.k}.mp3" download="callective-${t.k}.mp3" aria-label="Download ${esc(t.t)}">MP3 ↓</a></li>`).join("");
+    $("tracks").innerHTML = TRACKS.map((t, i) => `${t.g && t.g !== TRACKS[i - 1]?.g ? `<li class="track-group" aria-hidden="true">${esc(t.g)}</li>` : ""}<li class="track" data-k="${t.k}"><button type="button" data-hold="${t.k}" aria-label="Play ${esc(t.t)}"><span class="tri" aria-hidden="true"></span></button><span class="ln">LINE ${i + 1}</span><div class="tt"><b>${esc(t.t)}</b><span>${esc(t.s)}</span></div><span class="d">${t.d}</span><a class="dl" href="audio/${t.k}.mp3" download="callective-${t.k}.mp3" aria-label="Download ${esc(t.t)}">MP3 ↓</a></li>`).join("");
     document.addEventListener("click", e => { const b = e.target.closest("[data-hold]"); if (b) play(b.dataset.hold); });
     document.addEventListener("player-stopped", () => { if (aud().paused) { cur = null; sync(); } });
     const a = aud();
