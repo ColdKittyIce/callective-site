@@ -130,7 +130,7 @@
   </table>
 
   <p align="left" class="comic"><font size="5" color="#ffff00"><u>KOOL LINKZ</u></font><br>
-  <font color="#ffffff">&raquo; <a href="./#search">Search every call ever</a><br>&raquo; <a href="./#guess">Name That Caller game</a> <img src="/api/g98/newb.gif" alt="NEW!" width="34"><br>&raquo; <a href="./#glossary">What is a buttslam?? (glossary)</a><br>&raquo; <a href="./#wrapped">Callective Wrapped</a></font></p>
+  <font color="#ffffff">&raquo; <a href="./#search">Search every call ever</a><br>&raquo; <a href="./#guess">Name That Caller game</a> <img src="/api/g98/newb.gif" alt="NEW!" width="34"><br>&raquo; <a href="./#glossary">What is a buttslam?? (glossary)</a><br>&raquo; <a href="./#wrapped">Callective Wrapped</a><br>&raquo; <a href="https://phonelosers.com/" target="_blank" rel="noopener">Phone Losers of America</a> (the OG!!!)<br>&raquo; <a href="https://archive.org/details/2017-Phone_Losers_of_America_PLA_Media_Pack" target="_blank" rel="noopener">PLA Media Pack @ the Internet Archive</a><br>&raquo; <a href="#" onclick="document.getElementById('ring-list').click();document.getElementById('ring-sites').scrollIntoView();return false">MORE LINKZ in the webring &darr;</a></font></p>
 
   <center>
   <img src="/api/g98/fire.gif" alt="" width="60"><img src="/api/g98/redskull.gif" alt="" width="60"><img src="/api/g98/fire.gif" alt="" width="60">
@@ -156,9 +156,11 @@
 
   <br>
   <table border="3" cellpadding="6" bgcolor="#330033" style="border:3px double #f0f"><tr><td align="center">
-    <font face="Arial" size="2"><a href="./">&lt;&lt; Prev</a> | <b><font color="#ffff00">&#9742; THE PRANK CALL WEBRING &#9742;</font></b> | <a href="./#listen">Random</a> | <a href="./">Next &gt;&gt;</a><br>
-    <font size="1">This <a href="./">Prank Call Webring</a> site is owned by The Callective</font></font>
+    <font face="Arial" size="2"><a href="#" id="ring-prev">&lt;&lt; Prev</a> | <b><font color="#ffff00">&#9742; THE PRANK CALL WEBRING &#9742;</font></b> | <a href="#" id="ring-rand">Random</a> | <a href="#" id="ring-next">Next &gt;&gt;</a> | <a href="#" id="ring-list">List Sites</a><br>
+    <font size="1">This <a href="#" id="ring-home">Prank Call Webring</a> site is owned by The Callective. <span id="ring-where"></span></font></font>
   </td></tr></table>
+  <div id="ring-sites" style="display:none;width:95%;margin:8px auto;text-align:left">
+  </div>
 
   <br><img src="/api/g98/campfire.gif" alt="" width="40"><br>
   <font size="1" color="#aaaaaa">This page was requested by the Governor himself.<br>Last updated: 10/25/98<br>
@@ -172,6 +174,76 @@
 </div>
 
 <script>
+/* ---------- THE PRANK CALL WEBRING ---------- */
+var RING=[
+ ["Phone Losers of America","https://phonelosers.com/","the OG. phone phreaks + prank calls since 1994. RING LEADER","ring"],
+ ["The Snow Plow Show","https://snowplowshow.com/","RBCP's show. longest running prank show on earth probably","ring"],
+ ["PLA on Prankcast","https://prankcast.com/phonelosers","the snow plow show LIVE on prankcast","ring"],
+ ["PLA Radio (24/7 stream)","https://listen.notla.com/public/phonelosers","PLA audio all day all nite","ring"],
+ ["PLA Media Pack 2017 @ the Internet Archive","https://archive.org/details/2017-Phone_Losers_of_America_PLA_Media_Pack","EVERYTHING. calls, radio, books. download it all","ring"],
+ ["PLA Media Pack 2015","https://archive.org/details/2015-Phone_Losers_of_America_PLA_Media_Pack","the 2015 pack","ring"],
+ ["PLA Media Pack 2014","https://archive.org/details/2014-Phone_Losers_of_America_PLA_Media_Pack","the 2014 pack","ring"],
+ ["PLA Prank Call Compilation","https://archive.org/details/Phone_Losers_of_America_Prank_Call_Compilation","classic calls on the archive","ring"],
+ ["notla.com (RBCP's Cactus Shack)","https://notla.com/","cactuses. music. RBCP stuff","ring"],
+ ["PLA Forums","https://phonelosers.org/forums/","post ur calls","ring"],
+ ["r/phonelosers","https://www.reddit.com/r/phonelosers","PLA on reddit","ring"],
+ ["Mr. Dobalina's World of Prank Calls","https://worldofprankcalls.com/","the WOPC. our home turf. the Callective lives in the discord","ring"],
+ ["Prank Call Radio","https://worldofprankcalls.com/listen/","WOPC's prank radio","ring"],
+ ["PrankCast","https://prankcast.com/","where every prank show goes live. milkbox built it","ring"],
+ ["The Callective on PrankCast","https://prankcast.com/thecallective","every saturday 7PM EASTERN","ring"],
+ ["RogueServer","https://rogueserver.com/","icecast prank streams + a 24/7 wasted memory replay","ring"],
+ ["The Wasted Memory Show","https://www.wastedshow.com/","wasted memory's prank show","ring"],
+ ["The Corn Down","https://rogueserver.com/dragonmere","dragonmere on rogueserver","ring"],
+ ["Kitboga","https://www.twitch.tv/kitboga","wastes scammers time 4 a living. a hero","ring"],
+ ["Madhouse Live","http://www.madhouselive.com/","Carlito's legendary prank show. RIP Carlito","ring"],
+ ["Mop Riding With Dwight","https://prankcast.com/dwightthejanitor","Dwight the Janitor. grab a mop","ring"],
+ ["Dwight @ Prank Call Nation","http://www.prankcallnation.com/shows/dwight/","more Dwight","ring"],
+ ["DevonAnustart: Take Off Your Pants","https://prankcast.com/devonanustart","the prank call mom. 18+ ONLY!!!","ring"],
+ ["Prank Call Nation","http://www.prankcallnation.com/","a whole network of prank shows","ring"],
+ ["Another Prank Call Show","https://anotherprankcallshow.com/","King Richard's show","ring"],
+ ["976-NEON","http://976neon.com/","neon's show","ring"],
+ ["Travels With Miriam","http://travelswithmiriam.com/","on mixlr","ring"],
+ ["Graveyard Goonz","https://prankcast.com/graveyardgoonz","spooky goonz","ring"],
+ ["Robocalls with Dr. Tom Servo","https://prankcast.com/drtomservo","TOM MAN!!! TOM MAN!!!","ring"],
+ ["DespicableDogs","https://prankcast.com/despicabledogs","101.1 THE BUTT","ring"],
+ ["IceCat: The Chill","https://prankcast.com/icecat","the blue cat. made this webpage","ring"],
+ ["GreenImp","https://prankcast.com/greenimp","quack quack (Quackers says hi)","ring"],
+ ["milkbox","https://prankcast.com/milkbox","the guy who runs prankcast","ring"],
+ ["Greta Garbage","https://prankcast.com/gretagarbage","fabulous","ring"],
+ ["SnappyBakes","https://prankcast.com/snappybakes","snappy","ring"],
+ ["Carol's Prank Call Kitchen","https://prankcast.com/carol","cookin up calls","ring"],
+ ["The Web Page You Have Reached...","http://www.thisisarecording.com/","every phone company recording EVER","phreak"],
+ ["The Mojave Phone Booth","http://www.deuceofclubs.com/moj/mojave.html","a payphone in the middle of the desert. people called it 4 fun","phreak"],
+ ["Telephone Tribute","http://telephonetribute.com/","phone history","phreak"],
+ ["Phone Trips","http://www.wideweb.com/phonetrips/","old school phone phreak recordings","phreak"],
+ ["Bell System Memorial","http://www.bellsystemmemorial.com/","Ma Bell RIP","phreak"],
+ ["payphones.com","http://www.payphones.com/","payphones!!!","phreak"],
+ ["Cyber Telephone Museum","http://www.museumphones.com/","old phones","phreak"],
+ ["Private Line","http://www.privateline.com/","telecom history","phreak"],
+ ["2600: The Hacker Quarterly","https://www.2600.com/","off the hook","phreak"],
+ ["Phrack Magazine","http://www.phrack.com/","phreak + hack","phreak"],
+ ["Newgrounds","https://www.newgrounds.com/","flash movies d00d","phreak"],
+ ["The Onion","https://www.theonion.com/","america's finest news source","phreak"],
+ ["The Dialectizer","http://www.rinkworks.com/dialect/","make any page talk funny","phreak"],
+ ["Wall O' Shame","http://www.milk.com/wall-o-shame/","dumb stuff","phreak"],
+ ["dumblaws.com","http://www.dumblaws.com/","its illegal 2 do WHAT","phreak"]
+];
+(function(){
+  var K="cx98-ring", i=0; try{ i=+(localStorage.getItem(K)||0)||0; }catch(e){}
+  var members=RING.filter(function(r){return r[3]==="ring";});
+  function go(n){ i=(n+members.length)%members.length; try{localStorage.setItem(K,i);}catch(e){} var r=members[i];
+    document.getElementById("ring-where").innerHTML="Next stop: <b>"+r[0]+"</b> (site "+(i+1)+" of "+members.length+")"; window.open(r[1],"_blank","noopener"); }
+  function $(x){return document.getElementById(x);}
+  $("ring-next").onclick=function(e){e.preventDefault();go(i+1);};
+  $("ring-prev").onclick=function(e){e.preventDefault();go(i-1);};
+  $("ring-rand").onclick=function(e){e.preventDefault();go(Math.floor(Math.random()*members.length));};
+  function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function table(kind,title,color){ return '<table border="2" cellpadding="3" cellspacing="0" width="100%" bgcolor="#000033" style="margin:6px 0"><tr><td bgcolor="'+color+'" colspan="2"><font face="Arial" size="2" color="#000000"><b>'+title+'</b></font></td></tr>'+
+    RING.filter(function(r){return r[3]===kind;}).map(function(r){return '<tr><td width="45%"><font face="Arial" size="2">&raquo; <a href="'+esc(r[1])+'" target="_blank" rel="noopener">'+esc(r[0])+'</a></font></td><td><font face="Comic Sans MS" size="1" color="#ccccff">'+esc(r[2])+'</font></td></tr>';}).join("")+'</table>'; }
+  function toggle(e){ e.preventDefault(); var d=$("ring-sites"); if(d.style.display==="none"){ d.innerHTML=table("ring","&#9742; RING MEMBERS ("+members.length+" sites!!!)","#ffff00")+table("phreak","&#128225; PHONE PHREAK LINKZ (from the PLA links page)","#00ffff")+'<font size="1" color="#aaaaaa">want ur prank show in the ring? tell the Callective in the WOPC discord. some of these are old 90s sites and might be gone now. thats the internet baby</font>'; d.style.display="block"; } else d.style.display="none"; }
+  $("ring-list").onclick=toggle; $("ring-home").onclick=toggle;
+})();
+
 /* --- hit counter: counts each browser once a day --- */
 (async () => {
   const box = document.getElementById("counter"), show = n => { box.innerHTML = String(n).padStart(7, "0").split("").map(d => `<span>${d}</span>`).join(""); box.setAttribute("aria-label", `${n} visitors`); };

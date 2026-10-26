@@ -27,6 +27,8 @@
  *
  *
  *   Clips
+ *   GET  /c/:id                 a clip's share page: a little player, plus tags so Discord shows a playable video
+ *   GET  /c/:id.mp4             the clip as an MP4 (the clip card picture + the clip's MP3 audio, not re-encoded)
  *   GET  /api/clips             approved community clips
  *   GET  /api/clips/:id.mp3     an approved clip's audio (?dl=1 downloads it)
  *   POST /api/clips             send a clip: dest "board" or "crew" (private). Show slices with clean names post
@@ -44,6 +46,7 @@
  * Storage: KV namespace DB (clip records, rate limits), R2 bucket CLIPS (clip audio).
  * Nothing here writes to Prankcast or Discord, except the optional DISCORD_WEBHOOK heads-up for new clips.
  */
+import { mp4Head } from "./mp4.js";
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
 const UA = { "user-agent": "CallectiveSite/2.0 (+thecallective site worker)" };
@@ -54,7 +57,7 @@ const RADIO_SHOWS = 10; // Callective Radio plays the newest 10 shows, from the 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
+    if (!url.pathname.startsWith("/api/") && !url.pathname.startsWith("/c/")) return env.ASSETS.fetch(request);
     if (request.method === "OPTIONS") return new Response(null, { headers: cors() });
     try { return await route(request, env, ctx, url); }
     catch (e) { return json({ error: "Upstream error", detail: String(e && e.message || e) }, 502); }
@@ -67,6 +70,8 @@ async function route(request, env, ctx, url) {
       const p = url.pathname.replace(/\/+$/, ""), M = request.method;
       let m;
       if (p === "/api/ping") return json({ ok: true });
+      if ((m = p.match(/^\/c\/([a-z0-9-]+)\.mp4$/))) return clipVideo(env, ctx, m[1], request);
+      if ((m = p.match(/^\/c\/([a-z0-9-]+)$/))) return clipPage(env, ctx, m[1], url);
       if (p === "/api/status") return json(await getStatus(ctx), 200, 60);
       if (p === "/api/radio") return cached(request, ctx, 15, () => radio(env, url, ctx));
       if (p === "/api/latest") return json(await memo(ctx, "latest", 1800, latest), 200, 1800);
@@ -481,6 +486,80 @@ async function clipAudio(env, ctx, id, prefix, url, request) {
   const obj = await env.CLIPS.get(`clips/${id}.mp3`); if (!obj) return json({ error: "Not found" }, 404);
   return new Response(obj.body, { headers: { "content-type": "audio/mpeg", "cache-control": prefix === "a:" ? "public, max-age=604800" : "no-store", ...cors(), ...extra } });
 }
+/* ---------- shareable clip links ----------
+   /c/<id> is a small page with Open Graph video tags. Discord (and most chat apps) only show a player for video,
+   so /c/<id>.mp4 wraps the clip's MP3 in an MP4 with one still picture. Only the MP4 header is built here
+   (and saved in R2 as mp4h/<id>); the audio bytes stream straight from the clip's source, untouched. */
+async function clipSource(env, ctx, id) {
+  const rec = await env.DB.getWithMetadata("a:" + id); if (!rec.value) return null;
+  const md = rec.metadata || {};
+  if (md.ref) {
+    const ep = await memo(ctx, "ep2" + md.ref.ep, 604800, () => episode(md.ref.ep)); if (!ep.mp3) return null;
+    const lay = await memo(ctx, "lay" + md.ref.ep, 2592000, () => mp3Layout(env, md.ref.ep, ep.mp3));
+    const a = Math.floor(lay.start + md.ref.from * lay.bytesPerSec), z = Math.floor(lay.start + md.ref.to * lay.bytesPerSec);
+    return { md, size: z - a + 1, read: (o, l) => readPiece(env, md.ref.ep, ep.mp3, a + o, a + o + l - 1) };
+  }
+  const head = await env.CLIPS.head(`clips/${id}.mp3`); if (!head) return null;
+  return { md, size: head.size, read: async (o, l) => (await env.CLIPS.get(`clips/${id}.mp3`, { range: { offset: o, length: l } })).body };
+}
+async function clipMp4Head(env, id, src) {
+  const k = `mp4h/${id}`, o = await env.CLIPS.get(k);
+  if (o) return { head: new Uint8Array(await o.arrayBuffer()), start: +o.customMetadata.start, end: +o.customMetadata.end };
+  const mp3 = new Uint8Array(await new Response(await src.read(0, src.size)).arrayBuffer());
+  const h = mp4Head(mp3);
+  await env.CLIPS.put(k, h.head, { customMetadata: { start: String(h.start), end: String(h.end) } });
+  return h;
+}
+async function clipVideo(env, ctx, id, request) {
+  if (!env.DB || !env.CLIPS) return json({ error: "Storage not set up" }, 500);
+  const src = await clipSource(env, ctx, id); if (!src) return json({ error: "Not found" }, 404);
+  let H; try { H = await clipMp4Head(env, id, src); } catch (e) { return json({ error: "Couldn't build the video" }, 502); }
+  const hl = H.head.length, total = hl + (H.end - H.start);
+  let s0 = 0, s1 = total - 1, status = 200;
+  const rg = (request.headers.get("range") || "").match(/bytes=(\d*)-(\d*)/);
+  if (rg && (rg[1] || rg[2])) { if (rg[1]) { s0 = +rg[1]; s1 = rg[2] ? Math.min(+rg[2], total - 1) : total - 1; } else s0 = Math.max(0, total - +rg[2]); if (s0 > s1) return new Response(null, { status: 416, headers: { "content-range": `bytes */${total}` } }); status = 206; }
+  const len = s1 - s0 + 1, out = new FixedLengthStream(len);
+  ctx.waitUntil((async () => {
+    const w = out.writable.getWriter();
+    try {
+      if (s0 < hl) await w.write(H.head.subarray(s0, Math.min(hl, s1 + 1)));
+      if (s1 >= hl) { const a0 = Math.max(0, s0 - hl), a1 = s1 - hl; const r = (await src.read(H.start + a0, a1 - a0 + 1)).getReader();
+        for (;;) { const { done, value } = await r.read(); if (done) break; await w.write(value); } }
+      await w.close();
+    } catch (e) { try { await w.abort(e); } catch (x) {} }
+  })());
+  const h = { "content-type": "video/mp4", "accept-ranges": "bytes", "content-length": String(len), "cache-control": "public, max-age=86400", ...cors() };
+  if (status === 206) h["content-range"] = `bytes ${s0}-${s1}/${total}`;
+  return new Response(out.readable, { status, headers: h });
+}
+const hx = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+async function clipPage(env, ctx, id, url) {
+  if (!env.DB) return json({ error: "Storage not set up" }, 500);
+  const rec = await env.DB.getWithMetadata("a:" + id);
+  const o = url.origin;
+  if (!rec.value) return new Response(`<!doctype html><meta charset="utf-8"><title>Clip not found</title><meta http-equiv="refresh" content="2;url=${o}/#clips"><body style="background:#05040c;color:#e6f4ff;font-family:system-ui;padding:40px">That clip isn't on the board anymore. Taking you to the clip board…</body>`, { status: 404, headers: { "content-type": "text/html; charset=utf-8" } });
+  const md = rec.metadata || {}, ep = md.ep ? (await allEpisodes(env, ctx).catch(() => [])).find(e => e.id === md.ep) : null;
+  const len = (+md.sec || 0) >= 60 ? `${Math.floor(md.sec / 60)}m ${Math.round(md.sec % 60)}s` : `${Math.round(+md.sec || 0)}s`;
+  const when = ep?.d ? new Date(ep.d + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }) : "";
+  const desc = [`A Callective clip${when ? ` from the ${when} show` : ""}${ep?.h ? `, hosted by ${ep.h}` : ""}`, len, md.by ? `Clipped by ${md.by}.` : ""].filter(Boolean).join(" · ");
+  const t = hx(md.title || "A Callective clip"), d = hx(desc), v = `${o}/c/${id}.mp4`, img = `${o}/img/clip-card.jpg`, page = `${o}/c/${id}`;
+  const show = md.ep ? `<a href="${o}/#show/${md.ep}">The whole show →</a>` : "";
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${t} · The Callective</title><meta name="description" content="${d}">
+<meta property="og:site_name" content="The Callective"><meta property="og:type" content="video.other"><meta property="og:title" content="${t}"><meta property="og:description" content="${d}"><meta property="og:url" content="${page}">
+<meta property="og:image" content="${img}"><meta property="og:image:width" content="1280"><meta property="og:image:height" content="720">
+<meta property="og:video" content="${v}"><meta property="og:video:url" content="${v}"><meta property="og:video:secure_url" content="${v}"><meta property="og:video:type" content="video/mp4"><meta property="og:video:width" content="1280"><meta property="og:video:height" content="720">
+<meta name="twitter:card" content="player"><meta name="twitter:title" content="${t}"><meta name="twitter:description" content="${d}"><meta name="twitter:image" content="${img}"><meta name="twitter:player" content="${page}?embed=1"><meta name="twitter:player:width" content="640"><meta name="twitter:player:height" content="200"><meta name="twitter:player:stream" content="${v}"><meta name="twitter:player:stream:content_type" content="video/mp4">
+<meta name="theme-color" content="#ff2bd6"><link rel="icon" href="${o}/img/mark.webp">
+<style>body{margin:0;background:#05040c;color:#e6f4ff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:grid;place-items:center;padding:16px;box-sizing:border-box}
+.c{width:min(640px,100%);border:1px solid #2b2650;background:#0a0919;padding:18px;box-shadow:0 0 30px #ff2bd633}
+.k{font:12px ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#ff2bd6}h1{font-size:24px;margin:6px 0 4px;color:#18f0ff;text-shadow:0 0 10px #18f0ff66}
+p{color:#8e9ac4;margin:0 0 12px;font-size:14px}audio{width:100%}a{color:#e9ff3b}.l{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:14px}
+${url.searchParams.get("embed") ? ".l,.k{display:none}.c{border:0;box-shadow:none;padding:10px}body{min-height:0}" : ""}</style></head>
+<body><main class="c"><div class="k">The Callective · clip</div><h1>${t}</h1><p>${d}</p><audio controls preload="metadata" src="${o}/api/clips/${id}.mp3"></audio>
+<div class="l"><a href="${o}/#clips">More clips on the board →</a>${show}<a href="${o}/">The Callective</a></div></main></body></html>`;
+  return new Response(html, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=300" } });
+}
 function looksLikeMp3(b) { return (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33) || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0); }
 async function clipsPost(request, env, ctx) {
   if (!env.DB || !env.CLIPS) return json({ error: "Clip storage isn't set up yet" }, 500);
@@ -567,7 +646,7 @@ async function report(env, id, request) {
 async function modAct(env, id, action) {
   if (action === "remove") {
     const pub = await env.DB.getWithMetadata("a:" + id); if (!pub.value) return json({ error: "Not on the board" }, 404);
-    await env.DB.delete("a:" + id);
+    await env.DB.delete("a:" + id); await env.CLIPS.delete(`mp4h/${id}`);
     if (!pub.metadata?.ref) { await env.CLIPS.delete(`clips/${id}.mp3`); await env.DB.put("count", String(Math.max(0, (+(await env.DB.get("count")) || 1) - 1))); }
     return json({ ok: true });
   }

@@ -293,7 +293,7 @@ const Clipper = (() => {
       const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || r.status);
       SFX.pickup(); $("ct-name").value = "";
       if (dest === "crew") msg("> Sent straight to the crew. Only they can hear it.");
-      else if (j.status === "posted") { msg(`> Posted! It's on the <a href="#clips">clip board</a>.`); Board.reload(); }
+      else if (j.status === "posted") { msg(`> Posted! It's on the <a href="#clips">clip board</a>. <button class="cb-share" type="button" data-share="${esc(j.id)}">🔗 Copy the share link</button>`); Board.reload(); }
       else msg(j.flag === "recorded audio" ? "> Sent! Recorded clips get a quick listen from the crew before they go up." : "> Sent! The name tripped the filter, so the crew will take a quick look first.");
     } catch (e) { msg(`> Didn't send: ${esc(e.message)}`); }
     busy = false; paintAll();

@@ -2,13 +2,13 @@ name = "callective"
 main = "worker/index.js"
 compatibility_date = "2025-09-01"
 
-# The site itself. Only /api/... runs the worker; every other file is served
+# The site itself. Only /api/... and /c/... (clip share links) run the worker; every other file is served
 # straight from Cloudflare's static assets, which are free and don't count
 # toward the daily request limit.
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/c/*"]
 
 # Holds the clip board records.
 # Create it once with:  npx wrangler kv namespace create DB

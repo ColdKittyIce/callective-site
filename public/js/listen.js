@@ -40,7 +40,7 @@ const Listen = (() => {
     const go = () => { try { a.currentTime = pos(); } catch (e) {} a.play().catch(() => { want = false; paintNow(); }); };
     if (a.readyState >= 1) go(); else a.addEventListener("loadedmetadata", go, { once: true });
     a.preload = "auto";
-    Player.set({ kind: "radio", el: a, title: radioTitle(sched.ep), page: "listen", clip: () => clip(30), toggle, isPlaying: () => !a.paused, time: () => hms(pos(), true) });
+    Player.set({ kind: "radio", el: a, title: radioTitle(sched.ep), page: "listen", clip: () => clip(30), toggle, isPlaying: () => !a.paused, time: () => hms(pos(), true), call: () => sched?.ep ? ({ ep: sched.ep.id, t: pos(), dur: sched.ep.sec }) : null });
     $("ls-note").textContent = "Everyone listening hears this same moment. Pause and you rejoin wherever the radio is when you come back.";
   }
   function stopRadio() { switching = true; ra().pause(); switching = false; }

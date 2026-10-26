@@ -142,7 +142,7 @@ const Replay = (() => {
   function play() {
     if (!ep) return;
     if (hasAudio) { Media.claim(aud()); aud().play().catch(() => { toast("Couldn't start the audio. Try again or open it on Prankcast."); });
-      Player.set({ kind: "ep", el: aud(), title: `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, page: "replay", seek: true, clip: () => clip() }); curCall = undefined; paintCurCall(now()); }
+      Player.set({ kind: "ep", el: aud(), title: `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, page: "replay", seek: true, clip: () => clip(), call: () => ({ ep: ep.id, t: now(), dur }) }); curCall = undefined; paintCurCall(now()); }
     else { if (vt >= dur) vt = 0; vplaying = true; vlast = 0; }
     if (!raf) raf = requestAnimationFrame(loop);
   }

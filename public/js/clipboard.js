@@ -12,7 +12,7 @@ const Board = (() => {
     return `<article class="cb-card hud${cur === c.id ? " playing" : ""}" data-id="${esc(c.id)}">
       <button class="cb-play" type="button" data-cbplay="${esc(c.id)}" aria-label="Play ${esc(c.title)}"><span class="tri" aria-hidden="true"></span></button>
       <div class="cb-body"><b>${esc(c.title)}</b><span class="cb-by">clipped by ${esc(c.by || "an anonymous caller")} · ${(+c.sec || 0) >= 60 ? `${Math.floor(c.sec / 60)}m ${Math.round(c.sec % 60)}s` : (+c.sec || 0).toFixed(1) + "s"}${c.live ? " · from a live show" : ""}</span>${wave(c.peaks)}${src}</div>
-      <div class="cb-acts">${(+c.sec || 0) <= 122 ? `<button class="btn sm ghost cb-remix" type="button" data-remix="${esc(c.id)}">Remix</button>` : ""}<button class="cb-rep" type="button" data-report="${esc(c.id)}" title="Report this clip">⚑ Report</button><a class="btn sm ghost" href="${dlUrl(c)}" download="callective-${esc(String(c.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}.mp3">Download</a></div></article>`;
+      <div class="cb-acts">${demo ? "" : `<button class="cb-share" type="button" data-share="${esc(c.id)}" title="Copy a link that plays right in Discord">🔗 Share</button>`}${(+c.sec || 0) <= 122 ? `<button class="btn sm ghost cb-remix" type="button" data-remix="${esc(c.id)}">Remix</button>` : ""}<button class="cb-rep" type="button" data-report="${esc(c.id)}" title="Report this clip">⚑ Report</button><a class="btn sm ghost" href="${dlUrl(c)}" download="callective-${esc(String(c.title).toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 50))}.mp3">Download</a></div></article>`;
   }
   function render() {
     const q = $("cb-q").value.trim().toLowerCase();
@@ -31,6 +31,15 @@ const Board = (() => {
     Player.set({ kind: "clip", el: aud(), title: c.title, page: "clips", seek: true, clip: () => Player.clipFrom(aud(), url(c), c.title, 60) });
     document.querySelectorAll(".cb-card").forEach(el => el.classList.toggle("playing", el.dataset.id === id));
   }
+  // A clip's share link: /c/<id> plays right inside Discord (it's a video with the clip card as the picture).
+  async function share(id, title) {
+    const link = `${location.origin}/c/${id}`;
+    if (navigator.share && matchMedia("(pointer:coarse)").matches) { try { await navigator.share({ title: title || "A Callective clip", url: link }); return; } catch (e) { if (e.name === "AbortError") return; } }
+    try { await navigator.clipboard.writeText(link); toast("Link copied. Paste it in Discord and it plays right there."); }
+    catch (e) { prompt("Copy this link:", link); }
+    fetch(`/c/${id}.mp4`, { headers: { range: "bytes=0-1" } }).catch(() => {}); // warm up the video so the first Discord preview is quick
+  }
+  document.addEventListener("click", e => { const b = e.target.closest("[data-share]"); if (b) { e.preventDefault(); share(b.dataset.share, b.dataset.title); } });
   async function load() {
     if (C.api) {
       try { const r = await getJSON(`${C.api}/clips`, 8000); clips = (r.clips || []); demo = false;
@@ -57,7 +66,7 @@ const Board = (() => {
     const a = aud(); a.addEventListener("ended", () => { cur = null; render(); });
     load();
   }
-  return { init, reload: load, play, get list() { return demo ? [] : clips; } };
+  return { init, reload: load, play, share, get list() { return demo ? [] : clips; } };
 })();
 
 /* ---------- crew mod panel ---------- */
