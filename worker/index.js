@@ -633,12 +633,18 @@ async function hallNew(request, env) {
 const STUN = [{ urls: ["stun:stun.cloudflare.com:3478", "stun:stun.l.google.com:19302"] }];
 async function hallIce(env, ctx) {
   if (!env.TURN_KEY_ID || !env.TURN_KEY_API_TOKEN) return json({ iceServers: STUN });
-  try {
-    const r = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${env.TURN_KEY_ID}/credentials/generate-ice-servers`, {
-      method: "POST", headers: { authorization: `Bearer ${env.TURN_KEY_API_TOKEN}`, "content-type": "application/json" }, body: JSON.stringify({ ttl: 86400 }) });
-    const o = await r.json(); if (!r.ok || !o.iceServers) throw new Error("turn");
-    return json({ iceServers: [...STUN, ...(Array.isArray(o.iceServers) ? o.iceServers : [o.iceServers])], turn: true });
-  } catch (e) { return json({ iceServers: STUN }); }
+  const base = `https://rtc.live.cloudflare.com/v1/turn/keys/${String(env.TURN_KEY_ID).trim()}/credentials/`;
+  const opt = { method: "POST", headers: { authorization: `Bearer ${String(env.TURN_KEY_API_TOKEN).trim()}`, "content-type": "application/json" }, body: JSON.stringify({ ttl: 86400 }) };
+  let why = "";
+  for (const path of ["generate-ice-servers", "generate"]) { // newer endpoint first, then the original one
+    try {
+      const r = await fetch(base + path, opt), txt = await r.text();
+      if (!r.ok) { why += `${path}:${r.status} `; continue; }
+      const o = JSON.parse(txt), ice = o.iceServers; if (!ice) { why += `${path}:noice `; continue; }
+      return json({ iceServers: [...STUN, ...(Array.isArray(ice) ? ice : [ice])], turn: true });
+    } catch (e) { why += `${path}:err `; }
+  }
+  return json({ iceServers: STUN, turn: false, turnError: why.trim() }); // status codes only, never the key
 }
 async function hallGo(request, env, code, ws) {
   if (!env.HALL) return json({ error: "Rooms aren't set up yet" }, 500);
