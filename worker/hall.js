@@ -6,7 +6,7 @@ import { DurableObject } from "cloudflare:workers";
 import { screen, SLURS } from "./screen.js";
 
 const IDLE_MS = 12 * 3600e3, ALLCALL_COOLDOWN = 60e3, LOG_MAX = 150, MAX_ONLINE = 150;
-const BOT = "Patrick Howard", DM_KEEP = 60;
+const BOT = "Patrick Howard", DM_KEEP = 60, VOICE_MAX = 12, SFX_COOLDOWN = 2500;
 const now = () => Date.now();
 const rid = (n = 10) => [...crypto.getRandomValues(new Uint8Array(n))].map(b => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
 async function hash(s) { const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(d)].slice(0, 12).map(b => b.toString(16).padStart(2, "0")).join(""); }
@@ -14,8 +14,8 @@ const tidy = (s, n) => String(s ?? "").replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, "
 const low = s => String(s || "").toLowerCase().replace(/^@/, "");
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-const HELP_USER = "**Everyone:** `!join` (or drop 🔔 / :PLA: in chat) · `!leave` · `!queue` · `!position` · `!allcall` (or :TheCallectiveTitle:) · `!flair <emoji|off>` · `!mystats` · `!dm <name> <message>` (private: numbers and links are OK in DMs) · `!block <name>` / `!unblock <name>`";
-const HELP_MOD = "**Mods:** `!next` · `!remove <name|#pos>` · `!move <name> <pos>` · `!swap <a> <b>` · `!shuffle` · `!reverse` · `!lock` · `!unlock` · `!clear` · `!allcall <pos>` · `!kick <name>` · `!blacklist <name>` · `!unblacklist <name>` · `!blacklistlist`\n**Host:** `!mod <name>` · `!unmod <name>` · `!title <text>` · `!close`";
+const HELP_USER = "**Everyone:** `!join` (or drop 🔔 / :PLA: in chat) · `!leave` · `!queue` · `!position` · `!allcall` (or :TheCallectiveTitle:) · `!flair <emoji|off>` · `!mystats` · `!dm <name> <message>` (private: numbers and links are OK in DMs) · `!block <name>` / `!unblock <name>`\n**Voice:** join from the Voice box. Rule 1: stay muted unless it's your turn.";
+const HELP_MOD = "**Mods:** `!next` · `!remove <name|#pos>` · `!move <name> <pos>` · `!swap <a> <b>` · `!shuffle` · `!reverse` · `!lock` · `!unlock` · `!clear` · `!allcall <pos>` · `!kick <name>` · `!blacklist <name>` · `!unblacklist <name>` · `!blacklistlist` · `!mute <name>` / `!unmute <name>` (voice) · `!muteall`\n**Host:** `!mod <name>` · `!unmod <name>` · `!title <text>` · `!soundboard open|mods|off` · `!close`";
 
 export class Hall extends DurableObject {
   constructor(ctx, env) {
@@ -80,17 +80,19 @@ export class Hall extends DurableObject {
   }
 
   /* ---------- sockets ---------- */
-  online() { const o = new Set(); for (const ws of this.ctx.getWebSockets()) { const a = ws.deserializeAttachment(); if (a && a.id) o.add(a.id); } return o; }
+  online() { const o = new Set(); for (const ws of this.ctx.getWebSockets()) { if (ws.readyState !== 1) continue; const a = ws.deserializeAttachment(); if (a && a.id) o.add(a.id); } return o; }
   sockets(id) { return this.ctx.getWebSockets().filter(ws => (ws.deserializeAttachment() || {}).id === id); }
   send(ws, o) { try { ws.send(JSON.stringify(o)); } catch (e) {} }
   broadcast(o) { const t = JSON.stringify(o); for (const ws of this.ctx.getWebSockets()) try { ws.send(t); } catch (e) {} }
   state(id) {
     const s = this.s, on = this.online(), M = s.members;
     const q = s.queue.map(e => e.all ? { k: e.k, all: true, by: e.by } : { k: e.k, id: e.id, name: M[e.id]?.name || "?", flair: M[e.id]?.flair || "" });
-    const members = Object.entries(M).filter(([k]) => on.has(k) || s.queue.some(e => e.id === k)).map(([k, m]) => ({ id: k, name: m.name, flair: m.flair, mod: m.mod, host: m.host, on: on.has(k) }))
+    const vc = this.voiceMap();
+    const members = Object.entries(M).filter(([k]) => on.has(k) || s.queue.some(e => e.id === k)).map(([k, m]) => ({ id: k, name: m.name, flair: m.flair, mod: m.mod, host: m.host, on: on.has(k),
+        v: vc.has(k) ? { muted: !!vc.get(k).muted, smute: !!m.smute, vs: vc.get(k).vs || "" } : null }))
       .sort((a, b) => (b.host - a.host) || (b.mod - a.mod) || (b.on - a.on) || a.name.localeCompare(b.name));
-    return { type: "state", code: s.code, title: s.title, locked: s.locked, cur: s.cur, queue: q, members, calls: s.calls,
-      you: id && M[id] ? { id, name: M[id].name, mod: M[id].mod, host: M[id].host, flair: M[id].flair, blocks: M[id].blocks || [] } : null };
+    return { type: "state", code: s.code, title: s.title, locked: s.locked, cur: s.cur, queue: q, members, calls: s.calls, sfx: s.sfxMode || "open", vmax: VOICE_MAX,
+      you: id && M[id] ? { id, name: M[id].name, mod: M[id].mod, host: M[id].host, flair: M[id].flair, blocks: M[id].blocks || [], smute: !!M[id].smute } : null };
   }
   broadcastState() {
     for (const ws of this.ctx.getWebSockets()) { const a = ws.deserializeAttachment() || {}; this.send(ws, this.state(a.id || null)); }
@@ -108,6 +110,8 @@ export class Hall extends DurableObject {
     const a = ws.deserializeAttachment() || {}; if (!a.id) return;
     const me = this.s.members[a.id]; if (!me) return ws.close(4001, "removed");
     let d; try { d = JSON.parse(raw); } catch (e) { return; }
+    if (d.type === "rtc" || d.type === "voice") return this.voiceMsg(ws, a, d); // signaling: no flood limit, no storage write
+    if (d.type === "sfx") return this.sfx(ws, a.id, d);
     // flood control: 8 messages per 10 seconds
     const t = now(); me.burst = (me.burst || []).filter(x => t - x < 10000); if (me.burst.length >= 8) return this.whisper(ws, "Slow down a little. 🐢"); me.burst.push(t);
     me.seen = t;
@@ -149,6 +153,34 @@ export class Hall extends DurableObject {
     me.blocks = (me.blocks || []).filter(x => x !== who); if (on) me.blocks.push(who);
     this.whisper(ws, on ? `🚫 Blocked ${t.name}. They can't DM you, and you won't see their chat messages.` : `Unblocked ${t.name}.`);
     for (const w of this.sockets(id)) this.send(w, this.state(id));
+  }
+  /* ---------- voice: peer-to-peer WebRTC. The room only passes the setup messages between browsers; audio never touches the worker. ---------- */
+  voiceMap() { const v = new Map(); for (const ws of this.ctx.getWebSockets()) { if (ws.readyState !== 1) continue; const a = ws.deserializeAttachment() || {}; if (a.id && a.voice) v.set(a.id, a.voice); } return v; }
+  voiceSocket(id) { return this.ctx.getWebSockets().find(ws => { if (ws.readyState !== 1) return false; const a = ws.deserializeAttachment() || {}; return a.id === id && a.voice; }); }
+  voiceMsg(ws, a, d) {
+    if (d.type === "voice") {
+      if (d.on) {
+        const vm = this.voiceMap(); vm.delete(a.id);
+        if (!a.voice && vm.size >= VOICE_MAX) return this.send(ws, { type: "voicefull", max: VOICE_MAX });
+        for (const w of this.sockets(a.id)) if (w !== ws && (w.deserializeAttachment() || {}).voice) { const b = w.deserializeAttachment(); delete b.voice; w.serializeAttachment(b); this.send(w, { type: "voiceoff", why: "You joined voice in another tab." }); }
+        a.voice = { muted: d.muted !== false, vs: String(d.vs || "").slice(0, 16) };
+      } else delete a.voice;
+      ws.serializeAttachment(a); this.broadcastState(); return;
+    }
+    // rtc: relay {sig} to the other person's voice tab, only if both are in voice
+    if (!a.voice) return;
+    a.rl = (a.rl || 0); const t = now(); if (!a.rlT || t - a.rlT > 10000) { a.rlT = t; a.rl = 0; } if (++a.rl > 400) return; ws.serializeAttachment(a);
+    const to = this.voiceSocket(String(d.to || "")); if (!to || JSON.stringify(d.sig || "").length > 20000) return;
+    this.send(to, { type: "rtc", from: a.id, sig: d.sig });
+  }
+  /* ---------- soundboard: tells every browser in the room to play a sound. Rule 7: during a call only the caller and mods can. ---------- */
+  sfx(ws, id, d) {
+    const s = this.s, m = s.members[id], k = String(d.k || ""); if (!/^[cs]:[a-z0-9-]{1,40}$/.test(k)) return;
+    const mode = s.sfxMode || "open", caller = s.cur && s.cur.id === id;
+    if (mode === "off" && !m.host) return this.whisper(ws, "The host turned the room soundboard off. Your sounds still play on your own line.");
+    if (!m.mod && !caller && (mode === "mods" || s.cur)) return this.whisper(ws, mode === "mods" ? "Only mods and the person on the phone can play sounds to the room right now." : "Rule 7: no sound effects during someone's call unless you're invited. Your sounds still play on your own line.");
+    const t = now(); if (!m.mod && t - (m.sfxAt || 0) < SFX_COOLDOWN) return; m.sfxAt = t;
+    this.broadcast({ type: "sfx", k, by: m.name, uid: id });
   }
   async webSocketClose(ws) { if (this.s) this.broadcastState(); }
   async webSocketError(ws) { if (this.s) this.broadcastState(); }
@@ -268,6 +300,20 @@ export class Hall extends DurableObject {
         for (const w of this.sockets(f.id)) { this.send(w, { type: "error", error: c === "kick" ? "You were removed from the room." : "You've been blacklisted from this room." }); w.close(4003, "removed"); }
         if (c === "kick") delete s.members[f.id]; else m.banned = true;
         say(c === "kick" ? `👢 **${m.name}** was removed from the room.` : `⛔ **${m.name}** is blacklisted.`); return done();
+      }
+      case "mute": case "unmute": {
+        if (needMod()) return; const f = this.find(args.join(" ")); if (!f || !f.id) return tell("Couldn't find that person.");
+        const m = s.members[f.id]; if (m.host || (m.mod && !host)) return tell("You can't mute the host or another mod.");
+        m.smute = c === "mute"; say(m.smute ? `🔇 **${m.name}** is muted by a mod.` : `🔊 **${m.name}** can talk again.`); return done();
+      }
+      case "muteall": {
+        if (needMod()) return; const mods = Object.keys(s.members).filter(k => s.members[k].mod || (s.cur && s.cur.id === k));
+        this.broadcast({ type: "forcemute", except: mods }); say("🔇 Open mics muted (Rule 1). The person on the phone and mods stay live."); return;
+      }
+      case "soundboard": case "sfx": {
+        if (!host) return tell("Only the host can change the soundboard.");
+        const v = low(args[0]); if (!["open", "mods", "off"].includes(v)) return tell("Use `!soundboard open`, `!soundboard mods` or `!soundboard off`.");
+        s.sfxMode = v; say(v === "open" ? "🔊 Room soundboard is **open** (between calls; during a call only the caller and mods)." : v === "mods" ? "🔊 Room soundboard is **mods only** (plus whoever's on the phone)." : "🔇 Room soundboard is **off**."); return done();
       }
       case "unblacklist": case "unban": {
         if (needMod()) return; const x = low(args.join(" ")); const e = Object.entries(s.members).find(([, m]) => m.banned && low(m.name) === x);

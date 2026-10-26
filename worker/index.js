@@ -94,6 +94,7 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/g98\/([a-z0-9]+)\.gif$/))) return gif98(env, m[1]);
       if ((m = p.match(/^\/api\/media\/([a-z0-9-]+)\.mp3$/))) return mediaAudio(env, m[1], request);
       if (p === "/api/hall" && M === "POST") return hallNew(request, env);
+      if (p === "/api/hall-ice") return hallIce(env, ctx);
       if ((m = p.match(/^\/api\/hall\/([A-Za-z]{2,6}-\d{4})(\/ws)?$/))) return hallGo(request, env, m[1].toUpperCase(), !!m[2]);
       if (p === "/api/hits") return hits(env, M === "POST");
       if (p === "/api/suggest" && M === "GET") return cached(request, ctx, 30, () => sgAll(env));
@@ -626,6 +627,18 @@ async function hallNew(request, env) {
     const o = await res.json(); return json({ code, title, hostKey: o.hostKey });
   }
   return json({ error: "Couldn't find a free code. Try again" }, 503);
+}
+// Voice connection helpers. STUN is free and works for most home networks. If TURN keys are set up
+// (Cloudflare Realtime → TURN; secrets TURN_KEY_ID + TURN_KEY_API_TOKEN), strict networks get a relay too.
+const STUN = [{ urls: ["stun:stun.cloudflare.com:3478", "stun:stun.l.google.com:19302"] }];
+async function hallIce(env, ctx) {
+  if (!env.TURN_KEY_ID || !env.TURN_KEY_API_TOKEN) return json({ iceServers: STUN });
+  try {
+    const r = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${env.TURN_KEY_ID}/credentials/generate-ice-servers`, {
+      method: "POST", headers: { authorization: `Bearer ${env.TURN_KEY_API_TOKEN}`, "content-type": "application/json" }, body: JSON.stringify({ ttl: 86400 }) });
+    const o = await r.json(); if (!r.ok || !o.iceServers) throw new Error("turn");
+    return json({ iceServers: [...STUN, ...(Array.isArray(o.iceServers) ? o.iceServers : [o.iceServers])], turn: true });
+  } catch (e) { return json({ iceServers: STUN }); }
 }
 async function hallGo(request, env, code, ws) {
   if (!env.HALL) return json({ error: "Rooms aren't set up yet" }, 500);

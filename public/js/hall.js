@@ -16,7 +16,7 @@ const Hall = (() => {
   function fmt(text) {
     let h = esc(text);
     h = h.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
-    h = h.replace(/:pla:/gi, '<span class="hl-pla" title=":PLA:">🔔</span>').replace(/:thecallectivetitle:/gi, '<span class="hl-pla" title=":TheCallectiveTitle:">📣</span>');
+    h = h.replace(/:pla:|🔔/gi, '<img class="hl-pla" src="img/pla-bell.png" alt=":PLA:" title=":PLA:">').replace(/:thecallectivetitle:/gi, '<span class="hl-pla" title=":TheCallectiveTitle:">📣</span>');
     if (me && me.name) h = h.replace(new RegExp(`(^|[^\\w])(@?${me.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})(?![\\w])`, "gi"), '$1<mark>$2</mark>');
     return h.replace(/\n/g, "<br>");
   }
@@ -89,12 +89,12 @@ const Hall = (() => {
     $("hl-cur").classList.toggle("me", !!(st.cur && st.cur.id && st.cur.id === y.id));
     $("hl-calls").textContent = st.calls ? `${st.calls} call${st.calls === 1 ? "" : "s"} so far` : "";
     const inLine = st.queue.findIndex(e => e.id === y.id);
-    const bell = $("hl-bell"); bell.textContent = inLine >= 0 ? `👋 Leave line (#${inLine + 1})` : "🔔 Get in line"; bell.disabled = st.locked && !mod && inLine < 0;
+    const bell = $("hl-bell"); bell.innerHTML = inLine >= 0 ? `👋 Leave line (#${inLine + 1})` : `<img class="hl-pla" src="img/pla-bell.png" alt=""> Get in line`; bell.disabled = st.locked && !mod && inLine < 0;
     $("hl-qn").textContent = st.queue.length ? `(${st.queue.length})` : "";
     $("hl-q").innerHTML = st.queue.length ? st.queue.map((e, i) => `<li class="${e.id && e.id === y.id ? "me" : ""}${e.all ? " all" : ""}">
         <span class="hl-qn">${i + 1}</span><span class="hl-qname">${e.all ? `📣 ALL CALL <small>by ${esc(e.by)}</small>` : `${e.flair ? esc(e.flair) + " " : ""}${esc(e.name)}`}</span>
         ${mod ? `<span class="hl-qctl"><button type="button" data-cmd="!up #${i + 1}" aria-label="Move up" ${i ? "" : "disabled"}>▲</button><button type="button" data-cmd="!down #${i + 1}" aria-label="Move down" ${i < st.queue.length - 1 ? "" : "disabled"}>▼</button><button type="button" data-cmd="!remove #${i + 1}" aria-label="Remove">✕</button></span>` : ""}</li>`).join("")
-      : `<li class="hl-empty">Empty. ${st.locked ? "The line is locked." : "Drop 🔔 in chat to get in."}</li>`;
+      : `<li class="hl-empty">Empty. ${st.locked ? "The line is locked." : 'Drop the <img class="hl-pla" src="img/pla-bell.png" alt="PLA bell"> in chat to get in.'}</li>`;
     const on = st.members.filter(m => m.on).length;
     $("hl-mn").textContent = `(${on})`;
     $("hl-mem").innerHTML = st.members.map(m => {
@@ -122,13 +122,18 @@ const Hall = (() => {
     sock.onmessage = e => {
       if (e.data === "pong") return;
       let d; try { d = JSON.parse(e.data); } catch (x) { return; }
-      if (d.type === "welcome") { me = { id: d.id, name: d.name }; store.put(code, { key: d.key, name: d.name }); store.setName(d.name); show(true); history.replaceState(null, "", "#host/" + code); }
+      if (d.type === "welcome") { const again = !!me; me = { id: d.id, name: d.name }; if (again) HallVoice.onReconnect(); store.put(code, { key: d.key, name: d.name }); store.setName(d.name); show(true); history.replaceState(null, "", "#host/" + code); }
       else if (d.type === "log") { $("hl-log").innerHTML = ""; lastN = 0; d.log.forEach(addMsg); $("hl-log").scrollTop = 1e9; }
       else if (d.type === "msg") addMsg(d.msg);
+      else if (d.type === "rtc") HallVoice.onSignal(d.from, d.sig);
+      else if (d.type === "sfx") HallSB.onSfx(d);
+      else if (d.type === "forcemute") HallVoice.onForceMute(d.except);
+      else if (d.type === "voiceoff") HallVoice.off(d.why);
+      else if (d.type === "voicefull") { HallVoice.off(`Voice is full (${d.max} max).`); }
       else if (d.type === "dms") { dms.clear(); d.list.forEach(x => addDM(x, true)); if (view !== "room") openView(view); }
       else if (d.type === "dm") addDM(d.dm);
       else if (d.type === "dmfail") addDM({ n: 0, at: Date.now(), sys: true, from: d.to, fromName: "", to: me && me.id, text: d.error }, true);
-      else if (d.type === "state") { st = d; render(); }
+      else if (d.type === "state") { st = d; render(); HallVoice.onState(d); HallSB.onState(d); }
       else if (d.type === "ping") { if (sound) { try { sample("ring", .8); } catch (x) {} } toast(d.text); flash(d.text); }
       else if (d.type === "error") fatal = d.error;
       else if (d.type === "closed") fatal = "The host closed the room.";
@@ -157,7 +162,7 @@ const Hall = (() => {
   function send(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } toast("Not connected yet"); return false; }
   const cmd = t => send({ type: "cmd", text: t });
   function leave() {
-    leaving = true; clearTimeout(retry); if (ws) try { ws.close(1000); } catch (e) {} ws = null; st = null; me = null;
+    leaving = true; clearTimeout(retry); HallVoice.leave(true); if (ws) try { ws.close(1000); } catch (e) {} ws = null; st = null; me = null;
     show(false); history.replaceState(null, "", "#host"); status("");
   }
 
@@ -219,6 +224,7 @@ const Hall = (() => {
     const invite = () => { const u = `${location.origin}${location.pathname}#host/${code}`; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => toast("Invite link copied"), () => prompt("Copy the invite link:", u)); };
     $("hl-invite").addEventListener("click", invite); $("hl-code").addEventListener("click", invite);
     $("hl-leave").addEventListener("click", leave);
+    HallVoice.init({ send, me: () => me }); HallSB.init({ send, me: () => me });
     addEventListener("hashchange", fromHash); fromHash();
   }
   return { init, get code() { return code; } };
