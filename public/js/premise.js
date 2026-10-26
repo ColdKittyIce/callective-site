@@ -41,5 +41,5 @@ const Premise = (() => {
     $("pm-copy").addEventListener("click", async () => { try { await navigator.clipboard.writeText(line()); toast("Copied. Drop a PLA bell and go."); } catch (e) { toast(line()); } });
     paint();
   }
-  return { init };
+  return { init, random: () => ({ who: pick(R.who), you: pick(R.you), want: pick(R.want) }) };
 })();

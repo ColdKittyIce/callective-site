@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Monoton&family=Share+Tech+Mono&family=VT323&display=swap">
-<link rel="stylesheet" href="css/site.css?v=0ef5e847">
+<link rel="stylesheet" href="css/site.css?v=ec18033a">
 
 <div class="bg" aria-hidden="true"><div class="sun"></div><canvas class="rain" id="rain"></canvas><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
@@ -73,7 +73,7 @@
     <div class="sec-head">
       <p class="kicker">How to go from lurker to menace</p>
       <h2 class="glitch" data-text="The line">The line</h2>
-      <p class="lede">Calls happen in the WOPC Discord voice channel, and the real queue lives there. Four steps from lurker to legend, plus a practice line where nobody can hear you choke.</p>
+      <p class="lede">Calls happen in the WOPC Discord voice channel, and the real queue lives there. Four steps from lurker to legend, plus a rehearsal booth: drop the bell, survive the waiting room, get a premise, make the call, and find out how the chat took it. Nobody can hear you choke.</p>
     </div>
     <div class="line-grid">
       <ol class="how">
@@ -82,17 +82,10 @@
         <li class="hud"><span class="n">3</span><div><h3>Wait for your ticket</h3><p>The host runs <code>!next</code>, the bot pings whoever's up, and Patrick reminds everybody he's got a badge and a schedule. Keep your mic muted until then. Rule 1, baby.</p></div></li>
         <li class="hud"><span class="n">4</span><div><h3>Make the call</h3><p>The host dials, you do the bit. If it dies, it dies. On an <b>All Call</b>, the whole room piles onto one line like a clown car. When it's over, tell them they just got buttslammed.</p></div></li>
       </ol>
-      <div class="rail hud">
-        <div class="rail-top"><h3>Practice line</h3><span class="status-pill" id="qstatus"><i aria-hidden="true"></i><span>Practice line</span></span></div>
-        <ol class="tickets" id="tickets"></ol>
-        <div class="rail-ctl" id="qctl">
-          <label class="sr" for="qname">Your name</label>
-          <input id="qname" type="text" value="You" maxlength="24" autocomplete="off">
-          <button class="btn sm" type="button" id="q-join">Drop a PLA bell</button>
-          <button class="btn sm mustard" type="button" id="q-next">!next</button>
-          <button class="btn sm red" type="button" id="q-all">All Call</button>
-        </div>
-        <p class="rail-log" id="qlog" aria-live="polite">A practice line loaded with the real queue from 6/20/26. Get in line, run !next, start an All Call. No roycipients were harmed.</p>
+      <div class="rail hud booth" id="booth">
+        <div class="rail-top"><h3>The rehearsal booth</h3><span class="status-pill" id="bt-pill"><i aria-hidden="true"></i><span id="bt-stage">Waiting room</span></span></div>
+        <div class="bt-body" id="bt-body"></div>
+        <p class="rail-log" id="bt-log" aria-live="polite"></p>
       </div>
     </div>
   </div>
@@ -102,19 +95,22 @@
     <div class="sec-head">
       <p class="kicker">Patch somebody through</p>
       <h2 class="glitch" data-text="Patch bay">Patch bay</h2>
-      <p class="lede">Every jack is a real moment ripped straight off the air. Patch a few at once for a conference call from hell. Anything you like goes straight into the clip lab.</p>
+      <p class="lede">Forty mystery lines, every one a real moment ripped off the air. No names, no labels: you don't know who's on a line until you patch it. Every patch goes on the tape in order. Play the tape back, put the whole tape on one line for a conference call from hell, or splice it into one clip in the clip lab.</p>
     </div>
     <div class="board hud" id="board">
       <div class="panel" id="panel">
         <div class="strips" id="strips"></div>
         <svg class="cords" id="cords" aria-hidden="true"></svg>
       </div>
+      <div class="tapedeck"><div class="td-head"><b>THE TAPE</b><span id="sb-count">0 of 12</span></div><ol class="sb-tape" id="sb-tape"></ol></div>
       <div class="console">
-        <div class="now"><small id="sb-who">Operator</small><b id="sb-line">Number please?</b><span id="sb-sub">Tap a jack to patch it through.</span></div>
+        <div class="now"><small id="sb-who">Operator</small><b id="sb-line">Number please?</b><span id="sb-sub">Tap a jack. Every jack is a mystery until you patch it.</span></div>
         <div class="acts">
+          <button class="btn sm red solid" type="button" id="sb-play" disabled>▶ Play the tape</button>
+          <button class="btn sm mustard" type="button" id="sb-conf">☎ Conference call</button>
           <button class="btn sm" type="button" id="sb-random">Random patch</button>
-          <button class="btn sm mustard" type="button" id="sb-conf">Conference call</button>
-          <button class="btn sm red" type="button" id="sb-lab" disabled>Edit in clip lab</button>
+          <button class="btn sm" type="button" id="sb-lab" disabled>✂ Splice into the clip lab</button>
+          <button class="btn sm ghost" type="button" id="sb-shuffle">Rewire the board</button>
           <button class="btn sm ghost" type="button" id="sb-clear">Pull the cords</button>
         </div>
       </div>
@@ -140,7 +136,8 @@
           <video id="livevid" playsinline preload="none" hidden></video>
           <div class="scr-art" id="ls-art">
             <canvas id="ls-osc" aria-hidden="true"></canvas>
-            <img src="img/stage.webp" alt="" loading="lazy">
+            <img src="img/crowd.webp" alt="" loading="lazy">
+            <img class="scr-logo" src="img/callective-logo.webp" alt="The Callective" loading="lazy">
           </div>
           <button class="scr-tap" type="button" id="ls-tap" hidden>Tap to watch the live show</button>
         </div>
@@ -882,8 +879,8 @@
 <script src="js/player.js?v=7f12409b"></script>
 <script src="js/fx.js?v=18c621e3"></script>
 <script src="js/dial.js?v=26878a63"></script>
-<script src="js/line.js?v=dc298740"></script>
-<script src="js/switchboard.js?v=8d42edda"></script>
+<script src="js/line.js?v=0dcd3cb5"></script>
+<script src="js/switchboard.js?v=0dc97ef8"></script>
 <script src="js/replay.js?v=30e1fe3b"></script>
 <script src="js/lab.js?v=a093bd54"></script>
 <script src="js/clipper.js?v=3b6ad4a6"></script>
@@ -896,7 +893,7 @@
 <script src="js/wrapped.js?v=edc78a07"></script>
 <script src="js/guess.js?v=ba46633d"></script>
 <script src="js/showpage.js?v=d313546b"></script>
-<script src="js/premise.js?v=21734d99"></script>
+<script src="js/premise.js?v=2d8eb628"></script>
 <script src="js/main.js?v=6cc48614"></script>
 </body>
 </html>

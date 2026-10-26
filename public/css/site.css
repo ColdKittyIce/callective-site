@@ -553,7 +553,10 @@ nav.sections a[aria-current="page"]{color:var(--void);background:var(--cyan);box
 .scr-tv video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
 .scr-art{position:absolute;inset:0}
 .scr-art[hidden]{display:none}
-.scr-art img{width:100%;height:100%;object-fit:cover;opacity:.42;filter:saturate(1.5) hue-rotate(-10deg)}
+.scr-art img{width:100%;height:100%;object-fit:cover;opacity:.95}
+.scr-art img.scr-logo{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:min(62%,460px);height:auto;object-fit:contain;opacity:1;filter:drop-shadow(0 6px 0 #000) drop-shadow(0 0 22px #18f0ff55);z-index:0;animation:logobob 4s ease-in-out infinite}
+@keyframes logobob{50%{transform:translate(-50%,-53%) rotate(-1.5deg)}}
+@media (prefers-reduced-motion:reduce){.scr-art img.scr-logo{animation:none}}
 .scr-art canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;mix-blend-mode:screen}
 .scr-art::after{content:"";position:absolute;inset:0;z-index:2;background:repeating-linear-gradient(0deg,#0000 0 2px,#00000055 2px 4px)}
 .screen.has-video .scr-art{display:none}
@@ -1026,3 +1029,49 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .idea-card .idea-f{display:flex;gap:8px}.idea-card .idea-f input{flex:1;min-width:0;background:#05040c;border:1px solid var(--line);color:var(--text);padding:8px 10px;font:inherit}
 .cb-share{background:none;border:1px solid var(--cyan);color:var(--cyan);font-family:var(--f-mono);font-size:12px;text-transform:uppercase;letter-spacing:.08em;padding:5px 9px}
 .cb-share:hover{background:var(--cyan);color:var(--void)}
+/* rehearsal booth */
+.booth .bt-body{padding:16px;min-height:300px;display:flex;flex-direction:column;justify-content:center}
+.bt-center{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.bt-big{font-family:var(--f-head);font-size:20px;text-transform:uppercase;color:var(--text);margin:0}
+.bt-hint{font-size:13.5px;color:var(--muted);margin:0}
+.bt-bell{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:64px;line-height:1;background:#05040c;border:2px solid var(--volt);color:var(--volt);padding:18px 26px;box-shadow:0 0 22px #e9ff3b55;animation:bellwiggle 2.4s ease-in-out infinite}
+.bt-bell span{font-family:var(--f-mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+.bt-bell:hover{background:#e9ff3b18}
+@keyframes bellwiggle{0%,80%,100%{transform:rotate(0)}84%{transform:rotate(-12deg)}88%{transform:rotate(10deg)}92%{transform:rotate(-6deg)}}
+.bt-q{margin:0 0 12px}
+.ticket.you .nm{color:var(--volt);font-weight:700}
+.bt-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.bt-mic{background:#05040c;border:1px solid var(--cyan);color:var(--cyan);font-family:var(--f-mono);font-size:13px;padding:8px 12px;letter-spacing:.08em}
+.bt-mic.hot{border-color:var(--red);color:#fff;background:#ff3b5c33;animation:hotmic .5s steps(2) infinite}
+@keyframes hotmic{50%{background:#ff3b5c77}}
+.bt-patrick{font-family:var(--f-crt);font-size:19px;color:var(--pink);flex:1;min-width:200px}
+.bt-card{display:flex;flex-direction:column;gap:10px}
+.bt-card small{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--pink)}
+.bt-prem{font-size:19px;line-height:1.45;margin:0}.bt-prem b{color:var(--cyan)}
+.bt-dots::after{content:"";animation:dots 1.2s steps(4) infinite}@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.bt-live{display:flex;flex-direction:column;gap:10px}
+.bt-top{display:flex;justify-content:space-between;align-items:center}
+.bt-onair{font-family:var(--f-mono);font-size:13px;color:var(--red);letter-spacing:.14em;animation:hotmic 1s steps(2) infinite;padding:2px 6px}
+.bt-clock{font-family:var(--f-crt);font-size:28px;color:var(--volt)}
+.bt-them{font-family:var(--f-crt);font-size:21px;color:var(--text);margin:0;min-height:2.6em}
+.bt-meter{position:relative;height:18px;background:#05040c;border:1px solid var(--line)}
+.bt-meter i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--red),var(--volt),var(--cyan));transition:width .3s}
+.bt-meter span{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#000;mix-blend-mode:difference;filter:invert(1)}
+.bt-chat{list-style:none;margin:0;padding:8px 10px;background:#05040c;border:1px solid var(--line);min-height:120px;font-family:var(--f-mono);font-size:13.5px;display:flex;flex-direction:column;gap:3px}
+.bt-chat li:first-child{color:var(--volt)}.bt-chat li{color:var(--muted)}
+.bt-end{align-items:flex-start}.bt-score{font-family:var(--f-crt);font-size:64px;line-height:1;color:var(--cyan);text-shadow:var(--glow-c)}
+.bt-rank{font-family:var(--f-head);font-size:22px;text-transform:uppercase;color:var(--volt);margin:0}
+/* patch bay: mystery jacks + the tape */
+.jack{height:66px}
+.jack .jk{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em}
+.jack.played .jk{color:var(--pink)}
+.tapedeck{margin:0 16px 4px;padding:10px 12px;background:#05040c;border:1px solid var(--line)}
+.td-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--muted)}
+.td-head b{color:var(--volt);font-weight:400}
+.sb-tape{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;min-height:34px}
+.sb-tape li.empty{font-size:13.5px;color:var(--muted);align-self:center}
+.sb-tape button{display:flex;align-items:center;gap:6px;background:#0a0919;border:1px solid var(--c);color:var(--text);padding:4px 9px 4px 4px;font-family:var(--f-mono);font-size:12px;box-shadow:0 0 8px color-mix(in srgb,var(--c) 40%,transparent)}
+.sb-tape button b{display:grid;place-items:center;width:20px;height:20px;background:var(--c);color:#05040c;font-weight:400}
+.sb-tape button:hover{text-decoration:line-through}
+.sb-tape li.now button{background:color-mix(in srgb,var(--c) 30%,#0a0919);transform:translateY(-2px)}
+.rail.booth{display:flex;flex-direction:column}
