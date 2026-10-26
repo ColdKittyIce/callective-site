@@ -2,6 +2,10 @@
  * The Callective site worker.
  * Serves the static site from ./public and answers /api routes:
  *
+ *   The Hall (host your own Callective; rooms are Hall durable objects, worker/hall.js)
+ *   POST /api/hall              {title} open a room: returns {code, hostKey}
+ *   GET  /api/hall/:code        room info; /api/hall/:code/ws is the room's WebSocket (chat + queue bot)
+ *
  *   Shows
  *   GET  /api/ping              health check (no Prankcast call)
  *   GET  /api/status            is TheCallective live on Prankcast, plus the live stream address
@@ -47,6 +51,8 @@
  * Nothing here writes to Prankcast or Discord, except the optional DISCORD_WEBHOOK heads-up for new clips.
  */
 import { mp4Head } from "./mp4.js";
+import { screen } from "./screen.js";
+export { Hall } from "./hall.js";
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
 const UA = { "user-agent": "CallectiveSite/2.0 (+thecallective site worker)" };
@@ -87,6 +93,8 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
       if ((m = p.match(/^\/api\/g98\/([a-z0-9]+)\.gif$/))) return gif98(env, m[1]);
       if ((m = p.match(/^\/api\/media\/([a-z0-9-]+)\.mp3$/))) return mediaAudio(env, m[1], request);
+      if (p === "/api/hall" && M === "POST") return hallNew(request, env);
+      if ((m = p.match(/^\/api\/hall\/([A-Za-z]{2,6}-\d{4})(\/ws)?$/))) return hallGo(request, env, m[1].toUpperCase(), !!m[2]);
       if (p === "/api/hits") return hits(env, M === "POST");
       if (p === "/api/suggest" && M === "GET") return cached(request, ctx, 30, () => sgAll(env));
       if ((m = p.match(/^\/api\/suggest(?:\/(vote|report))?$/)) && M === "POST") return sgPost(request, env, m[1] || "add");
@@ -594,19 +602,42 @@ async function clipsPost(request, env, ctx) {
   if (env.DISCORD_WEBHOOK) ctx.waitUntil(notify(env.DISCORD_WEBHOOK, md, bytes));
   return json({ ok: true, id, status: dest === "crew" ? "sent to the crew" : "waiting" });
 }
+/* ---------- Host your own Callective (rooms live in the Hall durable object, worker/hall.js) ---------- */
+const HALL_WORDS = ["BUTT", "CAW", "DING", "LUNK", "QUACK", "BELL", "DIAL", "RING", "HOLD", "FART", "TOMMAN", "PEE", "GOOSE", "PIZZA", "HOTEL", "BUSY", "PATCH", "ROTARY"];
+async function ipTag(request) {
+  const ip = request.headers.get("cf-connecting-ip") || "";
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hall:" + ip));
+  return [...new Uint8Array(d)].slice(0, 10).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function hallNew(request, env) {
+  if (!env.HALL) return json({ error: "Rooms aren't set up yet" }, 500);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
+  const title = clean(b.title, 60) || "The Callective";
+  if (screen(title)) return json({ error: "Try a different room name" }, 400);
+  if (env.DB) { // 6 new rooms an hour per person
+    const k = `hallrl:${await ipTag(request)}:${new Date().toISOString().slice(0, 13)}`, n = +(await env.DB.get(k) || 0);
+    if (n >= 6) return json({ error: "That's a lot of rooms. Try again in an hour" }, 429);
+    await env.DB.put(k, String(n + 1), { expirationTtl: 3700 });
+  }
+  for (let tries = 0; tries < 6; tries++) {
+    const r = crypto.getRandomValues(new Uint32Array(2)), code = `${HALL_WORDS[r[0] % HALL_WORDS.length]}-${String(r[1] % 10000).padStart(4, "0")}`;
+    const res = await env.HALL.get(env.HALL.idFromName(code)).fetch("https://hall/create", { method: "POST", body: JSON.stringify({ code, title }) });
+    if (res.status === 409) continue;
+    const o = await res.json(); return json({ code, title, hostKey: o.hostKey });
+  }
+  return json({ error: "Couldn't find a free code. Try again" }, 503);
+}
+async function hallGo(request, env, code, ws) {
+  if (!env.HALL) return json({ error: "Rooms aren't set up yet" }, 500);
+  const stub = env.HALL.get(env.HALL.idFromName(code)), u = new URL(request.url);
+  if (!ws) { const r = await stub.fetch("https://hall/info"); return json(await r.json(), r.status); }
+  const h = new Headers(request.headers); h.set("x-ip", await ipTag(request));
+  return stub.fetch(new Request("https://hall/ws" + u.search, { headers: h }));
+}
+
 /* ---------- the auto-post filter ----------
    Clips cut from a show go straight onto the board unless the words people typed trip this.
    It looks for slurs, phone numbers (prank calls involve real people), emails and links. Anything flagged waits for the crew. */
-const SLURS = /\b(n+[i1!]+g+(?:[e3]+r+|a+h?|u+h)s?|f+[a@4]+g+(?:[o0]+t+)?s?|k+[i1]+k+[e3]+s?|ch+[i1]+n+k+s?|sp+[i1]+c+k?s?|tr+[a@4]+n+n+(?:y|[i1]+e+)s?|r+[e3]+t+[a@4]+r+d+s?|w+[e3]+t+b+[a@4]+c+k+s?|g+[o0]+[o0]+k+s?|c+[o0]+[o0]+n+s?|d+y+k+[e3]+s?)\b/i;
-function screen(...texts) {
-  const t = texts.filter(Boolean).join(" ");
-  if (SLURS.test(t)) return "language";
-  if (/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/.test(t)) return "phone number";
-  if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(t)) return "email";
-  if (/https?:\/\/|www\.|\b[\w-]+\.(?:com|net|org|io|gg|tv|me|ly)\b/i.test(t)) return "link";
-  return null;
-}
-
 // A clip that's a slice of a show: no audio upload, so it takes no storage.
 async function refPost(request, env, ctx, rl) {
   let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }

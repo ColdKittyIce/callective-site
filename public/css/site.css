@@ -1099,3 +1099,74 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .tablet li button span{color:var(--volt)}
 .tablet li.right button{background:#e9ff3b26;color:var(--volt)}
 .tablet li.wrong button{background:#ff3b5c26;color:var(--red);text-decoration:line-through}
+
+/* ---------- The Hall: host your own Callective ---------- */
+.hl-lobby{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.hl-card{display:flex;flex-direction:column;gap:12px;padding:20px}
+.hl-card h3{font-family:var(--f-head);font-size:26px;text-transform:uppercase;color:var(--cyan);text-shadow:var(--glow-c)}
+.hl-card p{color:var(--muted);margin:0}
+.hl-card label{display:flex;flex-direction:column;gap:6px;font-family:var(--f-mono);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hl-card .btn{align-self:flex-start;margin-top:4px}
+.hl-code{text-transform:uppercase;letter-spacing:.12em}
+.hl-notes{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;color:var(--muted);font-size:15px}
+.hl-notes b{color:var(--text)} .hl-notes p{margin:0}
+.hl-err{grid-column:1/-1;color:var(--pink);font-family:var(--f-mono);font-size:15px}
+.hl-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;padding:14px 16px;margin-bottom:16px}
+.hl-titles{display:flex;flex-direction:column;gap:4px;min-width:0}
+.hl-titles b{font-family:var(--f-head);font-size:26px;text-transform:uppercase;color:var(--text);overflow-wrap:anywhere}
+.hl-titles>span{font-family:var(--f-mono);font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.hl-chip{font-family:var(--f-crt);font-size:22px;letter-spacing:.1em;background:#020204;color:var(--volt);border:1px dashed #e9ff3b88;padding:0 10px;cursor:pointer;text-shadow:var(--glow-v)}
+.hl-lockb{color:var(--pink)}
+.hl-acts{display:flex;flex-wrap:wrap;gap:8px}
+.hl-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.hl-chat{display:flex;flex-direction:column;height:min(72vh,720px);min-height:420px}
+.hl-log{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:6px;overscroll-behavior:contain}
+.hl-msg{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:0 8px;align-items:baseline;line-height:1.4;font-size:15px}
+.hl-t{font-family:var(--f-mono);font-size:11px;color:#5d6790}
+.hl-who{font-weight:700;color:var(--cyan);white-space:nowrap}
+.hl-msg.bot .hl-who{color:var(--volt)}
+.hl-txt{overflow-wrap:anywhere;color:var(--text)}
+.hl-txt code{font-family:var(--f-mono);font-size:.9em;background:#18f0ff14;padding:0 4px;color:var(--cyan)}
+.hl-txt b{color:#fff}
+.hl-txt mark{background:#ff2bd633;color:#fff;padding:0 2px}
+.hl-msg.cmd .hl-txt{font-family:var(--f-mono);color:var(--muted)}
+.hl-msg.only{background:#e9ff3b0d;border-left:2px solid #e9ff3b66;padding:4px 6px}
+.hl-only{display:block;font-size:11px;font-style:normal;color:#8e9ac4aa;font-family:var(--f-mono)}
+.hl-tag{font-style:normal;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;margin-left:5px;padding:1px 4px;vertical-align:2px;border:1px solid currentColor}
+.hl-tag.bot{color:var(--volt)} .hl-tag.host{color:var(--pink)} .hl-tag.mod{color:var(--cyan)}
+.hl-pla{display:inline-block;filter:drop-shadow(0 0 4px #e9ff3b)}
+.hl-status{padding:6px 14px;font-family:var(--f-mono);font-size:13px;color:var(--pink);border-top:1px solid #ff2bd633}
+.hl-input{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #18f0ff33}
+.hl-input input{flex:1;min-width:0;font:inherit;font-size:16px;background:#020204;color:var(--text);border:1px solid #18f0ff55;padding:8px 10px}
+.hl-input input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan)}
+.hl-quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 12px}
+.hl-side{display:flex;flex-direction:column;gap:14px}
+.hl-now{padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.hl-now small,.hl-mod small{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hl-now b{font-family:var(--f-head);font-size:28px;text-transform:uppercase;color:var(--pink);text-shadow:var(--glow-p);overflow-wrap:anywhere}
+.hl-now b.me{color:var(--volt);text-shadow:var(--glow-v)}
+.hl-now span{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.hl-mod{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.hl-modbtns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.hl-modbtns .btn{padding:9px 6px;font-size:11.5px;letter-spacing:.05em}
+.hl-list{padding:12px 14px}
+.hl-list h3{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}
+.hl-list h3 span{color:var(--muted)}
+.hl-list ol,.hl-list ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:340px;overflow-y:auto}
+.hl-list li{display:flex;align-items:center;gap:8px;padding:5px 6px;border:1px solid transparent;font-size:15px;min-width:0}
+.hl-list li.me{border-color:#e9ff3b55;background:#e9ff3b0d}
+.hl-list li.all .hl-qname{color:var(--pink)}
+.hl-list li.off{opacity:.45}
+.hl-qn{font-family:var(--f-crt);font-size:20px;color:var(--pink);min-width:1.4em;text-align:right}
+.hl-qname,.hl-list li>span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-qname small{color:var(--muted)}
+.hl-qctl,.hl-mctl{display:flex;gap:3px;flex:none}
+.hl-qctl button,.hl-mctl button{font:inherit;font-size:12px;line-height:1;background:#05040c;color:var(--cyan);border:1px solid var(--line);padding:5px 6px;cursor:pointer}
+.hl-qctl button:hover,.hl-mctl button:hover{border-color:var(--cyan)}
+.hl-qctl button:disabled{opacity:.3;cursor:default}
+.hl-empty{color:var(--muted);font-size:14px}
+.hl-dot{width:8px;height:8px;border-radius:50%;background:#39ff88;box-shadow:0 0 6px #39ff88;flex:none}
+.hl-list li.off .hl-dot{background:#555;box-shadow:none}
+@media (max-width:900px){.hl-grid{grid-template-columns:minmax(0,1fr)}.hl-chat{height:62vh}}
+@media (max-width:700px){.hl-lobby,.hl-notes{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:600px){.hl-msg{grid-template-columns:auto minmax(0,1fr)}.hl-msg .hl-txt{grid-column:1/-1}.hl-log{gap:9px}.hl-modbtns{grid-template-columns:repeat(2,minmax(0,1fr))}}

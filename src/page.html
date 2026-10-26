@@ -16,7 +16,7 @@
   <div class="wrap">
     <a class="brand" href="#home" aria-label="The Callective, home"><img src="img/mark.webp" alt=""><b id="brandname">THE CALLECTIVE</b></a>
     <nav class="sections" aria-label="Pages" id="nav">
-      <a href="#home">Home</a><a href="#listen" class="nav-listen">Listen<i aria-hidden="true"></i></a><a href="#archive">Archive</a><a href="#lab">Clip lab</a><a href="#clips">Clips</a><a href="#bingo">Games</a><a href="#downloads">Downloads</a><a href="#lore">Lore</a><a href="#search" class="nav-search" title="Search (shortcut: /)">🔍 Search</a>
+      <a href="#home">Home</a><a href="#listen" class="nav-listen">Listen<i aria-hidden="true"></i></a><a href="#archive">Archive</a><a href="#lab">Clip lab</a><a href="#clips">Clips</a><a href="#bingo">Games</a><a href="#host">Host</a><a href="#downloads">Downloads</a><a href="#lore">Lore</a><a href="#search" class="nav-search" title="Search (shortcut: /)">🔍 Search</a>
     </nav>
     <a class="lamp" id="lamp" href="#listen"><i aria-hidden="true"></i><span id="lamptxt">Off the hook</span></a>
   </div>
@@ -65,6 +65,7 @@
       <p class="kicker">How to go from lurker to menace</p>
       <h2 class="glitch" data-text="The line">The line</h2>
       <p class="lede">Calls happen in the WOPC Discord voice channel, and the real queue lives there. Four steps from lurker to legend, plus a rehearsal booth: drop the bell, survive the waiting room, get a premise, make the call, and find out how the chat took it. Nobody can hear you choke.</p>
+      <p class="lede">Want to run one yourself? <a href="#host">Open a room in The Hall</a>: your own chat with the queue bot built in. Share a code and you're the host.</p>
     </div>
     <div class="line-grid">
       <ol class="how">
@@ -589,6 +590,81 @@
   </div>
 </section>
 </div>
+<div class="page" id="page-host" data-page="host" hidden>
+<section class="band" id="host">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Host your own Callective</p>
+      <h2 class="glitch" data-text="The Hall">The Hall</h2>
+      <p class="lede">Your own Callective chat room, with the queue bot built in. Open a room, share the code, and run the line just like Saturday nights: people drop 🔔 to get in, and you hit <b>!next</b>. Bring your own voice (Discord, a group call, whatever you're on). This is the text chat and the bot.</p>
+    </div>
+
+    <div id="hl-lobby" class="hl-lobby">
+      <form class="hud hl-card" id="hl-new">
+        <h3>Open a room</h3>
+        <p>You'll be the host: you run the line and can make other people mods.</p>
+        <label>Your name<input class="lab-in" id="hl-new-name" maxlength="24" autocomplete="nickname" placeholder="IceCat" required></label>
+        <label>Room name<input class="lab-in" id="hl-new-title" maxlength="60" placeholder="The Callective, after hours"></label>
+        <button class="btn red solid" type="submit">📞 Open the room</button>
+      </form>
+      <form class="hud hl-card" id="hl-join">
+        <h3>Join with a code</h3>
+        <p>Got a code from the host? Punch it in.</p>
+        <label>Room code<input class="lab-in hl-code" id="hl-join-code" maxlength="12" placeholder="BUTT-1234" autocapitalize="characters" spellcheck="false" required></label>
+        <label>Your name<input class="lab-in" id="hl-join-name" maxlength="24" autocomplete="nickname" placeholder="Fleshbag" required></label>
+        <button class="btn solid" type="submit">🔔 Join the room</button>
+      </form>
+      <div class="hl-notes">
+        <p><b>House rules still apply.</b> Same 10 Callmandments. The bot won't post phone numbers, emails, links or slurs, so keep the numbers you're calling out of chat.</p>
+        <p><b>Rooms are temporary.</b> A room closes after 12 quiet hours, or when the host types <code>!close</code>. Nothing gets saved after that.</p>
+        <p id="hl-err" class="hl-err" role="alert" hidden></p>
+      </div>
+    </div>
+
+    <div id="hl-room" class="hl-room" hidden>
+      <div class="hl-bar hud">
+        <div class="hl-titles"><b id="hl-title">The Callective</b><span>Room code <button type="button" class="hl-chip" id="hl-code" title="Copy the invite link">----</button> <span id="hl-lock" class="hl-lockb" hidden>🔒 Line locked</span></span></div>
+        <div class="hl-acts">
+          <button type="button" class="btn sm" id="hl-invite">🔗 Copy invite</button>
+          <a class="btn sm ghost" id="hl-obs" target="_blank" rel="noopener" hidden title="A queue display for OBS (add as a Browser Source)">📺 OBS overlay</a>
+          <button type="button" class="btn sm ghost" id="hl-leave">Leave</button>
+        </div>
+      </div>
+      <div class="hl-grid">
+        <div class="hud hl-chat">
+          <div class="hl-log" id="hl-log" aria-live="polite"></div>
+          <div class="hl-status" id="hl-status" hidden></div>
+          <form class="hl-input" id="hl-form">
+            <input id="hl-in" maxlength="500" autocomplete="off" placeholder="Say something… or !help">
+            <button class="btn sm solid" type="submit">Send</button>
+          </form>
+          <div class="hl-quick">
+            <button type="button" class="btn sm" id="hl-bell">🔔 Get in line</button>
+            <button type="button" class="btn sm red" id="hl-all">📣 All call</button>
+            <button type="button" class="btn sm ghost" id="hl-sound" aria-pressed="true" title="Ring when it's your turn">🔊 Ring me</button>
+          </div>
+        </div>
+        <aside class="hl-side">
+          <div class="hud hl-now"><small>On the line</small><b id="hl-cur">Nobody yet</b><span id="hl-calls"></span></div>
+          <div class="hud hl-mod" id="hl-mod" hidden>
+            <small>Bot controls</small>
+            <div class="hl-modbtns">
+              <button type="button" class="btn sm mustard solid" data-cmd="!next">⏭ Next</button>
+              <button type="button" class="btn sm" data-cmd="!done">✅ Done</button>
+              <button type="button" class="btn sm" id="hl-lockbtn" data-cmd="!lock">🔒 Lock</button>
+              <button type="button" class="btn sm" data-cmd="!shuffle">🎲 Shuffle</button>
+              <button type="button" class="btn sm" data-cmd="!reverse">🔃 Reverse</button>
+              <button type="button" class="btn sm red" data-cmd="!clear" data-confirm="Clear the whole line?">🧹 Clear</button>
+            </div>
+          </div>
+          <div class="hud hl-list"><h3>The line <span id="hl-qn"></span></h3><ol id="hl-q"></ol></div>
+          <div class="hud hl-list"><h3>In the room <span id="hl-mn"></span></h3><ul id="hl-mem"></ul></div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
 <div class="page" id="page-show" data-page="show" hidden>
 <section class="band" id="showpage"><div class="wrap" id="sp-body"></div></section>
 </div>
@@ -887,4 +963,5 @@
 <script src="js/guess.js"></script>
 <script src="js/showpage.js"></script>
 <script src="js/premise.js"></script>
+<script src="js/hall.js"></script>
 <script src="js/main.js"></script>

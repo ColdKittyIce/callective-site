@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Callective Queue · OBS overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  /* Transparent page for an OBS Browser Source: obs.html?room=BUTT-1234 (add &bg=1 to preview on a dark background). */
+  :root{--cyan:#18f0ff;--pink:#ff2bd6;--volt:#e9ff3b;--text:#e6f4ff;--muted:#8e9ac4}
+  html,body{margin:0;background:transparent;color:var(--text);font-family:"Chakra Petch",system-ui,sans-serif}
+  body.bg{background:#05040c}
+  .box{display:inline-flex;flex-direction:column;gap:10px;padding:16px 20px;margin:12px;min-width:320px;background:#05040ccc;border:1px solid #18f0ff66;box-shadow:0 0 24px #ff2bd633,inset 0 0 30px #18f0ff14}
+  small{font-family:"Share Tech Mono",monospace;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .now b{display:block;font-size:40px;line-height:1.05;text-transform:uppercase;color:var(--pink);text-shadow:0 0 4px #ff2bd6,0 0 18px #ff2bd699}
+  ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
+  li{font-size:24px;display:flex;gap:10px;align-items:baseline}
+  li i{font-style:normal;font-family:VT323,monospace;font-size:28px;color:var(--cyan);min-width:1.3em;text-align:right;text-shadow:0 0 8px #18f0ff}
+  li.all{color:var(--volt)}
+  .lock{color:var(--pink);font-family:"Share Tech Mono",monospace;font-size:15px}
+  .empty{color:var(--muted);font-size:20px}
+  .err{font-family:"Share Tech Mono",monospace;color:var(--pink);font-size:18px}
+</style>
+</head>
+<body>
+<div class="box" id="box"><small>Callective queue</small><div class="empty">Connecting…</div></div>
+<script>
+const q = new URLSearchParams(location.search), room = (q.get("room") || "").toUpperCase(), max = Math.max(1, +q.get("max") || 10);
+if (q.get("bg")) document.body.classList.add("bg");
+const box = document.getElementById("box"), esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let tries = 0;
+function draw(s) {
+  const list = s.queue.slice(0, max).map((e, i) => `<li class="${e.all ? "all" : ""}"><i>${i + 1}</i>${e.all ? `📣 ALL CALL` : `${e.flair ? esc(e.flair) + " " : ""}${esc(e.name)}`}</li>`).join("");
+  box.innerHTML = `<div class="now"><small>Now calling</small><b>${esc(s.cur ? s.cur.name : "—")}</b></div>
+    <div><small>Up next</small>${s.locked ? ` <span class="lock">🔒 locked</span>` : ""}</div>
+    ${list ? `<ol>${list}</ol>` : `<div class="empty">Drop 🔔 in chat to get in line</div>`}${s.queue.length > max ? `<small>+${s.queue.length - max} more</small>` : ""}`;
+}
+function go() {
+  if (!/^[A-Z]{2,6}-\d{4}$/.test(room)) { box.innerHTML = `<div class="err">Add ?room=YOUR-CODE to this page's address.</div>`; return; }
+  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/hall/${room}/ws?watch=1`);
+  let dead = false, keep;
+  ws.onopen = () => { tries = 0; keep = setInterval(() => { try { ws.send("ping"); } catch (e) {} }, 30000); };
+  ws.onmessage = e => { if (e.data === "pong") return; const d = JSON.parse(e.data); if (d.type === "state") draw(d); if (d.type === "error" || d.type === "closed") { dead = true; box.innerHTML = `<div class="err">${esc(d.error || "Room closed")}</div>`; } };
+  ws.onclose = () => { clearInterval(keep); if (!dead) setTimeout(go, Math.min(15000, 1000 * 2 ** Math.min(++tries, 4))); };
+}
+go();
+</script>
+</body>
+</html>

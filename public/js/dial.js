@@ -144,6 +144,7 @@ const Dir = (() => {
   const W2N = w => [...w].map(ch => Dial.toDigit(ch)).join("");
   const E = [
     { word: "OPERATOR", num: "0", label: "Operator (resets everything)", listed: true, act() { setMode(""); toast("Operator here. Everything's back to normal."); } },
+    { word: "HOST", label: "Host your own Callective", listed: true, act() { go("host"); } },
     { word: "RULES", label: "Ira reads the rules", listed: true, act() { Hold.play("ira-rules"); go("rules"); } },
     { word: "THEME", label: "The theme song", listed: true, act() { Hold.play("theme"); } },
     { word: "QUEUE", label: "Get in line", listed: true, act() { go("line"); } },

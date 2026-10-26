@@ -37,3 +37,12 @@ deleted_classes = ["Room"]
 # so Callective Radio plays from the site's own copies instead of Prankcast.
 [triggers]
 crons = ["*/15 * * * *"]
+
+# "Host your own Callective" rooms: one durable object per room code (chat + queue bot). SQLite-backed, so it runs on the free plan.
+[[durable_objects.bindings]]
+name = "HALL"
+class_name = "Hall"
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["Hall"]
