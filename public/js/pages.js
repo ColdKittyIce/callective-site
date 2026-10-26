@@ -4,7 +4,6 @@
 const Hold = (() => {
   const TRACKS = [
     { k: "theme", g: "The Callective", t: "The Callective Theme", s: "By IceCat and Suno · the opener", d: "1:19" },
-    { k: "ira-rules", t: "Ira Reads the Rules", s: "All ten, from the 10/24/26 show. The best part of the show, per the chat. Not a bit.", d: "2:51" },
     { k: "farewell", t: "The Callective Farewell", s: "By IceCat and Suno · the closer", d: "3:20" },
     { k: "theme-2026", t: "The Callective Theme, 2026 take", s: "Newer cut of the opener", d: "1:19" },
     { k: "jingle", t: "Jingle: Ramp In & Out", s: "Bumper between calls", d: "0:27" },
@@ -20,6 +19,8 @@ const Hold = (() => {
     { k: "cheers-to-ira", t: "Cheers to Ira the Governor", s: "A toast to the show runner, who is muting you right now", d: "3:18" },
     { k: "be-quiet", t: "Be Quiet, the Callective Is On", s: "Drop", d: "0:05" },
     { k: "callectives-cousin", t: "The Callective's Cousin", s: "By IceCat and Suno · a.k.a. the background music", d: "1:38" },
+    { k: "ira-rules", g: "The 10 Callmandments", t: "Ira Reads the Rules (Clean)", s: "All ten, straight from the 10/24/26 show, cleaned up: less room noise, levels evened out. The best part of the show, per the chat. Not a bit.", d: "2:55" },
+    { k: "ira-rules-remix", g: "The 10 Callmandments", t: "The Callmandments (Club Mix)", s: "Ira's rules, chopped into a 128 BPM house banger. Countdown into the drop, a rule-number stutter, and a \"real emergency\" breakdown. Open the queue in three, two, one…", d: "2:52" },
     { k: "phone-book-megamix-full", g: "The Phone Book Megamix", src: "api/media/phone-book-megamix-full.mp3", t: "The Phone Book Megamix (Full)", s: "All 15 of IceCat's phone songs back to back, with real Callective calls and crew drops between every one. 56 minutes. Hit play and go about your night.", d: "56:09" },
     { k: "phone-book-megamix", g: "The Phone Book Megamix", t: "The Phone Book Megamix (Radio Edit)", s: "The short version: seven songs, rotary dial, ringing, crew drops, one busy signal", d: "3:44" },
     { k: "dialtone-dialtone", g: "IceCat's phone songs", t: "Dialtone Dialtone", s: "By IceCat and Suno", d: "4:27" },
@@ -102,7 +103,7 @@ const Court = (() => {
     [10, "a caller who couldn't read the room", "kept going after the clerk said, \"I'm calling the police.\""]
   ];
   const SENTENCE = ["Sentenced to the back of the queue.", "Sentenced to listen to the hold music. All of it.", "Sentenced to read the rules out loud. Twice.",
-    "Sentenced to one week of being called pig boy. Affectionately.", "Sentenced to be buttslammed by 101.1 The Butt.", "Patrick has revoked your badge privileges.",
+    "Sentenced to one week of hosting the queue with your mic open.", "Sentenced to be buttslammed by 101.1 The Butt.", "Patrick has revoked your badge privileges.",
     "Sentenced to call a Five Below and ask for something off the list.", "The court orders you to apologize to the duck."];
   const ROUNDS = 10;
   let deck = [], round = 0, score = 0, streak = 0, objection = true, state = "idle", cur = null;

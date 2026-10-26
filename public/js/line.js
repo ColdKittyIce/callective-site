@@ -9,7 +9,7 @@ const Line = (() => {
   const PATRICK_NEXT = ["Alright, that one's done. I got a badge and I'm usin' it. NEXT.", "Done. Hang it up. NEXT.", "That's enough of that. Movin' the line. NEXT.",
     "Somebody clip that. Anyway. NEXT.", "Wrap it up, wrap it up. NEXT."];
   const PATRICK_MUTE = ["Hey. HEY. You're unmuted. Rule 1. Mute up.", "I can hear you breathing. Mute. Now.", "That's a hot mic, pal. Back of the line if it happens again."];
-  const CHAT_GOOD = ["LMAOOO", "caw", "good job pig boy", "🔔🔔🔔", "this is the one", "clip it clip it", "HE'S NOT BREAKING", "roycipient is cooked", "😭😭😭", "keep going", "TOM MAN", "she believes it", "lunk alarm"];
+  const CHAT_GOOD = ["LMAOOO", "caw", "good job", "🔔🔔🔔", "this is the one", "clip it clip it", "HE'S NOT BREAKING", "roycipient is cooked", "😭😭😭", "keep going", "TOM MAN", "she believes it", "lunk alarm"];
   const CHAT_BAD = ["uh oh", "he's breaking", "dead air", "🦗", "rule 4: sometimes calls just don't work out", "it's ok we love you", "dial tone", "hang up hang up"];
   const S = { stage: "wait", queue: [], ticket: 0, muted: true, strikes: 0, premise: null, laughs: 50, t: 0, timers: [] };
   const $b = () => $("bt-body");
@@ -103,7 +103,7 @@ const Line = (() => {
     if (S.stage !== "live") return; clearAll(); stage("done", "Hung up");
     if (how === "slam") SFX.thump(); else SFX.hangup();
     const L = Math.round(S.laughs) + (how === "slam" && S.laughs > 40 ? 10 : 0);
-    const rank = L >= 85 ? ["Certified Callective legend", "Somebody clip it. This one's going on the board."] : L >= 65 ? ["Good job, pig boy", "That's a compliment. Probably."]
+    const rank = L >= 85 ? ["Certified Callective legend", "Somebody clip it. This one's going on the board."] : L >= 65 ? ["Good job, caller", "Patrick nods. Barely."]
       : L >= 45 ? ["Solid fleshbag", "Chat liked it. Mostly."] : L >= 20 ? ["Rule 4 applies", "Sometimes calls just don't work out, and it's nobody's fault."] : ["Dead air", "The crickets have entered the chat. Try again."];
     const why = how === "slam" ? "You told them they just got buttslammed by 101.1 The Butt." : how === "hungup" ? "They hung up on you." : how === "dead" ? "The call died. Chat went quiet." : "Time's up. The host took the phone back.";
     $b().innerHTML = `<div class="bt-card bt-end"><small>${esc(why)}</small><b class="bt-score">${clamp(L, 0, 100)}%</b><p class="bt-rank">${rank[0]}</p><p class="bt-hint">${rank[1]}</p>
