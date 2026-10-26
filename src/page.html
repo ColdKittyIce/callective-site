@@ -690,6 +690,7 @@
         <div class="hl-sbhead">
           <h3>Soundboard</h3><span class="hl-sbmode" id="hl-sbmode"></span>
           <input id="hl-sbq" class="hl-sbq" type="search" placeholder="> find a sound" aria-label="Find a sound">
+          <button type="button" class="btn sm red" id="hl-sbstop" title="Stop every sound and loop">■ Stop all</button>
           <select id="hl-sbhost" class="hl-sbhost" hidden aria-label="Room soundboard setting"><option value="open">Room: open</option><option value="mods">Room: mods + caller</option><option value="off">Room: off</option></select>
         </div>
         <div class="hl-sbctl">
@@ -703,7 +704,14 @@
           <button type="button" class="btn sm ghost" id="hl-sbtest">Test ring</button>
           <p>Pick the device that feeds your phone line, like a Voicemeeter or VB-Cable input (the Audio Bible on the Downloads page shows the setup). Sounds then go straight into the call. Works in Chrome and Edge.</p>
         </div>
+        <div class="hl-sbtabs" id="hl-sbtabs" role="tablist" aria-label="Boards"></div>
+        <div class="hl-mine" id="hl-mine" hidden>
+          <p><b>Your own board.</b> Drag sound files from your computer onto a pad (or anywhere here), or tap an empty pad to pick files. Drag a pad onto another to swap them, ✎ to rename, ✕ to clear. They stay in this browser until you leave the room. When 🔊 Room is on, your own sounds go out through your voice, so join voice first.</p>
+          <div class="hl-mineacts"><button type="button" class="btn sm" id="hl-mineadd">＋ Add sounds…</button><button type="button" class="btn sm ghost" id="hl-mineclear">Clear board</button></div>
+          <input type="file" id="hl-file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac,.aac,.opus,.webm" multiple hidden>
+        </div>
         <div class="hl-pads" id="hl-pads"></div>
+        <p class="hl-sbfrom" id="hl-sbfrom"></p>
       </div>
     </div>
   </div>

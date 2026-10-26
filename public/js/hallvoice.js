@@ -6,6 +6,8 @@
 const HallVoice = (() => {
   let send = () => false, getMe = () => null, ice = null;
   let vs = "", inVoice = false, muted = true, ptt = false, stream = null, track = null, actx = null, st = null, smute = false;
+  // Outgoing audio is a mix: mic → micGain ┐ → dest (what peers get). Soundboard files → sfxBus ┘. Muted = mic gain 0; nothing is sent unless the mic is open or a sound is playing.
+  let micSrc = null, micGain = null, sfxBus = null, dest = null, out = null, sfxN = 0;
   const peers = new Map(); // id → {pc, audio, polite, makingOffer, ignoreOffer, level, node}
   const vol = new Map();   // id → 0..1 (per-person volume, kept for the session)
   const opts = { ec: false, ns: false, agc: true, mic: "", out: "", saver: null };
@@ -46,8 +48,10 @@ const HallVoice = (() => {
     if (inVoice) return;
     if (!navigator.mediaDevices || !window.RTCPeerConnection) return toast("This browser can't do voice. Try Chrome, Edge, Firefox or Safari.");
     try { stream = await getMic(); } catch (e) { return toast("Couldn't get your mic. Check the browser's mic permission."); }
-    track = stream.getAudioTracks()[0]; muted = true; applyMute();
-    localMeter = meter(ctx().createMediaStreamSource(stream));
+    track = stream.getAudioTracks()[0]; muted = true;
+    const c = ctx(); micSrc = c.createMediaStreamSource(stream); micGain = c.createGain(); sfxBus = c.createGain(); dest = c.createMediaStreamDestination();
+    micSrc.connect(micGain).connect(dest); sfxBus.connect(dest); out = dest.stream.getAudioTracks()[0];
+    localMeter = meter(micSrc); applyMute();
     await iceServers(); inVoice = true;
     vs = Math.random().toString(36).slice(2, 10); send({ type: "voice", on: true, muted: true, vs }); render(); fillDevices();
     toast("You're in voice, muted. Rule 1: unmute when it's your turn.");
@@ -56,11 +60,21 @@ const HallVoice = (() => {
     if (!inVoice && !stream) return;
     inVoice = false; for (const id of [...peers.keys()]) drop(id);
     if (stream) stream.getTracks().forEach(t => t.stop()); stream = track = null; localMeter = null;
+    try { micSrc && micSrc.disconnect(); sfxBus && sfxBus.disconnect(); } catch (e) {} micSrc = micGain = sfxBus = dest = out = null; sfxN = 0;
     if (!quiet) send({ type: "voice", on: false }); render();
   }
+  const micOpen = () => !!track && inVoice && !smute && (!muted || ptt);
   function applyMute() {
-    const on = !!track && inVoice && !smute && (!muted || ptt); if (track) track.enabled = on;
-    for (const P of peers.values()) if (P.sender) P.sender.replaceTrack(on ? track : null).catch(() => {}); // muted = send nothing
+    const mic = micOpen(), sending = !!out && inVoice && !smute && (mic || sfxN > 0);
+    if (micGain) micGain.gain.setTargetAtTime(mic ? 1 : 0, ctx().currentTime, 0.01);
+    for (const P of peers.values()) if (P.sender && P.sending !== sending) { P.sending = sending; P.sender.replaceTrack(sending ? out : null).catch(() => {}); } // nothing open = send nothing
+  }
+  // Play a decoded sound into your voice, so everyone in voice hears it (used by custom soundboard pads).
+  function playInto(buffer, gain = 0.9) {
+    if (!inVoice || !sfxBus) return false; if (smute) { toast("A mod muted you, so your sounds don't go out either."); return false; }
+    const c = ctx(), src = c.createBufferSource(), g = c.createGain(); src.buffer = buffer; g.gain.value = gain; src.connect(g).connect(sfxBus);
+    sfxN++; applyMute(); src.onended = () => setTimeout(() => { sfxN = Math.max(0, sfxN - 1); applyMute(); }, 250);
+    src.start(); return src;
   }
   function setMuted(m) {
     if (smute && !m) return toast("A mod muted you. Ask in chat.");
@@ -77,7 +91,7 @@ const HallVoice = (() => {
     const P = { pc, audio, polite: me.id > id, makingOffer: false, ignoreOffer: false, node: null };
     peers.set(id, P);
     P.sender = pc.addTransceiver("audio", { direction: "sendrecv", streams: stream ? [stream] : [] }).sender;
-    const talking = !!track && track.enabled; if (talking) P.sender.replaceTrack(track).catch(() => {});
+    P.sending = false; applyMute();
     pc.onnegotiationneeded = async () => {
       try {
         P.makingOffer = true; const off = await pc.createOffer(); if (pc.signalingState !== "stable") return;
@@ -163,7 +177,7 @@ const HallVoice = (() => {
     if (!$("hl-vlist")) return; const me = getMe();
     for (const li of $("hl-vlist").querySelectorAll("[data-vid]")) {
       const id = li.dataset.vid; let lv = 0;
-      if (me && id === me.id) lv = localMeter && track && track.enabled ? level(localMeter) : 0;
+      if (me && id === me.id) lv = localMeter && micOpen() ? level(localMeter) : 0;
       else { const P = peers.get(id); lv = P && P.node && !P.audio.muted ? level(P.node) : 0; }
       li.classList.toggle("talking", lv > 0.02);
     }
@@ -182,8 +196,8 @@ const HallVoice = (() => {
   async function restartMic() {
     if (!inVoice) return;
     const old = stream; let s; try { s = await getMic(); } catch (e) { return toast("Couldn't switch mics."); }
-    stream = s; track = s.getAudioTracks()[0]; applyMute(); localMeter = meter(ctx().createMediaStreamSource(s));
-    applyMute();
+    stream = s; track = s.getAudioTracks()[0];
+    try { micSrc.disconnect(); } catch (e) {} micSrc = ctx().createMediaStreamSource(s); micSrc.connect(micGain); localMeter = meter(micSrc); applyMute();
     if (old) old.getTracks().forEach(t => t.stop());
   }
 
@@ -209,6 +223,6 @@ const HallVoice = (() => {
     $("hl-vlist").addEventListener("input", e => { const r = e.target.closest("[data-vol]"); if (!r) return; vol.set(r.dataset.vol, +r.value); volFor(r.dataset.vol); });
     addEventListener("pagehide", () => leave(true));
   }
-  return { _pcs: () => [...peers.values()].map(P => P.pc), init, onState, onSignal, onReconnect, onForceMute, leave, fillDevices, get inVoice() { return inVoice; },
+  return { playInto, ctx, _pcs: () => [...peers.values()].map(P => P.pc), init, onState, onSignal, onReconnect, onForceMute, leave, fillDevices, get inVoice() { return inVoice; },
     off(why) { leave(true); if (why) toast(why); } };
 })();

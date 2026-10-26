@@ -122,7 +122,7 @@ const Hall = (() => {
     sock.onmessage = e => {
       if (e.data === "pong") return;
       let d; try { d = JSON.parse(e.data); } catch (x) { return; }
-      if (d.type === "welcome") { const again = !!me; me = { id: d.id, name: d.name }; if (again) HallVoice.onReconnect(); store.put(code, { key: d.key, name: d.name }); store.setName(d.name); show(true); history.replaceState(null, "", "#host/" + code); }
+      if (d.type === "welcome") { const again = !!me; me = { id: d.id, name: d.name }; if (again) HallVoice.onReconnect(); else HallSB.enterRoom(code); store.put(code, { key: d.key, name: d.name }); store.setName(d.name); show(true); history.replaceState(null, "", "#host/" + code); }
       else if (d.type === "log") { $("hl-log").innerHTML = ""; lastN = 0; d.log.forEach(addMsg); $("hl-log").scrollTop = 1e9; }
       else if (d.type === "msg") addMsg(d.msg);
       else if (d.type === "rtc") HallVoice.onSignal(d.from, d.sig);
@@ -143,7 +143,7 @@ const Hall = (() => {
       if (leaving) return;
       if (ev.code >= 4000 || fatal) {
         if (ev.code === 4003 || ev.code === 4004 || ev.code === 4001) store.put(code, null);
-        ws = null; show(false); err(fatal || ev.reason || "Couldn't get into that room."); history.replaceState(null, "", "#host"); return;
+        ws = null; me = null; HallVoice.leave(true); show(false); err(fatal || ev.reason || "Couldn't get into that room."); history.replaceState(null, "", "#host"); return;
       }
       tries++; status("Lost the connection. Reconnecting…"); retry = setTimeout(connect, Math.min(15000, 800 * 2 ** Math.min(tries, 5)));
     };
@@ -162,7 +162,7 @@ const Hall = (() => {
   function send(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } toast("Not connected yet"); return false; }
   const cmd = t => send({ type: "cmd", text: t });
   function leave() {
-    leaving = true; clearTimeout(retry); HallVoice.leave(true); if (ws) try { ws.close(1000); } catch (e) {} ws = null; st = null; me = null;
+    leaving = true; clearTimeout(retry); HallVoice.leave(true); HallSB.leaveRoom(code); if (ws) try { ws.close(1000); } catch (e) {} ws = null; st = null; me = null;
     show(false); history.replaceState(null, "", "#host"); status("");
   }
 
