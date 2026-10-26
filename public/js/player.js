@@ -1,7 +1,7 @@
 /* The bar at the bottom: whatever is playing (radio, live show, an episode, a song), wherever you are on the site. */
 const Player = (() => {
   let cur = null; // { el, kind, title, page, seek, clip(), toggle(), stop(), time() }
-  const KIND = { radio: "Callective Radio", live: "Live now", ep: "Replay", song: "Hold.fm", clip: "Clip board", drop: "Patch bay" };
+  const KIND = { radio: "Callective Radio", live: "Live now", ep: "Replay", song: "Hold.fm", clip: "Clip board", drop: "Patch bay", rule: "The rules" };
   function set(info) {
     cur = info; const bar = $("pbar"); bar.hidden = false; bar.dataset.kind = info.kind;
     $("pb-kind").textContent = KIND[info.kind] || ""; $("pb-title").textContent = info.title || "";

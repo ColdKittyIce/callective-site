@@ -144,7 +144,7 @@ const Dir = (() => {
   const W2N = w => [...w].map(ch => Dial.toDigit(ch)).join("");
   const E = [
     { word: "OPERATOR", num: "0", label: "Operator (resets everything)", listed: true, act() { setMode(""); toast("Operator here. Everything's back to normal."); } },
-    { word: "RULES", label: "Ira reads the rules", listed: true, act() { Hold.play("ira-rules"); go("court"); } },
+    { word: "RULES", label: "Ira reads the rules", listed: true, act() { Hold.play("ira-rules"); go("rules"); } },
     { word: "THEME", label: "The theme song", listed: true, act() { Hold.play("theme"); } },
     { word: "QUEUE", label: "Get in line", listed: true, act() { go("line"); } },
     { word: "RADIO", label: "Callective Radio, 24/7", listed: true, act() { go("listen"); Listen.tuneIn(); } },
@@ -183,7 +183,8 @@ const Dir = (() => {
     { word: "GAMES", label: "Games", act() { go("guess"); } },
     { word: "PREMISE", label: "Dial-a-premise", act() { go("premise"); } },
     { word: "SEARCH", label: "Search", act() { go("search"); } },
-    { word: "LORE", label: "The glossary", act() { go("glossary"); } }
+    { word: "LORE", label: "The glossary", act() { go("glossary"); } },
+    { word: "COURT", label: "Callective Court", act() { go("court"); } }
   ];
   E.forEach(e => { if (!e.num) e.num = W2N(e.word); });
   return {

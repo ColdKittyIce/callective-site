@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Monoton&family=Share+Tech+Mono&family=VT323&display=swap">
-<link rel="stylesheet" href="css/site.css?v=ec18033a">
+<link rel="stylesheet" href="css/site.css?v=4a5b33f1">
 
 <div class="bg" aria-hidden="true"><div class="sun"></div><canvas class="rain" id="rain"></canvas><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
@@ -392,6 +392,33 @@
     </div>
   </div>
 </section>
+<section class="band" id="court">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker">Order in the court</p>
+      <h2 class="glitch" data-text="Callective Court">Callective Court</h2>
+      <p class="lede">Ten cases. Ten fleshbags who broke the Callmandments. You're the judge: read the charge, point at the rule they broke, and Ira reads them the law. Get it wrong and the defendant walks. One objection per trial.</p>
+    </div>
+    <div class="court">
+      <div class="bench" id="bench">
+        <img src="img/rules-court.webp" alt="The cast in a cartoon courtroom in front of a rotary phone judge" width="1600" height="900" loading="lazy">
+        <div class="docket" id="docket"></div>
+      </div>
+      <div class="tablet" id="tablet">
+        <h3>The 10 Callmandments</h3>
+        <ol id="callmandments"></ol>
+        <p id="tablet-note">Tap a rule to hear Ira read it. Start a trial and the tablet is how you rule.</p>
+      </div>
+    </div>
+    <div class="transcript hud" aria-label="Quotes from the Prankcast chat">
+      <p><b>THE GALLERY [7/11/26]&gt;</b> I woke up at 1 am for the rules.</p>
+      <p><b>THE GALLERY [1/7/26]&gt;</b> Without the rules, there would be no show.</p>
+      <p><b>THE CALLECTIVE [1/7/26]&gt;</b> Are you suggesting an all-rules show?</p>
+      <p><b>THE GALLERY [4/11/26]&gt;</b> I'm not here for the pranks, just the rules.</p>
+      <p><b>THE GALLERY [4/11/26]&gt;</b> Hey, what happened to the metal rap version of the rules?</p>
+    </div>
+  </div>
+</section>
 <section class="band" id="premise">
   <div class="wrap">
     <div class="sec-head">
@@ -635,33 +662,6 @@
     </div>
   </div>
 </section>
-<section class="band" id="court">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker">The top of every show</p>
-      <h2 class="glitch" data-text="Court is in session">Court is in session</h2>
-      <p class="lede">Ira reads the rules right after the theme. The chat considers this the best part of the show, and they are not joking. Rule 5 exists because of someone in this room. You know who you are.</p>
-    </div>
-    <div class="court">
-      <div class="bench" id="bench">
-        <img src="img/rules-court.webp" alt="The cast in a cartoon courtroom in front of a rotary phone judge" width="1600" height="900" loading="lazy">
-        <div class="allrise"><b>ALL RISE</b><div style="display:flex;flex-wrap:wrap;gap:8px"><button class="btn red solid" type="button" id="gavel"><span class="tri" aria-hidden="true"></span>Bang the gavel</button><button class="btn sm mustard" type="button" id="objection">Objection!</button></div></div>
-      </div>
-      <div class="tablet">
-        <h3>The 10 Callmandments</h3>
-        <ol id="callmandments"></ol>
-        <p>The rest are sealed. Show up Saturday at 7 and Ira will read them to you, slowly, with feeling.</p>
-      </div>
-    </div>
-    <div class="transcript hud" aria-label="Quotes from the Prankcast chat">
-      <p><b>THE GALLERY [7/11/26]&gt;</b> I woke up at 1 am for the rules.</p>
-      <p><b>THE GALLERY [1/7/26]&gt;</b> Without the rules, there would be no show.</p>
-      <p><b>THE CALLECTIVE [1/7/26]&gt;</b> Are you suggesting an all-rules show?</p>
-      <p><b>THE GALLERY [4/11/26]&gt;</b> I'm not here for the pranks, just the rules.</p>
-      <p><b>THE GALLERY [4/11/26]&gt;</b> Hey, what happened to the metal rap version of the rules?</p>
-    </div>
-  </div>
-</section>
 <section class="band" id="rules">
   <div class="wrap">
     <div class="sec-head">
@@ -672,16 +672,18 @@
     <div class="rules-grid">
       <div class="rulebook hud">
         <h3>The Callective rules</h3>
-        <p class="ext">As read by Ira, the Governor, at the top of every show.</p>
+        <p class="ext">All ten, as read by Ira, the Governor, at the top of every show. Tap &#9654; to hear him read one.</p>
         <ol class="rlist">
-          <li><b>Keep muted unless it's your turn.</b><span>Open mics get muted. All conversation happens in text chat. The roycipient doesn't need to hear you breathing.</span></li>
-          <li><b>Want to make a call? Put a PLA bell in chat.</b><span>That's the whole sign-up. Patrick Fucking Howard will take it from there.</span></li>
-          <li><b>Follow the rules of the WoPC server and the PLA.</b><span>No slurs, no threatening violence, no involving police. Keep it light. The rules of prank calling are just below.</span></li>
-          <li><b>Be nice. Sometimes calls just don't work out.</b><span>Dead air happens. Hang-ups happen. Nobody needs your notes. Clap anyway.</span></li>
-          <li><b>If you're drunk and abusive, you'll be removed.</b><span>Drunk and charming is a gray area. Drunk and abusive is not. If you don't know why this rule exists, it exists because of you.</span></li>
-          <li><b>Please use headphones if you have them.</b><span>Turn off Discord noise reduction if you're going to play sounds through your mic, or your soundboard turns into a whisper.</span></li>
-          <li><b>No interrupting a call unless you're invited.</b><span>That includes sound effects. The host or the show mods will play them if you ask nicely in chat.</span></li>
-          <li><b>No leaking the source of the call.</b><span>When it's time to come clean, you're 101.1 The Butt and they just got buttslammed. That's all they need to know.</span></li>
+          <li><b>Keep muted unless it's your turn.</b><span>Open mics will be muted. All conversation should be done in text chat. The roycipient doesn't need to hear you breathing.</span><button class="rl-play" type="button" data-rule="1" aria-label="Hear Ira read rule 1">&#9654; Ira</button></li>
+          <li><b>If you want to make a call, put a PLA bell emoji (:PLA:) in the chat and Patrick Howard will add you to the queue.</b><span>That's the whole sign-up. He's got a badge and he's usin' it.</span><button class="rl-play" type="button" data-rule="2" aria-label="Hear Ira read rule 2">&#9654; Ira</button></li>
+          <li><b>When making a call, follow the rules of the World of Prank Calls Discord server and Phone Losers of America.</b><span>Examples: no slurs, no threatening violence, no involving police. The full rules of prank calling are right next door.</span><button class="rl-play" type="button" data-rule="3" aria-label="Hear Ira read rule 3">&#9654; Ira</button></li>
+          <li><b>Be nice to each other.</b><span>Sometimes calls don't work out, sometimes people are new. We support each other in our prank call journey. Clap anyway.</span><button class="rl-play" type="button" data-rule="4" aria-label="Hear Ira read rule 4">&#9654; Ira</button></li>
+          <li><b>If you're drunk and just being abusive, you'll be removed.</b><span>Don't be a dick. Drunk and charming is a gray area. Drunk and abusive is not. If you don't know why this rule exists, it exists because of you.</span><button class="rl-play" type="button" data-rule="5" aria-label="Hear Ira read rule 5">&#9654; Ira</button></li>
+          <li><b>Please use headphones if you have them and get close to your microphone when speaking.</b><span>We want to hear your beautiful voice, and you will too. Turn off Noise Suppression and Echo Cancellation in Discord's Voice &amp; Video settings.</span><button class="rl-play" type="button" data-rule="6" aria-label="Hear Ira read rule 6">&#9654; Ira</button></li>
+          <li><b>NO INTERRUPTING A CALL unless you are invited to join.</b><span>This includes sound effects. Yes, even the really good one.</span><button class="rl-play" type="button" data-rule="7" aria-label="Hear Ira read rule 7">&#9654; Ira</button></li>
+          <li><b>Set up group calls ahead of time in chat.</b><span>Don't put people on the spot. Ping them in chat. We like consent here.</span><button class="rl-play" type="button" data-rule="8" aria-label="Hear Ira read rule 8">&#9654; Ira</button></li>
+          <li><b>No leaking the source of the call.</b><span>Do not say PLA, Prankcast, Callective, usernames, etc. on a call. If you need to bail, say you're a radio DJ and this is a prank. (101.1 The Butt. They just got buttslammed.)</span><button class="rl-play" type="button" data-rule="9" aria-label="Hear Ira read rule 9">&#9654; Ira</button></li>
+          <li><b>Do not pretend there is a real emergency.</b><span>If they threaten to get the police involved, bail on the call. The host reserves the right to end the call at any time.</span><button class="rl-play" type="button" data-rule="10" aria-label="Hear Ira read rule 10">&#9654; Ira</button></li>
         </ol>
         <button class="btn sm mustard" type="button" data-hold="ira-rules">&#9654; Hear Ira read them</button>
       </div>
@@ -876,16 +878,16 @@
 
 <script src="js/core.js?v=79dbe880"></script>
 <script src="js/router.js?v=e4aa483a"></script>
-<script src="js/player.js?v=7f12409b"></script>
+<script src="js/player.js?v=78e5fc3e"></script>
 <script src="js/fx.js?v=18c621e3"></script>
-<script src="js/dial.js?v=26878a63"></script>
+<script src="js/dial.js?v=3e0903d1"></script>
 <script src="js/line.js?v=0dcd3cb5"></script>
 <script src="js/switchboard.js?v=0dc97ef8"></script>
 <script src="js/replay.js?v=30e1fe3b"></script>
 <script src="js/lab.js?v=a093bd54"></script>
 <script src="js/clipper.js?v=3b6ad4a6"></script>
 <script src="js/clipboard.js?v=d0e2d1de"></script>
-<script src="js/pages.js?v=986c8f8e"></script>
+<script src="js/pages.js?v=33335dde"></script>
 <script src="js/listen.js?v=ae75fb17"></script>
 <script src="js/bingo.js?v=e098cc1c"></script>
 <script src="js/downloads.js?v=01b8c4c8"></script>

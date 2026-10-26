@@ -4,7 +4,7 @@
 const Hold = (() => {
   const TRACKS = [
     { k: "theme", g: "The Callective", t: "The Callective Theme", s: "By IceCat and Suno · the opener", d: "1:19" },
-    { k: "ira-rules", t: "Ira Reads the Rules", s: "The best part of the show, per the chat. Not a bit.", d: "2:28" },
+    { k: "ira-rules", t: "Ira Reads the Rules", s: "All ten, from the 10/24/26 show. The best part of the show, per the chat. Not a bit.", d: "2:51" },
     { k: "farewell", t: "The Callective Farewell", s: "By IceCat and Suno · the closer", d: "3:20" },
     { k: "theme-2026", t: "The Callective Theme, 2026 take", s: "Newer cut of the opener", d: "1:19" },
     { k: "jingle", t: "Jingle: Ramp In & Out", s: "Bumper between calls", d: "0:27" },
@@ -63,17 +63,102 @@ const Hold = (() => {
 })();
 window.Hold = Hold;
 
-/* ---------- court ---------- */
-const Court = {
-  init() {
-    const known = { 2: "Put the PLA bell in chat.", 3: "Follow the rules of WOPC." };
-    $("callmandments").innerHTML = Array.from({ length: 10 }, (_, i) => i + 1).map(n => known[n]
-      ? `<li><span>${n}.</span>${known[n]}</li>`
-      : `<li class="sealed"><span>${n}.</span><em aria-label="Sealed">${"█".repeat(10 + (n * 7) % 14)}</em></li>`).join("");
-    $("gavel").addEventListener("click", () => { SFX.thump(); const b = $("bench"); b.classList.remove("banged"); void b.offsetWidth; b.classList.add("banged"); setTimeout(() => Hold.play("ira-rules"), 350); });
-    $("objection").addEventListener("click", () => { playClip("anteater-court"); toast("Sustained. Somebody settle this out of court."); });
+/* ---------- Callective Court: a judging game on the Games page. Each case breaks one of the 10 Callmandments;
+   point at the rule on the tablet and Ira reads the law (his real reading of that rule, from the 10/24/26 show). ---------- */
+const RULE_SHORT = ["Keep muted unless it's your turn", "PLA bell in chat to get in line", "Follow the WOPC & PLA rules", "Be nice to each other",
+  "Drunk and abusive = removed", "Headphones, close to the mic", "No interrupting a call", "Set up group calls in chat first", "No leaking the source", "No fake emergencies"];
+let ruleAud = null;
+function playRule(n) {
+  if (ruleAud) ruleAud.pause();
+  ruleAud = new Audio(`audio/rules/rule-${n}.mp3`); Media.claim(ruleAud); ruleAud.play().catch(() => {});
+  if (typeof Player !== "undefined") Player.set({ kind: "rule", el: ruleAud, title: `Ira reads rule ${n}: ${RULE_SHORT[n - 1]}`, page: "rules" });
+  return ruleAud;
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-rule]"); if (b && !b.closest("#tablet")) playRule(+b.dataset.rule); });
+const Court = (() => {
+  // [rule, the defendant, the charge]. Everyone here is made up.
+  const CASES = [
+    [1, "a guy calling himself DJ Wet Socks", "left his mic open and narrated his own sandwich during somebody else's call."],
+    [1, "Somebody's Hippie Aunt", "argued about pizza toppings out loud in the voice channel instead of in text chat."],
+    [1, "the Regional Ice Machine Director", "unmuted to whisper \"ask him about the ice\" while someone else was on the phone."],
+    [2, "a first-timer named Pickles", "yelled \"ME NEXT, ME NEXT\" into the voice channel instead of dropping a PLA bell."],
+    [2, "a lurker with a very long username", "DMed the host fourteen times asking to be put in line."],
+    [3, "the Night DJ from Station 404", "built his whole bit around threatening to come down there and \"handle it.\""],
+    [3, "a man in a trench coat", "said a slur on the call and claimed it was \"in character.\""],
+    [4, "the Talent Show Judge", "typed \"boooo\" in chat after a brand-new caller's first call died."],
+    [4, "a guy who's been here since 2024", "told a first-timer their voice was \"too normal\" and to \"maybe not.\""],
+    [5, "a guy nine beers deep", "rolled into the channel insulting everybody and wouldn't stop."],
+    [5, "the Drunk Uncle", "kept harassing the roycipient after the bit was over, just to be mean."],
+    [6, "a caller on laptop speakers", "made the whole call echo twice, then got mad the room couldn't hear him."],
+    [6, "a soundboard enthusiast", "left Noise Suppression on, and every sound effect came out as a sad little whisper."],
+    [6, "a man six feet from his microphone", "did his entire bit from across the room. Somewhere in there was a joke, probably."],
+    [7, "the Air Horn Bandit", "played an air horn in the middle of somebody else's call. Uninvited."],
+    [7, "an eager helper", "jumped on another caller's call to \"help\" without being asked."],
+    [8, "the Group Call Ambusher", "unmuted and yelled \"GROUP CALL, EVERYBODY IN\" with zero warning."],
+    [8, "a guy with big plans", "volunteered three people for a group call they never agreed to."],
+    [9, "a caller with no poker face", "told the hotel clerk, \"You're on Prankcast, buddy!\""],
+    [9, "a proud regular", "said \"this one's for the Callective\" in the middle of the call."],
+    [10, "the Gas Leak Guy", "told a front desk there was a gas leak in room 210."],
+    [10, "a caller who couldn't read the room", "kept going after the clerk said, \"I'm calling the police.\""]
+  ];
+  const SENTENCE = ["Sentenced to the back of the queue.", "Sentenced to listen to the hold music. All of it.", "Sentenced to read the rules out loud. Twice.",
+    "Sentenced to one week of being called pig boy. Affectionately.", "Sentenced to be buttslammed by 101.1 The Butt.", "Patrick has revoked your badge privileges.",
+    "Sentenced to call a Five Below and ask for something off the list.", "The court orders you to apologize to the duck."];
+  const ROUNDS = 10;
+  let deck = [], round = 0, score = 0, streak = 0, objection = true, state = "idle", cur = null;
+  const best = () => { try { return +localStorage.getItem("cx-court-best") || 0; } catch (e) { return 0; } };
+  function tablet(mark) {
+    $("callmandments").innerHTML = RULE_SHORT.map((r, i) => `<li class="${mark?.right === i + 1 ? "right" : ""} ${mark?.wrong === i + 1 ? "wrong" : ""}"><button type="button" data-rule="${i + 1}"><span>${i + 1}.</span>${esc(r)}</button></li>`).join("");
   }
-};
+  function docket(html) { $("docket").innerHTML = html; }
+  function lobby() {
+    state = "idle"; tablet();
+    docket(`<b class="ar">ALL RISE</b><p>The Honorable Rotary Phone presiding. Ten cases on the docket today.</p>
+      <div class="dk-row"><button class="btn red solid" type="button" id="ct-start"><span class="tri" aria-hidden="true"></span>Bang the gavel</button>${best() ? `<span class="dk-best">Best: ${best()}</span>` : ""}</div>`);
+    $("tablet-note").textContent = "Tap a rule to hear Ira read it. Start a trial and the tablet is how you rule.";
+  }
+  function start() { deck = [...CASES].sort(() => Math.random() - .5).slice(0, ROUNDS); round = 0; score = 0; streak = 0; objection = true; SFX.thump(); bang(); next(); }
+  function bang() { const b = $("bench"); b.classList.remove("banged"); void b.offsetWidth; b.classList.add("banged"); }
+  function next() {
+    if (round >= ROUNDS) return finish();
+    cur = deck[round++]; state = "case"; tablet();
+    docket(`<small>Case ${round} of ${ROUNDS} · Score ${score}${streak > 1 ? ` · ${streak} in a row` : ""}</small>
+      <b class="dk-vs">The Callective vs. ${esc(cur[1])}</b><p class="dk-charge">The defendant ${esc(cur[2])}</p>
+      <p class="dk-ask">Which Callmandment did they break? Point at the tablet. →</p>
+      <div class="dk-row">${objection ? `<button class="btn sm mustard" type="button" id="ct-obj">Objection! (skip, once)</button>` : ""}</div>`);
+    $("tablet-note").textContent = "Your honor, make your ruling.";
+  }
+  function rule(n) {
+    if (state !== "case") { playRule(n); return; }
+    state = "ruled"; const ok = n === cur[0];
+    if (ok) { streak++; score += 10 + Math.min(streak - 1, 4) * 2; SFX.thump(); bang(); } else { streak = 0; SFX.sit(); }
+    tablet({ right: cur[0], wrong: ok ? 0 : n });
+    docket(`<b class="dk-verdict ${ok ? "g" : "w"}">${ok ? "GUILTY" : "OVERRULED"}</b>
+      <p>${ok ? `Rule ${cur[0]}: ${esc(RULE_SHORT[cur[0] - 1])}. ${pick(SENTENCE)}` : `That's not the one. They broke rule ${cur[0]}: ${esc(RULE_SHORT[cur[0] - 1])}. The defendant walks, smirking.`}</p>
+      <p class="dk-ask">🔊 Ira reads the law…</p>
+      <div class="dk-row"><button class="btn red solid" type="button" id="ct-next">${round >= ROUNDS ? "Final verdict" : "Next case →"}</button><button class="btn sm ghost" type="button" id="ct-hush">Skip Ira</button></div>`);
+    setTimeout(() => playRule(cur[0]), ok ? 450 : 700);
+  }
+  function finish() {
+    state = "done"; tablet(); const b = best(); if (score > b) try { localStorage.setItem("cx-court-best", score); } catch (e) {}
+    const max = ROUNDS * 18, rank = score >= max * .75 ? "Honorary Governor. Ira's keeping an eye on you." : score >= max * .5 ? "Circuit judge. You know the Callmandments." : score >= max * .25 ? "Traffic court. Go read the rules again." : "Held in contempt. Back of the queue.";
+    docket(`<small>The court has reached a verdict</small><b class="dk-score">${score}</b><p>${rank}${score > b ? " New personal best." : ""}</p>
+      <div class="dk-row"><button class="btn red solid" type="button" id="ct-start">New trial</button><a class="btn sm ghost" href="#rules">Read the rules</a></div>`);
+    SFX.thump(); bang();
+  }
+  function init() {
+    lobby();
+    $("court").addEventListener("click", e => {
+      const r = e.target.closest("#tablet [data-rule]"); if (r) { rule(+r.dataset.rule); return; }
+      const id = e.target.closest("button")?.id;
+      if (id === "ct-start") start();
+      if (id === "ct-next") { ruleAud?.pause(); next(); }
+      if (id === "ct-hush") ruleAud?.pause();
+      if (id === "ct-obj" && objection) { objection = false; playClip("anteater-court"); toast("Sustained. Out of court settlement. Next case."); setTimeout(next, 1200); }
+    });
+  }
+  return { init };
+})();
 
 /* ---------- lineup ---------- */
 const Lineup = (() => {

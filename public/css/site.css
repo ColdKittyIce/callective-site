@@ -1075,3 +1075,27 @@ i.cm{font-style:normal;font-family:var(--f-mono);font-size:10.5px;letter-spacing
 .sb-tape button:hover{text-decoration:line-through}
 .sb-tape li.now button{background:color-mix(in srgb,var(--c) 30%,#0a0919);transform:translateY(-2px)}
 .rail.booth{display:flex;flex-direction:column}
+/* rules: per-rule play */
+.rlist li{position:relative;padding-right:64px}
+.rl-play{position:absolute;right:0;top:2px;background:#05040c;border:1px solid var(--volt);color:var(--volt);font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;padding:3px 7px;cursor:pointer}
+.rl-play:hover{background:var(--volt);color:var(--void)}
+/* Callective Court game */
+.bench .docket{position:absolute;left:3%;top:5%;z-index:1;width:min(58%,520px);display:flex;flex-direction:column;gap:10px;padding:16px 18px;background:#05040cdd;border:1px solid #ff2bd666;box-shadow:0 0 24px #ff2bd633}
+.docket small{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--pink)}
+.docket p{margin:0;font-size:15.5px;line-height:1.45}
+.docket .ar{font-family:var(--f-neon);font-weight:400;font-size:clamp(28px,4vw,50px);line-height:1;color:#ffe9fb;text-shadow:var(--glow-p)}
+.dk-vs{font-family:var(--f-head);font-size:20px;text-transform:uppercase;color:var(--cyan);line-height:1.2}
+.dk-charge{font-size:17px}
+.dk-ask{color:var(--volt);font-family:var(--f-mono);font-size:13px}
+.dk-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dk-best{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.dk-verdict{font-family:var(--f-neon);font-weight:400;font-size:clamp(30px,4.4vw,54px);line-height:1}
+.dk-verdict.g{color:var(--volt);text-shadow:var(--glow-v)}.dk-verdict.w{color:var(--red);text-shadow:0 0 12px #ff3b5c}
+.dk-score{font-family:var(--f-crt);font-size:64px;line-height:1;color:var(--cyan);text-shadow:var(--glow-c)}
+@media (max-width:700px){.bench .docket{position:static;width:auto}}
+.tablet li{display:block;border-bottom:1px dashed #e9ff3b22;padding:0}
+.tablet li button{display:grid;grid-template-columns:36px minmax(0,1fr);gap:6px;width:100%;text-align:left;background:none;border:0;color:var(--text);font-family:var(--f-crt);font-size:21px;line-height:1.1;padding:4px 2px;cursor:pointer}
+.tablet li button:hover{background:#e9ff3b14;color:var(--volt)}
+.tablet li button span{color:var(--volt)}
+.tablet li.right button{background:#e9ff3b26;color:var(--volt)}
+.tablet li.wrong button{background:#ff3b5c26;color:var(--red);text-decoration:line-through}
