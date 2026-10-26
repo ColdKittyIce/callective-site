@@ -615,7 +615,7 @@
         <button class="btn solid" type="submit">🔔 Join the room</button>
       </form>
       <div class="hl-notes">
-        <p><b>House rules still apply.</b> Same 10 Callmandments. The bot won't post phone numbers, emails, links or slurs, so keep the numbers you're calling out of chat.</p>
+        <p><b>House rules still apply.</b> Same 10 Callmandments. The bot won't post phone numbers, emails, links or slurs in the room chat. Need to pass someone a number or a link? Tap ✉️ next to their name and DM them: only the two of you can see it.</p>
         <p><b>Rooms are temporary.</b> A room closes after 12 quiet hours, or when the host types <code>!close</code>. Nothing gets saved after that.</p>
         <p id="hl-err" class="hl-err" role="alert" hidden></p>
       </div>
@@ -632,7 +632,12 @@
       </div>
       <div class="hl-grid">
         <div class="hud hl-chat">
+          <div class="hl-tabs" id="hl-tabs" role="tablist"></div>
           <div class="hl-log" id="hl-log" aria-live="polite"></div>
+          <div class="hl-dm" id="hl-dm" hidden>
+            <div class="hl-dmhead"><span id="hl-dmwho"></span><button type="button" class="btn sm ghost" id="hl-block">🚫 Block</button></div>
+            <div class="hl-log" id="hl-dmlog" aria-live="polite"></div>
+          </div>
           <div class="hl-status" id="hl-status" hidden></div>
           <form class="hl-input" id="hl-form">
             <input id="hl-in" maxlength="500" autocomplete="off" placeholder="Say something… or !help">

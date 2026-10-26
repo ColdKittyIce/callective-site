@@ -2,7 +2,7 @@
    The room lives in a durable object on the worker; this file is just the screen and the WebSocket. */
 const Hall = (() => {
   const CODE_RE = /^[A-Z]{2,6}-\d{4}$/;
-  let ws = null, code = null, me = null, st = null, tries = 0, retry = null, leaving = false, sound = true, lastN = 0;
+  let ws = null, code = null, me = null, st = null, view = "room", dms = new Map(), unread = new Map(), names = new Map(), closed = new Set(), tries = 0, retry = null, leaving = false, sound = true, lastN = 0;
   const store = {
     get() { try { return JSON.parse(localStorage.getItem("cx-hall") || "{}"); } catch (e) { return {}; } },
     set(o) { try { localStorage.setItem("cx-hall", JSON.stringify(o)); } catch (e) {} },
@@ -29,11 +29,54 @@ const Hall = (() => {
     if (m.n && m.n <= lastN) return; if (m.n) lastN = m.n;
     const div = document.createElement("div");
     div.className = "hl-msg" + (m.bot ? " bot" : "") + (m.only ? " only" : "") + (m.cmd ? " cmd" : "");
+    if (m.uid) { div.dataset.uid = m.uid; div.hidden = blocked(m.uid); }
     const badge = m.bot ? '<i class="hl-tag bot">BOT</i>' : m.host ? '<i class="hl-tag host">HOST</i>' : m.mod ? '<i class="hl-tag mod">MOD</i>' : "";
     div.innerHTML = `<span class="hl-t">${time(m.at)}</span><span class="hl-who">${m.flair ? esc(m.flair) + " " : ""}${esc(m.name)}${badge}</span><span class="hl-txt">${fmt(m.text)}${m.only ? '<em class="hl-only">Only you can see this</em>' : ""}</span>`;
     log.appendChild(div);
     while (log.children.length > 300) log.firstChild.remove();
     if (stick || m.only || (me && m.name === me.name)) log.scrollTop = log.scrollHeight;
+  }
+  const blocked = id => !!(st && st.you && (st.you.blocks || []).includes(id));
+  const nameOf = id => (st && st.members.find(m => m.id === id) || {}).name || names.get(id) || "someone";
+  function linkify(text) {
+    return esc(text).replace(/\b(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/gi, '<a href="$1" target="_blank" rel="noopener noreferrer nofollow">$1</a>').replace(/\n/g, "<br>");
+  }
+  function dmLine(dm, el) {
+    const div = document.createElement("div"), mine = me && dm.from === me.id;
+    div.className = "hl-msg" + (mine ? " mine" : "") + (dm.sys ? " only" : "");
+    div.innerHTML = `<span class="hl-t">${time(dm.at)}</span><span class="hl-who">${esc(dm.sys ? "Patrick Howard" : mine ? "You" : dm.fromName)}</span><span class="hl-txt">${linkify(dm.text)}</span>`;
+    el.appendChild(div);
+  }
+  function addDM(dm, quiet) {
+    const other = me && dm.from === me.id ? dm.to : dm.from;
+    names.set(dm.from, dm.fromName); if (dm.toName) names.set(dm.to, dm.toName);
+    const list = dms.get(other) || []; if (dm.n && list.some(x => x.n === dm.n)) return; list.push(dm); dms.set(other, list);
+    if (!quiet || dm.sys) closed.delete(other);
+    if (view === other) { const el = $("hl-dmlog"); dmLine(dm, el); el.scrollTop = el.scrollHeight; }
+    else if (!quiet && dm.from !== (me && me.id)) {
+      unread.set(other, (unread.get(other) || 0) + 1);
+      if (sound) { try { sample("page", .5); } catch (x) {} } toast(`✉️ DM from ${dm.fromName}`); flash(`DM from ${dm.fromName}`);
+    }
+    tabs();
+  }
+  function tabs() {
+    const ids = [...dms.keys()].filter(id => !closed.has(id)); if (view !== "room" && !ids.includes(view)) ids.push(view);
+    $("hl-tabs").innerHTML = `<button type="button" role="tab" data-view="room" aria-selected="${view === "room"}"># Room</button>` + ids.map(id => {
+      const n = unread.get(id) || 0;
+      return `<button type="button" role="tab" data-view="${esc(id)}" aria-selected="${view === id}">✉️ ${esc(nameOf(id))}${n ? `<i>${n}</i>` : ""}<span class="hl-x" data-closedm="${esc(id)}" title="Close">×</span></button>`;
+    }).join("");
+  }
+  function openView(v) {
+    view = v; unread.delete(v); closed.delete(v); const room = v === "room";
+    $("hl-log").hidden = !room; $("hl-dm").hidden = room;
+    $("hl-in").placeholder = room ? "Say something… or !help" : `Private message to ${nameOf(v)}… numbers and links are OK here`;
+    if (!room) {
+      const el = $("hl-dmlog"); el.innerHTML = "";
+      el.insertAdjacentHTML("beforeend", `<p class="hl-dmnote">🔒 Only you and <b>${esc(nameOf(v))}</b> can see this. Phone numbers and links are fine in DMs. The room's mods can't read it. DMs disappear when the room closes.</p>`);
+      (dms.get(v) || []).forEach(dm => dmLine(dm, el)); el.scrollTop = el.scrollHeight;
+      $("hl-dmwho").textContent = `✉️ ${nameOf(v)}`; $("hl-block").textContent = blocked(v) ? "Unblock" : "🚫 Block";
+    }
+    tabs(); $("hl-in").focus();
   }
   function render() {
     if (!st) return;
@@ -60,8 +103,13 @@ const Hall = (() => {
       if (mod && m.id !== y.id && !m.host && (y.host || !m.mod)) {
         ctl = `<span class="hl-mctl">${y.host ? `<button type="button" data-cmd="!${m.mod ? "unmod" : "mod"} ${esc(m.name)}" title="${m.mod ? "Take away mod" : "Make mod"}">🛡️</button>` : ""}<button type="button" data-cmd="!kick ${esc(m.name)}" data-confirm="Remove ${esc(m.name)} from the room?" title="Remove from room">👢</button><button type="button" data-cmd="!blacklist ${esc(m.name)}" data-confirm="Blacklist ${esc(m.name)}? They can't come back in." title="Blacklist">⛔</button></span>`;
       }
-      return `<li class="${m.on ? "" : "off"}${m.id === y.id ? " me" : ""}"><i class="hl-dot" aria-hidden="true"></i><span>${m.flair ? esc(m.flair) + " " : ""}${esc(m.name)}${tag}</span>${ctl}</li>`;
+      const dmb = m.id !== y.id ? `<button type="button" class="hl-dmbtn" data-dm="${esc(m.id)}" title="Send ${esc(m.name)} a private message">✉️</button>` : "";
+      return `<li class="${m.on ? "" : "off"}${m.id === y.id ? " me" : ""}${blocked(m.id) ? " blocked" : ""}"><i class="hl-dot" aria-hidden="true"></i><span>${m.flair ? esc(m.flair) + " " : ""}${esc(m.name)}${tag}</span>${dmb}${ctl}</li>`;
     }).join("");
+    for (const div of $("hl-log").querySelectorAll("[data-uid]")) div.hidden = blocked(div.dataset.uid);
+    st.members.forEach(m => names.set(m.id, m.name));
+    if (view !== "room") $("hl-block").textContent = blocked(view) ? "Unblock" : "🚫 Block";
+    tabs();
   }
 
   function wsUrl(params) { return `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/hall/${encodeURIComponent(code)}/ws?${new URLSearchParams(params)}`; }
@@ -77,6 +125,9 @@ const Hall = (() => {
       if (d.type === "welcome") { me = { id: d.id, name: d.name }; store.put(code, { key: d.key, name: d.name }); store.setName(d.name); show(true); history.replaceState(null, "", "#host/" + code); }
       else if (d.type === "log") { $("hl-log").innerHTML = ""; lastN = 0; d.log.forEach(addMsg); $("hl-log").scrollTop = 1e9; }
       else if (d.type === "msg") addMsg(d.msg);
+      else if (d.type === "dms") { dms.clear(); d.list.forEach(x => addDM(x, true)); if (view !== "room") openView(view); }
+      else if (d.type === "dm") addDM(d.dm);
+      else if (d.type === "dmfail") addDM({ n: 0, at: Date.now(), sys: true, from: d.to, fromName: "", to: me && me.id, text: d.error }, true);
       else if (d.type === "state") { st = d; render(); }
       else if (d.type === "ping") { if (sound) { try { sample("ring", .8); } catch (x) {} } toast(d.text); flash(d.text); }
       else if (d.type === "error") fatal = d.error;
@@ -101,7 +152,7 @@ const Hall = (() => {
   function enter(c, name) {
     code = c; err("");
     if (name) { const saved = store.room(c); if (!saved || saved.name.toLowerCase() !== name.toLowerCase()) store.put(c, { key: saved && saved.key && saved.name.toLowerCase() === name.toLowerCase() ? saved.key : "", name }); }
-    leaving = false; tries = 0; $("hl-log").innerHTML = ""; lastN = 0; st = null; connect();
+    leaving = false; tries = 0; $("hl-log").innerHTML = ""; lastN = 0; st = null; dms.clear(); unread.clear(); names.clear(); view = "room"; openView("room"); connect();
   }
   function send(o) { if (ws && ws.readyState === 1) { ws.send(JSON.stringify(o)); return true; } toast("Not connected yet"); return false; }
   const cmd = t => send({ type: "cmd", text: t });
@@ -143,10 +194,16 @@ const Hall = (() => {
     $("hl-join-code").addEventListener("blur", e => { const c = normCode(e.target.value); if (c) e.target.value = c; });
     $("hl-form").addEventListener("submit", e => {
       e.preventDefault(); const i = $("hl-in"), t = i.value.trim(); if (!t) return;
-      if (send({ type: "say", text: t })) i.value = "";
+      if (send(view === "room" ? { type: "say", text: t } : { type: "dm", to: view, text: t })) i.value = "";
     });
     $("hl-bell").addEventListener("click", () => { const y = st && st.you; cmd(st && st.queue.some(e => e.id === (y && y.id)) ? "!leave" : "!join"); });
     $("hl-all").addEventListener("click", () => cmd("!allcall"));
+    $("hl-tabs").addEventListener("click", e => {
+      const x = e.target.closest("[data-closedm]"); if (x) { e.stopPropagation(); const id = x.dataset.closedm; closed.add(id); unread.delete(id); if (view === id) openView("room"); else tabs(); return; }
+      const b = e.target.closest("[data-view]"); if (b) openView(b.dataset.view);
+    });
+    $("hl-mem").addEventListener("click", e => { const b = e.target.closest("[data-dm]"); if (b) openView(b.dataset.dm); });
+    $("hl-block").addEventListener("click", () => { if (view !== "room") send({ type: blocked(view) ? "unblock" : "block", to: view }); });
     try { sound = localStorage.getItem("cx-hall-sound") !== "0"; } catch (e) {}
     const sb = $("hl-sound"), paint = () => { sb.setAttribute("aria-pressed", sound); sb.textContent = sound ? "🔊 Ring me" : "🔇 Ring me"; };
     paint(); sb.addEventListener("click", () => { sound = !sound; paint(); try { localStorage.setItem("cx-hall-sound", sound ? "1" : "0"); } catch (e) {} if (sound) try { sample("ring", .5); } catch (x) {} });

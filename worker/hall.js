@@ -3,10 +3,10 @@
    the bot answers commands the way the real one does (!join, !next, !lock …) and the page shows the line.
    Hibernation keeps it free while people sit idle. Rooms delete themselves after 12 quiet hours. */
 import { DurableObject } from "cloudflare:workers";
-import { screen } from "./screen.js";
+import { screen, SLURS } from "./screen.js";
 
 const IDLE_MS = 12 * 3600e3, ALLCALL_COOLDOWN = 60e3, LOG_MAX = 150, MAX_ONLINE = 150;
-const BOT = "Patrick Howard";
+const BOT = "Patrick Howard", DM_KEEP = 60;
 const now = () => Date.now();
 const rid = (n = 10) => [...crypto.getRandomValues(new Uint8Array(n))].map(b => "abcdefghijkmnpqrstuvwxyz23456789"[b % 32]).join("");
 async function hash(s) { const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)); return [...new Uint8Array(d)].slice(0, 12).map(b => b.toString(16).padStart(2, "0")).join(""); }
@@ -14,7 +14,7 @@ const tidy = (s, n) => String(s ?? "").replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, "
 const low = s => String(s || "").toLowerCase().replace(/^@/, "");
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-const HELP_USER = "**Everyone:** `!join` (or drop 🔔 / :PLA: in chat) · `!leave` · `!queue` · `!position` · `!allcall` (or :TheCallectiveTitle:) · `!flair <emoji|off>` · `!mystats`";
+const HELP_USER = "**Everyone:** `!join` (or drop 🔔 / :PLA: in chat) · `!leave` · `!queue` · `!position` · `!allcall` (or :TheCallectiveTitle:) · `!flair <emoji|off>` · `!mystats` · `!dm <name> <message>` (private: numbers and links are OK in DMs) · `!block <name>` / `!unblock <name>`";
 const HELP_MOD = "**Mods:** `!next` · `!remove <name|#pos>` · `!move <name> <pos>` · `!swap <a> <b>` · `!shuffle` · `!reverse` · `!lock` · `!unlock` · `!clear` · `!allcall <pos>` · `!kick <name>` · `!blacklist <name>` · `!unblacklist <name>` · `!blacklistlist`\n**Host:** `!mod <name>` · `!unmod <name>` · `!title <text>` · `!close`";
 
 export class Hall extends DurableObject {
@@ -72,6 +72,7 @@ export class Hall extends DurableObject {
         ws.serializeAttachment({ id }); ws.send(JSON.stringify({ type: "welcome", id, key, name: m.name }));
       }
       ws.send(JSON.stringify({ type: "log", log: this.s.log }));
+      ws.send(JSON.stringify({ type: "dms", list: this.dmsFor(id) }));
       await this.save(); this.broadcastState();
       return new Response(null, { status: 101, webSocket: client });
     }
@@ -89,14 +90,14 @@ export class Hall extends DurableObject {
     const members = Object.entries(M).filter(([k]) => on.has(k) || s.queue.some(e => e.id === k)).map(([k, m]) => ({ id: k, name: m.name, flair: m.flair, mod: m.mod, host: m.host, on: on.has(k) }))
       .sort((a, b) => (b.host - a.host) || (b.mod - a.mod) || (b.on - a.on) || a.name.localeCompare(b.name));
     return { type: "state", code: s.code, title: s.title, locked: s.locked, cur: s.cur, queue: q, members, calls: s.calls,
-      you: id && M[id] ? { id, name: M[id].name, mod: M[id].mod, host: M[id].host, flair: M[id].flair } : null };
+      you: id && M[id] ? { id, name: M[id].name, mod: M[id].mod, host: M[id].host, flair: M[id].flair, blocks: M[id].blocks || [] } : null };
   }
   broadcastState() {
     for (const ws of this.ctx.getWebSockets()) { const a = ws.deserializeAttachment() || {}; this.send(ws, this.state(a.id || null)); }
   }
   post(from, text, extra = {}) {
     const m = from ? this.s.members[from] : null;
-    const msg = { n: ++this.s.seq, at: now(), bot: !from, name: m ? m.name : BOT, flair: m?.flair || "", mod: !!m?.mod, host: !!m?.host, text, ...extra };
+    const msg = { n: ++this.s.seq, at: now(), uid: from || null, bot: !from, name: m ? m.name : BOT, flair: m?.flair || "", mod: !!m?.mod, host: !!m?.host, text, ...extra };
     this.s.log.push(msg); if (this.s.log.length > LOG_MAX) this.s.log.splice(0, this.s.log.length - LOG_MAX);
     this.broadcast({ type: "msg", msg }); return msg;
   }
@@ -111,9 +112,11 @@ export class Hall extends DurableObject {
     const t = now(); me.burst = (me.burst || []).filter(x => t - x < 10000); if (me.burst.length >= 8) return this.whisper(ws, "Slow down a little. 🐢"); me.burst.push(t);
     me.seen = t;
     if (d.type === "say") {
-      const text = tidy(d.text, 500); if (!text) return;
+      const text = tidy(d.text, 800); if (!text) return;
+      if (/^!(dm|msg|w)\s/i.test(text)) { await this.command(ws, a.id, text); return await this.save(); } // private: never echoed or filtered for numbers
+      if (text.length > 500) return this.whisper(ws, "That's a long one. Keep chat messages under 500 characters.");
       const flag = screen(text);
-      if (flag) return this.whisper(ws, flag === "phone number" ? "Not posted: that looks like a phone number. Keep numbers out of chat." : flag === "language" ? "Not posted. Rule 3: no slurs." : `Not posted: no ${flag}s in chat.`);
+      if (flag) return this.whisper(ws, flag === "phone number" ? "Not posted: that looks like a phone number. Keep numbers out of the room chat. Send it in a DM instead (✉️ next to their name)." : flag === "language" ? "Not posted. Rule 3: no slurs." : `Not posted: no ${flag}s in the room chat. Send it in a DM instead.`);
       if (text.startsWith("!")) { if (!d.quiet) this.post(a.id, text, { cmd: true }); await this.command(ws, a.id, text); }
       else {
         this.post(a.id, text);
@@ -121,7 +124,31 @@ export class Hall extends DurableObject {
         else if (/:thecallectivetitle:/i.test(text)) await this.command(ws, a.id, "!allcall", true);
       }
       await this.save();
-    } else if (d.type === "cmd") { await this.command(ws, a.id, tidy(d.text, 200)); await this.save(); }
+    } else if (d.type === "dm") { await this.dm(ws, a.id, String(d.to || ""), d.text); await this.save(); }
+    else if (d.type === "block" || d.type === "unblock") { this.block(ws, a.id, String(d.to || ""), d.type === "block"); await this.save(); }
+    else if (d.type === "cmd") { await this.command(ws, a.id, tidy(d.text, 200)); await this.save(); }
+  }
+  /* ---------- DMs: just the two people. Numbers and links are allowed here (that's the point); slurs still aren't. ---------- */
+  pair(a, b) { return a < b ? a + ":" + b : b + ":" + a; }
+  dmsFor(id) { const out = []; for (const [k, list] of Object.entries(this.s.dms || {})) if (k.split(":").includes(id)) out.push(...list); return out.sort((x, y) => x.n - y.n); }
+  async dm(ws, from, to, raw) {
+    const s = this.s, A = s.members[from], B = s.members[to];
+    if (!B || B.banned) return this.whisper(ws, "Couldn't find that person.");
+    if (to === from) return this.whisper(ws, "You can't DM yourself.");
+    const text = tidy(raw, 800); if (!text) return;
+    if (SLURS.test(text)) return this.whisper(ws, "Not sent. Rule 3: no slurs, not even in DMs.");
+    if ((B.blocks || []).includes(from)) return this.send(ws, { type: "dmfail", to, error: `${B.name} isn't taking DMs from you.` });
+    if ((A.blocks || []).includes(to)) return this.send(ws, { type: "dmfail", to, error: `You blocked ${B.name}. Unblock them to send a DM.` });
+    s.dms = s.dms || {}; const k = this.pair(from, to), list = s.dms[k] = s.dms[k] || [];
+    const dm = { n: ++s.seq, at: now(), from, fromName: A.name, to, toName: B.name, text };
+    list.push(dm); if (list.length > DM_KEEP) list.splice(0, list.length - DM_KEEP);
+    for (const w of [...this.sockets(from), ...this.sockets(to)]) this.send(w, { type: "dm", dm });
+  }
+  block(ws, id, who, on) {
+    const me = this.s.members[id], t = this.s.members[who]; if (!t || who === id) return;
+    me.blocks = (me.blocks || []).filter(x => x !== who); if (on) me.blocks.push(who);
+    this.whisper(ws, on ? `🚫 Blocked ${t.name}. They can't DM you, and you won't see their chat messages.` : `Unblocked ${t.name}.`);
+    for (const w of this.sockets(id)) this.send(w, this.state(id));
   }
   async webSocketClose(ws) { if (this.s) this.broadcastState(); }
   async webSocketError(ws) { if (this.s) this.broadcastState(); }
@@ -171,6 +198,15 @@ export class Hall extends DurableObject {
         if ([...f].length > 3 || /[\w<>]/.test(f)) return tell("Flair has to be an emoji, like `!flair 🐸`.");
         me.flair = f; tell(`Flair set: ${f}`); return done();
       }
+      case "dm": case "msg": case "w": {
+        // names can have spaces: use the longest run of words that matches someone
+        for (let n = args.length - 1; n >= 1; n--) {
+          const f = this.find(args.slice(0, n).join(" "));
+          if (f && f.id && low(s.members[f.id].name).startsWith(low(args.slice(0, n).join(" ")))) { await this.dm(ws, id, f.id, args.slice(n).join(" ")); return; }
+        }
+        return tell("Use `!dm <name> <message>`, or tap ✉️ next to someone in the room list.");
+      }
+      case "block": case "unblock": { const f = this.find(args.join(" ")); if (!f || !f.id) return tell("Couldn't find that person."); return this.block(ws, id, f.id, c === "block"); }
       case "ping": return tell("Turn the \"your turn\" sound on or off with the 🔔 switch above the chat.");
       case "allcall": {
         const pos = args[0] && mod ? parseInt(args[0], 10) : NaN;
