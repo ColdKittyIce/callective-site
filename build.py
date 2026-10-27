@@ -11,7 +11,11 @@ html = f"""<!doctype html>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta property="og:title" content="The Callective">
 <meta property="og:description" content="A community prank call show. Live every Saturday at 7pm Eastern from the World of Prank Calls Discord.">
-<meta property="og:image" content="img/stage.webp">
+<meta property="og:image" content="https://callective.zoocrewprankradio.workers.dev/img/og-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://callective.zoocrewprankradio.workers.dev/img/og-card.jpg">
 {head}
 </head>
 <body>

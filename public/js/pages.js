@@ -165,13 +165,13 @@ const Court = (() => {
 const Lineup = (() => {
   const S = [
     { k: "ira", name: "Ira", aka: "iregretjumping · the Governor", role: "Show runner", sign: "LEAKED CALL SOURCE", no: "0001", host: "iregretjumping", clip: "ira-my-name",
-      imgs: [["Happy", "lineup-ira.webp"], ["Sad", "lineup-ira-sad.webp"]], priors: "Reads the rules at the top of every show, then gets asked to read them again. Wrote rule 5 for you specifically. Knows what you did." },
+      imgs: [["Happy", "lineup-ira.webp"], ["Sad", "lineup-ira-sad.webp"], ["Model sheet", "art/sheet-ira.webp"]], priors: "Reads the rules at the top of every show, then gets asked to read them again. Wrote rule 5 for you specifically. Knows what you did." },
     { k: "icecat", name: "IceCat", aka: "icecat", role: "Crew", sign: "REFUSED TO MUTE", no: "0002", host: "IceCat", clip: "icecat-what-call",
-      imgs: [["Excited", "lineup-icecat.webp"], ["Confused", "lineup-icecat-confused.webp"]], priors: "Made the logo, the cartoon cast, the theme songs and the queue bot. Also recorded the drunk version of the theme, which he will not be taking questions about." },
+      imgs: [["Excited", "lineup-icecat.webp"], ["Confused", "lineup-icecat-confused.webp"], ["Model sheet", "art/sheet-cat.webp"]], priors: "Made the logo, the cartoon cast, the theme songs and the queue bot. Also recorded the drunk version of the theme, which he will not be taking questions about." },
     { k: "dogs", name: "DespicableDogs", aka: "despicabledogs", role: "Crew", sign: "TOO LOUD ON MIC", no: "0003", host: "DespicableDogs", clip: "dogs-woo",
-      imgs: [["Hype", "lineup-dogs.webp"]], priors: "Never seen without the sunglasses or the 101.1 The Butt hoodie. Will buttslam on sight. Hosted the Bonerhaus corporate takeover and somehow made quarterly targets." },
+      imgs: [["Hype", "lineup-dogs.webp"], ["Model sheet", "art/sheet-dog.webp"]], priors: "Never seen without the sunglasses or the 101.1 The Butt hoodie. Will buttslam on sight. Hosted the Bonerhaus corporate takeover and somehow made quarterly targets." },
     { k: "tom", name: "Dr. Tom Servo", aka: "DrTomServo · Tom Man", role: "Crew", sign: "HACKED THE QUEUE SYSTEM", no: "0004", host: "Dr. Tom Servo", clip: "tom-yeaugh",
-      imgs: [["Servo", "lineup-tom.webp"], ["Tom Man", "tomman.webp"], ["Issue #42", "tomman-42.webp"]], priors: "Hosts more Callectives than anyone. Has a cape. Owns the roof, the sky, and every shingle you call a liar about." }];
+      imgs: [["Servo", "lineup-tom.webp"], ["Tom Man", "tomman.webp"], ["Issue #42", "tomman-42.webp"], ["Model sheet", "art/sheet-robot.webp"], ["Tom Man sheet", "art/sheet-tomman.webp"]], priors: "Hosts more Callectives than anyone. Has a cape. Owns the roof, the sky, and every shingle you call a liar about." }];
   function stats(host) {
     const seen = new Map(); for (const e of C.episodes) if (e.h === host) seen.set(e.d || e.id, e);
     const list = [...seen.values()].filter(e => e.d).sort((a, b) => b.d.localeCompare(a.d));
@@ -179,7 +179,7 @@ const Lineup = (() => {
   }
   function sheet(s, img = 0) {
     const st = stats(s.host);
-    $("sheet").innerHTML = `<div class="mug">${s.imgs.length > 1 ? `<div class="mood" role="group" aria-label="Photo">${s.imgs.map((m, i) => `<button type="button" data-img="${i}" aria-pressed="${i === img}">${m[0]}</button>`).join("")}</div>` : ""}<img src="img/${s.imgs[img][1]}" alt="${esc(s.name)}"></div>
+    $("sheet").innerHTML = `<div class="mug">${s.imgs.length > 1 ? `<div class="mood" role="group" aria-label="Photo">${s.imgs.map((m, i) => `<button type="button" data-img="${i}" aria-pressed="${i === img}">${m[0]}</button>`).join("")}</div>` : ""}<a href="img/${s.imgs[img][1]}" target="_blank" rel="noopener" title="Open full size"><img src="img/${s.imgs[img][1]}" alt="${esc(s.name)}"></a></div>
       <div><p class="kicker" style="color:var(--red)">Booking no. ${s.no}</p><h3>${esc(s.name)}</h3>
       <dl><dt>Known as</dt><dd>${esc(s.aka)}</dd><dt>Role</dt><dd>${esc(s.role)}</dd><dt>Charge</dt><dd>${esc(s.sign.charAt(0) + s.sign.slice(1).toLowerCase())}</dd>
       <dt>Shows hosted</dt><dd>${st.n} on Prankcast${st.last ? ` · last on ${fmtDate(st.last.d)}` : ""}</dd><dt>Priors</dt><dd>${esc(s.priors)}</dd></dl>

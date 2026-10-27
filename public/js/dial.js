@@ -132,10 +132,19 @@ function closeTakeover() { const t = $("takeover"); t.classList.remove("show"); 
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeTakeover(); });
 document.addEventListener("click", e => { if (e.target.id === "takeover" || e.target.closest("[data-close]")) closeTakeover(); });
 
-function setMode(m) {
+function setMode(m, quiet) {
+  const was = document.body.dataset.mode || "";
   document.body.dataset.mode = m || "";
+  if (!quiet && m && m !== was && { dog: 1, hell: 1 }[m]) modeCard(m);
   $("brandname").textContent = { dog: "THE DOGLECTIVE", hell: "THE HELLECTIVE", ding: "THE DINGLECTIVE" }[m] || "THE CALLECTIVE";
   try { m ? localStorage.setItem("cx-mode", m) : localStorage.removeItem("cx-mode"); } catch (e) {}
+}
+// Title card when you dial into a theme night
+function modeCard(m) {
+  const el = document.createElement("div"); el.className = "mode-card"; el.setAttribute("role", "img"); el.setAttribute("aria-label", m === "dog" ? "The Doglective" : "The Hellective");
+  el.innerHTML = `<img src="img/art/title-${m === "dog" ? "doglective" : "hellective"}.webp" alt="">`;
+  el.addEventListener("click", () => el.remove()); document.body.appendChild(el);
+  setTimeout(() => el.classList.add("out"), 2600); setTimeout(() => el.remove(), 3200);
 }
 const go = id => Router.go(id);
 const pick = a => a[Math.floor(Math.random() * a.length)];

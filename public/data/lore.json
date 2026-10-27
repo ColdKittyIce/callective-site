@@ -10,7 +10,9 @@
     "text": "If you want to make a call, put a PLA bell emoji in chat.",
     "who": "Ira, the rules",
     "d": "2026"
-   }
+   },
+   "img": "art/bit-pla-bell-callective.webp",
+   "imgAlt": "The PLA bell as a grinning desk bell sticker"
   },
   {
    "term": "Buttslam",
@@ -34,7 +36,9 @@
     "text": "If you want to reveal that it's a prank, we are 101.1 The Butt and \"You just got buttslammed\".",
     "who": "The original rules, rule 7",
     "d": "Dec 2024"
-   }
+   },
+   "img": "art/bit-101-1-the-butt.webp",
+   "imgAlt": "DespicableDogs slamming the BUTTSLAM button at 101.1 The Butt"
   },
   {
    "term": "Drunk and abusive",
@@ -70,7 +74,9 @@
    "since": "2025-11",
    "stat": "Peaked in December 2025 with 43 mentions in one month.",
    "def": "Before a Five Below call, chat posts a shopping list in spoiler tags. The caller clicks one blind and asks the store for whatever it says, with a straight face. Keeping a straight face has never once been achieved.",
-   "quote": null
+   "quote": null,
+   "img": "art/bit-the-list.webp",
+   "imgAlt": "The cat reading one line torn off a long blacked-out receipt"
   },
   {
    "term": "Lunk Alarm",
@@ -96,8 +102,8 @@
    "stat": "Said by 18 different people, mostly yelling it.",
    "def": "A clip of a very angry man from a call that went a bit viral around the community and turned into a catchphrase. If someone types it in chat, everyone else types it back.",
    "quote": null,
-   "img": "bathroom-bathroom.webp",
-   "imgAlt": "The robot holding the bathroom door shut on a desperate Ira while the dog and the cat watch"
+   "img": "art/bit-bathroom-bathroom.webp",
+   "imgAlt": "An angry man in a bathrobe yelling BATHROOM! BATHROOM! while the cast hides behind a room service cart"
   },
   {
    "term": "Patrick Fucking Howard",
@@ -109,7 +115,9 @@
     "text": "Alright, Cyber's finished. I got a badge and I'm usin' it — NEXT.",
     "who": "Patrick Fucking Howard (the bot)",
     "d": "Oct 2026"
-   }
+   },
+   "img": "art/bit-patrick.webp",
+   "imgAlt": "Patrick the queue bot blowing his whistle at a long line: NEXT!"
   },
   {
    "term": "Tom Man",
@@ -119,8 +127,8 @@
    "def": "Dr. Tom Servo's other self. When Tom Man gets on the phone, chat chants it. He has opinions about who owns the roof.",
    "quote": null,
    "search": "by:tomservo",
-   "img": "tomman-42.webp",
-   "imgAlt": "Tom Man comic cover, issue 42, The Rooftop Showdown"
+   "img": "art/tomman-cover.webp",
+   "imgAlt": "Tom Man comic cover: The Call of Chaos"
   },
   {
    "term": "Quackers",
@@ -129,7 +137,9 @@
    "stat": "Quacked about 85 times.",
    "def": "GreenImp's duck. Quacks along on calls, has a fan club in chat, and pulls better numbers than some hosts.",
    "quote": null,
-   "search": "by:greenimp"
+   "search": "by:greenimp",
+   "img": "art/bit-quackers.webp",
+   "imgAlt": "Quackers the duck sitting smug on a rotary phone"
   },
   {
    "term": "The crow",
@@ -137,7 +147,9 @@
    "since": "2025-01",
    "stat": "Cawed by 30 different people.",
    "def": "Any time a crow comes up, on a call or in chat, the room answers with \"caw.\" It started in January 2025 and it has not stopped.",
-   "quote": null
+   "quote": null,
+   "img": "art/bit-caw.webp",
+   "imgAlt": "The crow on a PLA bell with a room key card: CAW"
   },
   {
    "term": "Fleshbag",
@@ -153,7 +165,9 @@
    "since": "2026-09",
    "stat": "Not ours. We just say it sometimes.",
    "def": "A Bonerhaus thing that wanders into the Callective now and then, since the show is a mix of PLA and Prankcast folks. If someone tells you \"good job, pig boy,\" it's a compliment. Probably.",
-   "quote": null
+   "quote": null,
+   "img": "art/bit-pig-boy.webp",
+   "imgAlt": "A gold medal: Good job, pig boy"
   },
   {
    "term": "Boner Haus",

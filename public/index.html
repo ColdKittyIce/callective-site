@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta property="og:title" content="The Callective">
 <meta property="og:description" content="A community prank call show. Live every Saturday at 7pm Eastern from the World of Prank Calls Discord.">
-<meta property="og:image" content="img/stage.webp">
+<meta property="og:image" content="https://callective.zoocrewprankradio.workers.dev/img/og-card.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://callective.zoocrewprankradio.workers.dev/img/og-card.jpg">
 <title>The Callective</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="The Callective: a community prank call show. Live every Saturday at 7pm Eastern from the World of Prank Calls Discord.">
@@ -13,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Monoton&family=Share+Tech+Mono&family=VT323&display=swap">
-<link rel="stylesheet" href="css/site.css?v=15d6b2c8">
+<link rel="stylesheet" href="css/site.css?v=2335760e">
 
 <div class="bg" aria-hidden="true"><div class="sun"></div><canvas class="rain" id="rain"></canvas><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
@@ -122,6 +126,7 @@
 <div class="page" id="page-listen" data-page="listen">
 <section class="band" id="listen">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/listen.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker" id="ls-kicker">Callective Radio · 24/7</p>
       <h2 class="glitch" data-text="Listen">Listen</h2>
@@ -181,6 +186,7 @@
 <div class="page" id="page-archive" data-page="archive">
 <section class="band" id="replay">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/archive.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Party line replay</p>
       <h2 class="glitch" data-text="Replay terminal">Replay terminal</h2>
@@ -239,6 +245,7 @@
 <div class="page" id="page-lab" data-page="lab">
 <section class="band" id="lab">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/cliplab.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Cut the tape</p>
       <h2 class="glitch" data-text="Clip lab">Clip lab</h2>
@@ -327,6 +334,7 @@
 <div class="page" id="page-clips" data-page="clips">
 <section class="band" id="clips">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/clips.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Clipped by the community</p>
       <h2 class="glitch" data-text="Clip board">Clip board</h2>
@@ -349,6 +357,7 @@
 <div class="page" id="page-bingo" data-page="bingo">
 <section class="band" id="bingo">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/games.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Play along with the show</p>
       <h2 class="glitch" data-text="Callective bingo">Callective bingo</h2>
@@ -381,6 +390,7 @@
 
 <section class="band" id="guess">
   <div class="wrap">
+    <figure class="pbanner wide" aria-hidden="true"><img src="img/art/game-namethatcaller.webp" alt="" width="1600" height="893" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Game two</p>
       <h2 class="glitch" data-text="Name that caller">Name that caller</h2>
@@ -422,6 +432,7 @@
 </section>
 <section class="band" id="premise">
   <div class="wrap">
+    <figure class="pbanner side" aria-hidden="true"><img src="img/art/game-premise.webp" alt="" width="900" height="900" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Game three</p>
       <h2 class="glitch" data-text="Dial-a-premise">Dial-a-premise</h2>
@@ -443,6 +454,7 @@
 <div class="page" id="page-downloads" data-page="downloads">
 <section class="band" id="downloads">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/downloads.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Take the Callective with you</p>
       <h2 class="glitch" data-text="Downloads">Downloads</h2>
@@ -467,11 +479,20 @@
       </div>
     </div>
     <div class="wp-grid" id="wp-grid"></div>
+    <div class="wp-head"><h3 class="glitch" data-text="Stickers">Stickers</h3><p class="st-note">Die-cut and ready for a sticker printer. 1024×1024 PNG.</p></div>
+    <div class="st-grid">
+      <figure class="st hud"><img src="stickers/101-1-the-butt.png" alt="101.1 The Butt sticker" width="1024" height="1024" loading="lazy"><figcaption><b>101.1 The Butt</b><a class="btn sm" href="stickers/101-1-the-butt.png" download="callective-sticker-101-1-the-butt.png">Download</a></figcaption></figure>
+      <figure class="st hud"><img src="stickers/pla-bell-callective.png" alt="PLA bell: The Callective sticker" width="1024" height="1024" loading="lazy"><figcaption><b>PLA bell: The Callective</b><a class="btn sm" href="stickers/pla-bell-callective.png" download="callective-sticker-pla-bell-callective.png">Download</a></figcaption></figure>
+      <figure class="st hud"><img src="stickers/pla-bell-bellective.png" alt="PLA bell: The Bellective sticker" width="1024" height="1024" loading="lazy"><figcaption><b>PLA bell: The Bellective</b><a class="btn sm" href="stickers/pla-bell-bellective.png" download="callective-sticker-pla-bell-bellective.png">Download</a></figcaption></figure>
+      <figure class="st hud"><img src="stickers/caw.png" alt="Caw sticker" width="1024" height="1024" loading="lazy"><figcaption><b>Caw</b><a class="btn sm" href="stickers/caw.png" download="callective-sticker-caw.png">Download</a></figcaption></figure>
+      <figure class="st hud"><img src="stickers/quackers.png" alt="Quackers sticker" width="1024" height="1024" loading="lazy"><figcaption><b>Quackers</b><a class="btn sm" href="stickers/quackers.png" download="callective-sticker-quackers.png">Download</a></figcaption></figure>
+    </div>
   </div>
 </section>
 
 <section class="band" id="audiobible">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/audiobible.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Help desk · how to sound like you know what you're doing</p>
       <h2 class="glitch" data-text="The Audio Bible">The Audio Bible</h2>
@@ -627,6 +648,7 @@
         <p><b>House rules still apply.</b> Same 10 Callmandments. The bot won't post phone numbers, emails, links or slurs in the room chat. Need to pass someone a number or a link? Tap ✉️ next to their name and DM them: only the two of you can see it.</p>
         <p><b>Rooms are temporary.</b> A room closes after 12 quiet hours, or when the host types <code>!close</code>. Nothing gets saved after that.</p>
         <p id="hl-err" class="hl-err" role="alert" hidden></p>
+        <img class="hl-lobbyart" src="img/art/obs-starting.webp" alt="The cast waiting outside a phone booth with a STARTING SOON sign" width="1024" height="572" loading="lazy">
       </div>
     </div>
 
@@ -691,7 +713,7 @@
               <button type="button" class="btn sm red" data-cmd="!clear" data-confirm="Clear the whole line?">🧹 Clear</button>
             </div>
           </div>
-          <div class="hud hl-list"><h3>The line <span id="hl-qn"></span></h3><ol id="hl-q"></ol></div>
+          <div class="hud hl-list"><h3>The line <span id="hl-qn"></span></h3><img class="hl-closed" id="hl-closed" src="img/art/obs-queue-closed.webp" alt="Tom Servo working security at a velvet rope: QUEUE CLOSED" width="1000" height="558" hidden><ol id="hl-q"></ol></div>
           <div class="hud hl-list"><h3>In the room <span id="hl-mn"></span></h3><ul id="hl-mem"></ul></div>
         </aside>
       </div>
@@ -732,6 +754,7 @@
 <div class="page" id="page-search" data-page="search" hidden>
 <section class="band" id="search">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/search.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">Find anything</p>
       <h2 class="glitch" data-text="Search">Search</h2>
@@ -758,6 +781,7 @@
 <div class="page" id="page-lore" data-page="lore">
 <section class="band" id="story">
   <div class="wrap">
+    <figure class="pbanner" aria-hidden="true"><img src="img/banners/lore.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">How a voice channel became a problem</p>
       <h2 class="glitch" data-text="Our story">Our story</h2>
@@ -887,6 +911,7 @@
 </section>
 <section class="band" id="wrapped">
   <div class="wrap">
+    <figure class="pbanner wide" aria-hidden="true"><img src="img/art/wrapped-hero.webp" alt="" width="1600" height="893" loading="lazy"></figure>
     <div class="sec-head">
       <p class="kicker">The year in numbers</p>
       <h2 class="glitch" data-text="Callective Wrapped">Callective Wrapped</h2>
@@ -1008,14 +1033,14 @@
 <script src="js/router.js?v=e4aa483a"></script>
 <script src="js/player.js?v=78e5fc3e"></script>
 <script src="js/fx.js?v=18c621e3"></script>
-<script src="js/dial.js?v=3bf4c98d"></script>
+<script src="js/dial.js?v=b1fd4363"></script>
 <script src="js/line.js?v=7f1b12bc"></script>
 <script src="js/switchboard.js?v=0dc97ef8"></script>
 <script src="js/replay.js?v=30e1fe3b"></script>
 <script src="js/lab.js?v=a093bd54"></script>
 <script src="js/clipper.js?v=3b6ad4a6"></script>
 <script src="js/clipboard.js?v=d0e2d1de"></script>
-<script src="js/pages.js?v=03885335"></script>
+<script src="js/pages.js?v=5c6a4d7a"></script>
 <script src="js/listen.js?v=ae75fb17"></script>
 <script src="js/bingo.js?v=e098cc1c"></script>
 <script src="js/downloads.js?v=01b8c4c8"></script>
@@ -1026,7 +1051,7 @@
 <script src="js/premise.js?v=2d8eb628"></script>
 <script src="js/hallvoice.js?v=b96e8d1b"></script>
 <script src="js/hallsfx.js?v=edc0ceef"></script>
-<script src="js/hall.js?v=41801fac"></script>
-<script src="js/main.js?v=61276e47"></script>
+<script src="js/hall.js?v=2a59a86b"></script>
+<script src="js/main.js?v=dfc219f8"></script>
 </body>
 </html>

@@ -18,7 +18,7 @@
   }
 
   Router.init(); Player.init(); FX.init();
-  try { const m = localStorage.getItem("cx-mode"); if (m) setMode(m); } catch (e) {}
+  try { const m = localStorage.getItem("cx-mode"); if (m) setMode(m, true); } catch (e) {}
   await Promise.all([loadData(), detectApi()]);
   countdown(); setInterval(countdown, 30000);
   // Ask "is it live?" every 30 seconds around show time (Saturday 6:30pm to 1am ET), every 5 minutes the rest of the week.

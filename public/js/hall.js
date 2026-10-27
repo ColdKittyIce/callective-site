@@ -31,7 +31,7 @@ const Hall = (() => {
     div.className = "hl-msg" + (m.bot ? " bot" : "") + (m.only ? " only" : "") + (m.cmd ? " cmd" : "");
     if (m.uid) { div.dataset.uid = m.uid; div.hidden = blocked(m.uid); }
     const badge = m.bot ? '<i class="hl-tag bot">BOT</i>' : m.host ? '<i class="hl-tag host">HOST</i>' : m.mod ? '<i class="hl-tag mod">MOD</i>' : "";
-    div.innerHTML = `<span class="hl-t">${time(m.at)}</span><span class="hl-who">${m.flair ? esc(m.flair) + " " : ""}${esc(m.name)}${badge}</span><span class="hl-txt">${fmt(m.text)}${m.only ? '<em class="hl-only">Only you can see this</em>' : ""}</span>`;
+    div.innerHTML = `<span class="hl-t">${time(m.at)}</span><span class="hl-who">${m.bot ? '<img class="hl-av" src="img/art/patrick-avatar.webp" alt="">' : ""}${m.flair ? esc(m.flair) + " " : ""}${esc(m.name)}${badge}</span><span class="hl-txt">${fmt(m.text)}${m.only ? '<em class="hl-only">Only you can see this</em>' : ""}</span>`;
     log.appendChild(div);
     while (log.children.length > 300) log.firstChild.remove();
     if (stick || m.only || (me && m.name === me.name)) log.scrollTop = log.scrollHeight;
@@ -83,6 +83,7 @@ const Hall = (() => {
     const y = st.you || {}, mod = !!y.mod;
     $("hl-title").textContent = st.title; $("hl-code").textContent = st.code;
     $("hl-lock").hidden = !st.locked;
+    $("hl-closed").hidden = !st.locked;
     const lb = $("hl-lockbtn"); lb.dataset.cmd = st.locked ? "!unlock" : "!lock"; lb.textContent = st.locked ? "🔓 Unlock" : "🔒 Lock";
     $("hl-mod").hidden = !mod; $("hl-obs").hidden = !mod; $("hl-obs").href = `obs.html?room=${encodeURIComponent(st.code)}`;
     $("hl-cur").textContent = st.cur ? st.cur.name : "Nobody yet";
