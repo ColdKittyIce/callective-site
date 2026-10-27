@@ -1283,10 +1283,9 @@ img.hl-pla{width:1.25em;height:1.25em;vertical-align:-.25em;display:inline-block
 .pbanner.side::after{display:none}
 @media (max-width:700px){.pbanner{max-height:200px}.pbanner.side{float:none;width:100%;max-width:340px;margin:0 auto 18px}}
 .hero{position:relative;isolation:isolate}
-.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,var(--void) 0%,#05040ce6 38%,#05040c66 70%,#05040c99 100%),url(../img/art/site-hero.webp) right center/cover no-repeat;opacity:.75}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:none;opacity:.75}
 body[data-mode="dog"] .hero::before{background:linear-gradient(90deg,var(--void) 0%,#05040cd9 40%,#05040c55 75%),url(../img/art/title-doglective.webp) right center/cover no-repeat}
 body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void) 0%,#0c0303d9 40%,#0c030355 75%),url(../img/art/title-hellective.webp) right center/cover no-repeat}
-@media (max-width:960px){.hero::before{background:linear-gradient(180deg,#05040ccc,#05040cf2 60%),url(../img/art/site-hero.webp) center top/cover no-repeat}}
 .mode-card{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:#000c;animation:mcIn .35s ease-out;cursor:pointer}
 .mode-card img{width:min(92vw,1100px);height:auto;box-shadow:0 0 60px var(--cyan);border:2px solid var(--cyan)}
 .mode-card.out{opacity:0;transition:opacity .5s}
