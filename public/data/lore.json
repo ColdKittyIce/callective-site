@@ -2,96 +2,114 @@
  "bits": [
   {
    "term": "PLA bell",
-   "kind": "noun",
+   "kind": "the queue",
    "since": "2024-12",
-   "stat": "Dropped in chat about 2,700 times by 135 different people.",
-   "def": "Your ticket to the phone. PLA is the Phone Losers of America, RBCP's crew and the server's home base. Drop the PLA bell emoji in chat and you're in line, and the bot calls your name when it's your turn.",
-   "quote": {
-    "text": "If you want to make a call, put a PLA bell emoji in chat.",
-    "who": "Ira, the rules",
-    "d": "2026"
-   },
-   "img": "art/bit-pla-bell-callective.webp",
-   "imgAlt": "The PLA bell as a grinning desk bell sticker"
+   "stat": "Dropped about 3,100 times by more than 130 different people. The most-used emoji in the server.",
+   "def": "Your ticket to the phone. PLA is the Phone Losers of America, RBCP's crew and half the room's home base. Drop the PLA bell in chat and you're in line. The bot calls your name when it's your turn, and you'd better be in voice when it does.",
+   "quote": null
   },
   {
    "term": "Buttslam",
    "kind": "verb",
    "since": "2024-12",
-   "stat": "Said by 43 different people. Written into the very first rules.",
-   "def": "The reveal. When a call has gone as far as it can go, you tell them who they've been talking to: 101.1 The Butt. They have just been buttslammed. Most romantic word in the English language.",
-   "quote": {
-    "text": "No leaking the source of the call to the people we're calling.",
-    "who": "The rules, ever since",
-    "d": "Dec 2024"
-   }
+   "stat": "Said by more than 30 different people. Written into the very first rules.",
+   "def": "The reveal. When a call has gone as far as it can go, you tell them who they've been talking to: 101.1 The Butt. They have just been buttslammed. Optional, never required, and never a reason to leak where the call is coming from.",
+   "quote": null
   },
   {
    "term": "101.1 The Butt",
-   "kind": "noun",
+   "kind": "fake station",
    "since": "2024-12",
    "stat": "The station behind every reveal since night one.",
-   "def": "The fake radio station the Callective claims to be when it's time to come clean. Nobody has ever asked for the frequency to be checked.",
-   "quote": {
-    "text": "If you want to reveal that it's a prank, we are 101.1 The Butt and \"You just got buttslammed\".",
-    "who": "The original rules, rule 7",
-    "d": "Dec 2024"
-   },
-   "img": "art/bit-101-1-the-butt.webp",
-   "imgAlt": "DespicableDogs slamming the BUTTSLAM button at 101.1 The Butt"
+   "def": "The radio station the Callective claims to be when it's time to come clean. Callers like to add a proud on-air confession about what kind of listener they are. Nobody has ever asked for the frequency to be checked.",
+   "quote": null
   },
   {
    "term": "Drunk and abusive",
    "kind": "rule 5",
    "since": "2024-12",
-   "stat": "Still in the rules two years later.",
-   "def": "The one rule that has never needed rewording. If you're drunk and abusive, you're off the phone. Drunk and charming is a gray area.",
-   "quote": {
-    "text": "If you don't know why I have to put this here, YOU are why I have to put this here.",
-    "who": "The original rules, rule 5",
-    "d": "Dec 2024"
-   }
+   "stat": "Still in the rules two years later. Brought up by 17 different people.",
+   "def": "The one rule that has never needed rewording. Be as rude as you want to the person you called, but if you're drunk and abusive to the room, you're off the phone. Drunk and charming is a gray area.",
+   "quote": null
   },
   {
-   "term": "Roycipient",
+   "term": "Ma'am",
+   "kind": "the magic word",
+   "since": "2024-12",
+   "stat": "Said by nearly 50 different people. Has its own emoji.",
+   "def": "The most dangerous word on a Callective call. Every escalation runs through it: polite at first, then firm, then shouted in all caps. When a caller says it in the right tone, chat fires off the ma'am emoji like a sports crowd.",
+   "quote": null
+  },
+  {
+   "term": "The front desk",
+   "kind": "home turf",
+   "since": "2024-12",
+   "stat": "Talked about by 47 different people. The most-called kind of place on the show.",
+   "def": "Hotels are the Callective's home stadium. The front desk, the room number, the ice machine, the lost and found, the hot tub: half the premises in history start with someone at a hotel who has a problem only the night clerk can solve.",
+   "quote": null
+  },
+  {
+   "term": "Hold music",
    "kind": "noun",
-   "since": "2025-08",
-   "stat": "Also: Callectivecipient, Icecipient, and any other -cipient you can make up.",
-   "def": "Whoever answers the phone, God help them. Every person on the other end of a call is a roycipient, and a few of the best ones have become legends. At least one has crossed over and started making calls.",
+   "since": "2024-12",
+   "stat": "Rated by 41 different people.",
+   "def": "When a caller puts the other person on hold, they play their own music, and the room reviews it like a record label. Good hold music is a point of pride. Some regulars have a signature track.",
+   "quote": null
+  },
+  {
+   "term": "The guy in the background",
+   "kind": "recurring heckle",
+   "since": "2024-12",
+   "stat": "Called out by 18 different people since the first week.",
+   "def": "If anyone talks behind the person you called, the room hears it, fixates on it, and demands the caller tell that guy to be quiet. In later years it became the wife, the coworker, or whoever else is lurking off-mic.",
+   "quote": null
+  },
+  {
+   "term": "All call",
+   "kind": "queue event",
+   "since": "2025-03",
+   "stat": "Joined by 34 different people. Peaked in summer 2026.",
+   "def": "One themed call that everyone in voice can jump into at once. Somebody calls it in the queue, the line pauses, and the whole room piles onto one poor person on the other end. Once you call an all call, you can't take it back.",
+   "quote": null
+  },
+  {
+   "term": "Fart attack",
+   "kind": "medical emergency",
+   "since": "2025-03",
+   "stat": "Declared by 13 different people.",
+   "def": "A caller announces they're having a fart attack, usually at a hotel, and the room supplies the sound effects. It has been used to get attention, to end a call, and once as a distraction from a dog giving birth.",
    "quote": null
   },
   {
    "term": "Dings & Dingtember",
    "kind": "noun",
    "since": "2025-01",
-   "stat": "Brought up by 69 different people. Peaks every September.",
-   "def": "Notes left on parked cars saying \"sorry, I dinged your car, call me.\" The number rings the crew, who answer live. September is Dingtember, the whole month is dings, and somehow there are always goat calls. At least one ding recipient liked it so much they joined the queue.",
+   "stat": "Brought up by more than 60 different people. Peaks every September.",
+   "def": "Notes left on parked cars saying sorry, I dinged your car, call me. The number rings the crew, who answer live. September is Dingtember, the whole month is dings, and chat spends it inventing new things to have dinged the car with.",
    "quote": null
   },
   {
    "term": "Five Below list",
    "kind": "noun",
    "since": "2025-11",
-   "stat": "Peaked in December 2025 with 43 mentions in one month.",
+   "stat": "20 different people in on it. Peaked in December 2025.",
    "def": "Before a Five Below call, chat posts a shopping list in spoiler tags. The caller clicks one blind and asks the store for whatever it says, with a straight face. Keeping a straight face has never once been achieved.",
-   "quote": null,
-   "img": "art/bit-the-list.webp",
-   "imgAlt": "The cat reading one line torn off a long blacked-out receipt"
+   "quote": null
   },
   {
    "term": "Lunk Alarm",
    "kind": "noun",
    "since": "2025-02",
    "stat": "29 different people have hit it.",
-   "def": "The gym alarm that goes off when someone grunts too loud. A Callective premise, an emoji, and a sound the chat reaches for whenever something gets too intense.",
+   "def": "The gym alarm that goes off when someone grunts too loud. A Callective premise, an animated emoji, and the thing the chat reaches for whenever a call gets too intense.",
    "quote": null
   },
   {
    "term": "Yo Ghost",
    "kind": "artist",
-   "since": "2025-03",
-   "stat": "Mentioned by 28 different people. A regular in the queue.",
-   "def": "The official mumble rapper of the Callective. Yo Ghost turns up in the queue, on calls, and in chat requests for one more verse.",
+   "since": "2025-05",
+   "stat": "Mentioned by 29 different people, nearly 175 times.",
+   "def": "The official mumble rapper of the Callective. Yo Ghost turns up in the queue, on calls, and in chat, where everyone asks for one more verse about ghosts and aliens.",
    "quote": null,
    "search": "yo ghost"
   },
@@ -101,80 +119,40 @@
    "since": "2025-06",
    "stat": "Said by 18 different people, mostly yelling it.",
    "def": "A clip of a very angry man from a call that went a bit viral around the community and turned into a catchphrase. If someone types it in chat, everyone else types it back.",
-   "quote": null,
-   "img": "art/bit-bathroom-bathroom.webp",
-   "imgAlt": "An angry man in a bathrobe yelling BATHROOM! BATHROOM! while the cast hides behind a room service cart"
+   "quote": null
   },
   {
    "term": "Patrick Fucking Howard",
    "kind": "person, sort of",
    "since": "2025-04",
-   "stat": "Started as PackTrick Howard, a call character. Now he runs the queue.",
+   "stat": "Started as a call character. Now he runs the queue.",
    "def": "First a character in calls by RBCP and CrieFaux. Now the name of the bot that runs the queue, greets everyone who joins voice, and moves the line along like a mall cop with a schedule.",
-   "quote": {
-    "text": "Alright, Cyber's finished. I got a badge and I'm usin' it — NEXT.",
-    "who": "Patrick Fucking Howard (the bot)",
-    "d": "Oct 2026"
-   },
-   "img": "art/bit-patrick.webp",
-   "imgAlt": "Patrick the queue bot blowing his whistle at a long line: NEXT!"
+   "quote": null
   },
   {
    "term": "Tom Man",
    "kind": "alter ego",
    "since": "2026-02",
-   "stat": "Chanted by 11 different people.",
+   "stat": "Chanted by 12 different people.",
    "def": "Dr. Tom Servo's other self. When Tom Man gets on the phone, chat chants it. He has opinions about who owns the roof.",
    "quote": null,
-   "search": "by:tomservo",
-   "img": "art/tomman-cover.webp",
-   "imgAlt": "Tom Man comic cover: The Call of Chaos"
+   "search": "by:tomservo"
   },
   {
    "term": "Quackers",
    "kind": "duck",
-   "since": "2026-04",
-   "stat": "Quacked about 85 times.",
+   "since": "2026-05",
+   "stat": "Has a fan club of 11 and counting.",
    "def": "GreenImp's duck. Quacks along on calls, has a fan club in chat, and pulls better numbers than some hosts.",
    "quote": null,
-   "search": "by:greenimp",
-   "img": "art/bit-quackers.webp",
-   "imgAlt": "Quackers the duck sitting smug on a rotary phone"
+   "search": "by:greenimp"
   },
   {
    "term": "The crow",
    "kind": "bird",
    "since": "2025-01",
-   "stat": "Cawed by 30 different people.",
-   "def": "Any time a crow comes up, on a call or in chat, the room answers with \"caw.\" It started in January 2025 and it has not stopped.",
-   "quote": null,
-   "img": "art/bit-caw.webp",
-   "imgAlt": "The crow on a PLA bell with a room key card: CAW"
-  },
-  {
-   "term": "Fleshbag",
-   "kind": "noun",
-   "since": "2026-05",
-   "stat": "Picked up by 11 different people in one week.",
-   "def": "What the room has been calling everyone since May 2026. Affectionate, mostly. You are all fleshbags. Even you.",
-   "quote": null
-  },
-  {
-   "term": "Pig boy",
-   "kind": "borrowed from Bonerhaus",
-   "since": "2026-09",
-   "stat": "Not ours. We just say it sometimes.",
-   "def": "A Bonerhaus thing that wanders into the Callective now and then, since the show is a mix of PLA and Prankcast folks. If someone tells you \"good job, pig boy,\" it's a compliment. Probably.",
-   "quote": null,
-   "img": "art/bit-pig-boy.webp",
-   "imgAlt": "A gold medal: Good job, pig boy"
-  },
-  {
-   "term": "Boner Haus",
-   "kind": "the crossover crew",
-   "since": "2026-01",
-   "stat": "In October 2026, half the Discord renamed itself as Boner Haus middle management.",
-   "def": "A prank crew that does calls on its own server and crosses over with Prankcast and the PLA. For one week in October 2026 the whole Callective chat became Boner Haus corporate: quarterly targets, memos to the team, and a lot of CCs.",
+   "stat": "Cawed by more than 20 different people.",
+   "def": "Any time a crow comes up, on a call or in chat, the room answers with caw. It started in January 2025 and it has not stopped.",
    "quote": null
   },
   {
@@ -182,7 +160,7 @@
    "kind": "celebrity",
    "since": "2024-12",
    "stat": "Has come up with 14 different people.",
-   "def": "Every so often, chat breaks the sad news that Carrot Top has died. He has not. Chat will not stop.",
+   "def": "Every so often, chat breaks the sad news that Carrot Top has died, or that he's checking into the hotel being called. Neither is true. Chat will not stop.",
    "quote": null
   },
   {
@@ -190,17 +168,16 @@
    "kind": "RBCP's show",
    "since": "2025-01",
    "stat": "Brought up by 19 different people.",
-   "def": "RBCP's long-running Phone Losers of America show, the longest-running prank show in the community and maybe in prank call history. A lot of Callective regulars came from it, the ding number turns up in every episode, and RBCP (Arbee) hosts the Callective too.",
+   "def": "RBCP's long-running Phone Losers of America show, the longest-running prank show in the community. A lot of Callective regulars came from it, the ding number turns up in its episodes, and RBCP hosts the Callective too.",
    "quote": null
   },
   {
-   "term": "The Pumpkin Man",
-   "kind": "seasonal figure",
-   "since": "2026-10",
-   "stat": "Halloween 2026.",
-   "def": "Born on the 10/17/26 show, delivered on 10/24 when wild-one called a store about a pumpkin-suited man with allergies who just wanted someone to cover his shift.",
-   "quote": null,
-   "search": "pumpkin"
+   "term": "Pig boy",
+   "kind": "borrowed from Bonerhaus",
+   "since": "2026-09",
+   "stat": "Not ours. We just say it sometimes.",
+   "def": "A Bonerhaus thing that wanders into the Callective now and then, since the show is a mix of PLA and Prankcast folks. If someone tells you good job, pig boy, it's a compliment. Probably.",
+   "quote": null
   }
  ],
  "oldrules": {
