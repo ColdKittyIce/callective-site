@@ -6,7 +6,11 @@
    "since": "2024-12",
    "stat": "Dropped about 3,100 times by more than 130 different people. The most-used emoji in the server.",
    "def": "Your ticket to the phone. PLA is the Phone Losers of America, RBCP's crew and half the room's home base. Drop the PLA bell in chat and you're in line. The bot calls your name when it's your turn, and you'd better be in voice when it does.",
-   "quote": null
+   "quote": {
+    "text": "If you want to make a call, put a PLA bell emoji in chat.",
+    "who": "Ira, the rules",
+    "d": "2026"
+   }
   },
   {
    "term": "Buttslam",
@@ -14,7 +18,11 @@
    "since": "2024-12",
    "stat": "Said by more than 30 different people. Written into the very first rules.",
    "def": "The reveal. When a call has gone as far as it can go, you tell them who they've been talking to: 101.1 The Butt. They have just been buttslammed. Optional, never required, and never a reason to leak where the call is coming from.",
-   "quote": null
+   "quote": {
+    "text": "No leaking the source of the call to the people we're calling.",
+    "who": "The rules, ever since",
+    "d": "Dec 2024"
+   }
   },
   {
    "term": "101.1 The Butt",
@@ -22,7 +30,11 @@
    "since": "2024-12",
    "stat": "The station behind every reveal since night one.",
    "def": "The radio station the Callective claims to be when it's time to come clean. Callers like to add a proud on-air confession about what kind of listener they are. Nobody has ever asked for the frequency to be checked.",
-   "quote": null
+   "quote": {
+    "text": "If you want to reveal that it's a prank, we are 101.1 The Butt and \"You just got buttslammed\".",
+    "who": "The original rules, rule 7",
+    "d": "Dec 2024"
+   }
   },
   {
    "term": "Drunk and abusive",
@@ -30,7 +42,11 @@
    "since": "2024-12",
    "stat": "Still in the rules two years later. Brought up by 17 different people.",
    "def": "The one rule that has never needed rewording. Be as rude as you want to the person you called, but if you're drunk and abusive to the room, you're off the phone. Drunk and charming is a gray area.",
-   "quote": null
+   "quote": {
+    "text": "If you don't know why I have to put this here, YOU are why I have to put this here.",
+    "who": "The original rules, rule 5",
+    "d": "Dec 2024"
+   }
   },
   {
    "term": "Ma'am",
@@ -127,7 +143,11 @@
    "since": "2025-04",
    "stat": "Started as a call character. Now he runs the queue.",
    "def": "First a character in calls by RBCP and CrieFaux. Now the name of the bot that runs the queue, greets everyone who joins voice, and moves the line along like a mall cop with a schedule.",
-   "quote": null
+   "quote": {
+    "text": "Alright, Cyber's finished. I got a badge and I'm usin' it — NEXT.",
+    "who": "Patrick Fucking Howard (the bot)",
+    "d": "Oct 2026"
+   }
   },
   {
    "term": "Tom Man",
