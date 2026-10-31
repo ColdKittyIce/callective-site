@@ -17,7 +17,7 @@
     $("next-local").textContent = start.toLocaleString([], { weekday: "long", hour: "numeric", minute: "2-digit" });
   }
 
-  Router.init(); Player.init(); FX.init();
+  Router.init(); Player.init(); FX.init(); SubNav.init();
   try { const m = localStorage.getItem("cx-mode"); if (m) setMode(m, true); } catch (e) {}
   await Promise.all([loadData(), detectApi()]);
   countdown(); setInterval(countdown, 30000);
@@ -31,7 +31,7 @@
   setTimeout(pollStatus, 30000);
 
   Dial.init(); Hold.init(); Line.init(); SB.init(); Replay.init(); Lab.init(); Clipper.init(); Board.init();
-  Court.init(); Lineup.init(); Bill.init(); DNC.init(); Directory.init(); Bingo.init(); Downloads.init(); Search.init(); Glossary.init(); Wrapped.init(); Guess.init(); ShowPage.init(); Premise.init(); Hall.init();
+  Court.init(); Lineup.init(); Bill.init(); StoryStats.init(); DNC.init(); Directory.init(); Bingo.init(); Downloads.init(); Search.init(); Glossary.init(); Wrapped.init(); Guess.init(); ShowPage.init(); Premise.init(); Hall.init();
   await Listen.init();
   mergeLatest(); loadCallFixes();
 

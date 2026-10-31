@@ -111,8 +111,9 @@ function recentIds() { return new Set(C.episodes.filter(e => e.sec > 600).sort((
 const isRecent = id => recentIds().has(+id);
 
 async function loadData() {
-  const [eps, clips, calls] = await Promise.all([getJSON("data/episodes.json"), getJSON("data/clips.json"), getJSON("data/calls.json").catch(() => ({}))]);
+  const [eps, clips, calls, stats] = await Promise.all([getJSON("data/episodes.json"), getJSON("data/clips.json"), getJSON("data/calls.json").catch(() => ({})), getJSON("data/stats.json").catch(() => ({}))]);
   C.episodes = eps.sort((a, b) => b.id - a.id); C.clips = clips; C.calls = calls || {};
+  C.stats = Object.assign({ bells: 3100, bellPeople: 130, chatters: 300 }, stats || {}); // one place for the counts (audit R3)
 }
 /* Call lists (who made each call, and when it starts). Built from the Discord queue bot's handoffs, checked by the crew. */
 function callsFor(id, dur) {

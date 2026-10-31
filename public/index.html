@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Monoton&family=Share+Tech+Mono&family=VT323&display=swap">
-<link rel="stylesheet" href="css/site.css?v=df272232">
+<link rel="stylesheet" href="css/site.css?v=792829b7">
 
 <div class="bg" aria-hidden="true"><div class="sun"></div><canvas class="rain" id="rain"></canvas><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
@@ -34,6 +34,7 @@
     <nav class="sections" aria-label="Pages" id="nav">
       <a href="#home">Home</a><a href="#listen" class="nav-listen">Listen<i aria-hidden="true"></i></a><a href="#archive">Archive</a><a href="#lab">Clip lab</a><a href="#clips">Clip board</a><a href="#bingo">Games</a><a href="#host">The Hall</a><a href="#downloads">Downloads</a><a href="#lore">Lore</a><a href="#search" class="nav-search" title="Search (shortcut: /)">🔍 Search</a>
     </nav>
+    <button class="menubtn" id="menubtn" type="button" aria-expanded="false" aria-controls="nav">☰ Menu</button>
     <a class="lamp" id="lamp" href="#listen"><i aria-hidden="true"></i><span id="lamptxt">Not live</span></a>
   </div>
   <div class="ticker" aria-hidden="true"><div id="tickertxt"></div></div>
@@ -87,7 +88,7 @@
       <ol class="how">
         <li class="hud"><span class="n">1</span><div><h3>Jack into the WOPC Discord</h3><p>Hop in the voice channel called <b>The Callective (Saturdays at 7pm EST)</b>. There's no separate Callective server. Stop looking for it.</p></div></li>
         <li class="hud"><span class="n">2</span><div><h3>Drop a PLA bell</h3><p>Put the PLA bell emoji in the voice channel's text chat, or type <code>!join</code>. You're in line. Patrick Fucking Howard has his eye on you.</p></div></li>
-        <li class="hud"><span class="n">3</span><div><h3>Wait for your ticket</h3><p>The host runs <code>!next</code>, the bot pings whoever's up, and Patrick reminds everybody he's got a badge and a schedule. Keep your mic muted until then. Rule 1, baby.</p></div></li>
+        <li class="hud"><span class="n">3</span><div><h3>Wait for your ticket</h3><p>The host runs <code>!next</code>, the bot pings whoever's up, and Patrick reminds everybody he's got a badge and a schedule. Keep your mic muted until then. <a href="#rules">Rule 1</a>, baby.</p></div></li>
         <li class="hud"><span class="n">4</span><div><h3>Make the call</h3><p>The host dials, you do the bit. If it dies, it dies. On an <b>All Call</b>, the whole room piles onto one line like a clown car. When it's over, tell them they just got buttslammed.</p></div></li>
       </ol>
       <div class="rail hud booth" id="booth">
@@ -196,6 +197,7 @@
       <h2 class="glitch" data-text="Replay terminal">Replay terminal</h2>
       <p class="lede">Play any of the 10 newest shows with the Prankcast chat scrolling along, right where people typed it, typos and all. Hear something good? Hit Clip it, mark the start and end (up to 10 minutes), and download it or post it.</p>
     </div>
+    <div class="rp-tabs" id="rp-tabs" role="tablist" aria-label="Replay view"><button type="button" role="tab" data-tab="calls" aria-selected="true">📋 Calls</button><button type="button" role="tab" data-tab="chat" aria-selected="false">💬 Chat</button></div>
     <div class="booth">
       <div class="deck hud">
         <div><label class="l" for="ep-select">Episode</label><select id="ep-select"></select></div>
@@ -241,7 +243,7 @@
         <div class="yp-chips" id="yp-chips" role="group" aria-label="Filter by host"></div>
       </div>
       <div class="listings" id="listings"></div>
-      <div class="yp-foot"><span id="yp-count"></span><button type="button" id="yp-more">Show every listing</button></div>
+      <div class="yp-foot"><span id="yp-count"></span><a class="yp-search" id="yp-search" href="#search" hidden></a><button type="button" id="yp-more">Show every listing</button></div>
     </div>
   </div>
 </section>
@@ -255,6 +257,16 @@
       <h2 class="glitch" data-text="Clip lab">Clip lab</h2>
       <p class="lede">Clips from the radio, the live show and the replay terminal land here. You can also load a patch bay clip, a song, or your own audio. Drag to select, trim it, run it through the phone, then download it or send it to the Callective. Want it to sound like it was recorded in a bathroom stall? There's a button for that.</p>
     </div>
+    <details class="hud howclip" id="howclip">
+      <summary>✂ How clipping works</summary>
+      <div class="howclip-grid">
+        <div><b>Clip it</b><p>The pink ✂ button on the radio, a replay, a song, the live show or the player bar. It grabs what you're hearing. Drag the start and end, preview, then download it, post it to the clip board, or send it here to edit.</p></div>
+        <div><b>Clip lab (this page)</b><p>Edit any clip, or drop in your own audio: trim, reverse, effects like Phone line and Bathroom stall, speed and volume. Then download it or post it.</p></div>
+        <div><b>Patch bay tape</b><p>On the home page, patch jacks to record a tape, then hit <i>Splice into the clip lab</i> to edit the whole tape here as one clip.</p></div>
+        <div><b>Remix</b><p>Any clip on the clip board has a Remix button that loads it here.</p></div>
+      </div>
+      <p class="howclip-rules"><b>Limits:</b> every clip can be up to <b>10 minutes</b>. Only the 10 newest shows can be clipped, because those are the ones the site keeps a copy of; older shows open on Prankcast. From the live show you can clip the last <b>2 minutes</b> you heard.</p>
+    </details>
     <div class="lab hud" id="labbox">
       <div class="lab-top">
         <h3>Clip lab</h3>
@@ -359,6 +371,7 @@
 </section>
 </div>
 <div class="page" id="page-bingo" data-page="bingo">
+<nav class="jump" aria-label="Games on this page"><div class="wrap"><a href="#bingo">🎱 Bingo</a><a href="#guess">🎤 Name That Caller</a><a href="#court">⚖️ Court</a><a href="#premise">🎰 Dial-a-Premise</a></div></nav>
 <section class="band" id="bingo">
   <div class="wrap">
     <figure class="pbanner" aria-hidden="true"><img src="img/banners/games.webp" alt="" width="1920" height="815" loading="lazy"></figure>
@@ -422,7 +435,7 @@
       <div class="tablet" id="tablet">
         <h3>The 10 Callmandments</h3>
         <ol id="callmandments"></ol>
-        <p id="tablet-note">Tap a rule to hear Ira read it. Start a trial and the tablet is how you rule.</p>
+        <p id="tablet-note">Tap a rule to hear Ira read it. Start a trial and the tablet is how you rule. These are the short versions: <a href="#rules">read the full rules</a>.</p>
       </div>
     </div>
     <div class="transcript hud" aria-label="Quotes from the Prankcast chat">
@@ -464,7 +477,8 @@
       <h2 class="glitch" data-text="Downloads">Downloads</h2>
       <p class="lede">The show's songs and jingles, plus wallpapers for your desktop and phone so your coworkers know you're not okay. Play anything here first, or grab the file.</p>
     </div>
-    <div class="dl-songs">
+    <div class="dl-tabs jump" id="dl-tabs" role="tablist" aria-label="Downloads"><div class="jump-in"><button type="button" role="tab" data-tab="music">🎵 Music</button><button type="button" role="tab" data-tab="wall">🖼 Wallpapers</button><button type="button" role="tab" data-tab="stickers">🏷 Stickers</button><button type="button" role="tab" data-tab="bible">📖 Audio Bible</button></div></div>
+    <div class="dl-songs" data-dltab="music">
       <div class="holdcard hud">
         <div class="big">Hold.fm</div>
         <canvas class="viz" id="viz" aria-hidden="true"></canvas>
@@ -473,6 +487,7 @@
       </div>
       <ul class="tracks" id="tracks"></ul>
     </div>
+    <div data-dltab="wall" hidden>
     <div class="wp-head">
       <h3 class="glitch" data-text="Wallpapers">Wallpapers</h3>
       <div class="yp-chips" id="wp-chips" role="group" aria-label="Filter wallpapers">
@@ -483,6 +498,8 @@
       </div>
     </div>
     <div class="wp-grid" id="wp-grid"></div>
+    </div>
+    <div data-dltab="stickers" hidden>
     <div class="wp-head"><h3 class="glitch" data-text="Stickers">Stickers</h3><p class="st-note">Die-cut with transparent backgrounds, ready for a sticker printer or a Discord emoji. PNG, up to 1024 px.</p></div>
     <div class="st-grid">
       <figure class="st hud"><img src="stickers/101-1-the-butt.png" width="1024" height="984" alt="101.1 The Butt sticker" loading="lazy"><figcaption><b>101.1 The Butt</b><a class="btn sm" href="stickers/101-1-the-butt.png" download="callective-sticker-101-1-the-butt.png">Download</a></figcaption></figure>
@@ -491,10 +508,11 @@
       <figure class="st hud"><img src="stickers/caw.png" width="710" height="1024" alt="Caw sticker" loading="lazy"><figcaption><b>Caw</b><a class="btn sm" href="stickers/caw.png" download="callective-sticker-caw.png">Download</a></figcaption></figure>
       <figure class="st hud"><img src="stickers/quackers.png" width="868" height="1024" alt="Quackers sticker" loading="lazy"><figcaption><b>Quackers</b><a class="btn sm" href="stickers/quackers.png" download="callective-sticker-quackers.png">Download</a></figcaption></figure>
     </div>
+    </div>
   </div>
 </section>
 
-<section class="band" id="audiobible">
+<section class="band" id="audiobible" data-dltab="bible" hidden>
   <div class="wrap">
     <figure class="pbanner" aria-hidden="true"><img src="img/banners/audiobible.webp" alt="" width="1920" height="815" loading="lazy"></figure>
     <div class="sec-head">
@@ -660,7 +678,7 @@
           <li><b>Joining?</b> Punch the code into <b>Join with a code</b>, or open the invite link.</li>
           <li>Use the same browser to come back later and you'll keep your name and spot.</li>
         </ol>
-        <p class="hl-gnote"><b>House rules still apply.</b> The bot won't post phone numbers, emails, links or slurs in the room chat. Tap a name and hit ✉️ to DM: only the two of you can see it. A room closes after 12 quiet hours, or when the host types <code>!close</code>. Nothing is saved after that.</p>
+        <p class="hl-gnote"><b>House rules still apply:</b> the same <a href="#rules">10 Callmandments</a>. The bot won't post phone numbers, emails, links or slurs in the room chat. Tap a name and hit ✉️ to DM: only the two of you can see it. A room closes after 12 quiet hours, or when the host types <code>!close</code>. Nothing is saved after that.</p>
       </div>
       <div class="hud hl-gcard">
         <h3>2. Set up voice</h3>
@@ -853,6 +871,7 @@
 </section>
 </div>
 <div class="page" id="page-lore" data-page="lore">
+<nav class="jump" aria-label="On this page"><div class="wrap"><a href="#story">Story</a><a href="#rules">Rules</a><a href="#lineup">Lineup</a><a href="#bill">Data bill</a><a href="#wrapped">Wrapped</a><a href="#dnc">Do Not Call</a><a href="#glossary">Glossary</a></div></nav>
 <section class="band" id="story">
   <div class="wrap">
     <figure class="pbanner" aria-hidden="true"><img src="img/banners/lore.webp" alt="" width="1920" height="815" loading="lazy"></figure>
@@ -879,10 +898,10 @@
         <li><time>Oct 2026</time><div><b>Spooky season.</b> The Doglective and the Hellective rebrands, Boner Haus corporate week, and the arrival of the Pumpkin Man. Also, this website.</div></li>
       </ol>
       <div class="story-stats">
-        <div><b>~100</b><span>episodes on Prankcast</span></div>
-        <div><b>1,400+</b><span>turns on the phone, logged</span></div>
-        <div><b>300+</b><span>people who've typed in chat</span></div>
-        <div><b>~3,100</b><span>PLA bells dropped</span></div>
+        <div><b id="st-shows">115</b><span>shows in the archive</span></div>
+        <div><b id="st-turns">1,400+</b><span>turns on the phone, logged</span></div>
+        <div><b id="st-chat">300+</b><span>people who've typed in chat</span></div>
+        <div><b id="st-bells">~3,100</b><span>PLA bells dropped</span></div>
         <div><b>1</b><span>rule 5. You know who you are.</span></div>
       </div>
     </div>
@@ -1053,7 +1072,8 @@
 <div class="takeover" id="takeover" role="dialog" aria-modal="true" aria-label="Dial result"></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="clipper" id="clipper" hidden role="dialog" aria-label="Clip it">
-  <div class="ct-head"><b>✂ Clip it</b><span id="ct-title"></span><button class="ct-x" type="button" id="ct-x" aria-label="Close">✕</button></div>
+  <div class="ct-head"><b>✂ Clip it</b><span id="ct-title"></span><button class="ct-help" type="button" id="ct-help" aria-expanded="false" aria-controls="ct-helptxt">? How it works</button><button class="ct-x" type="button" id="ct-x" aria-label="Close">✕</button></div>
+  <p class="ct-helptxt" id="ct-helptxt" hidden>Drag the pink box's edges (or use <b>Start here</b> / <b>End here</b>) to pick the piece, hit <b>Preview clip</b> to hear it, then <b>Download MP3</b>, <b>Post to the clip board</b>, or <b>Send to the clip editor</b> to add effects. Clips can be up to <b>10 minutes</b>; from the live show, the last 2 minutes you heard. <a href="#howclip">More about clipping</a></p>
   <div class="ct-over" id="ct-over" title="Drag the box to move the close-up"><canvas id="ct-over-c" aria-hidden="true"></canvas><div class="ct-over-sel" id="ct-over-sel"></div><div class="ct-view" id="ct-view"></div><div class="ct-over-ph" id="ct-over-ph"></div></div>
   <div class="ct-zoombar"><span id="ct-span"></span><div class="ct-zbtns"><button type="button" id="ct-zout" aria-label="Zoom out">−</button><button type="button" id="ct-zin" aria-label="Zoom in">+</button><button type="button" id="ct-zfit">Fit clip</button><button type="button" id="ct-zall">Show all</button></div></div>
   <div class="ct-track" id="ct-track">
@@ -1102,7 +1122,7 @@
 <audio id="holdaud" preload="none"></audio>
 <audio id="cbaud" preload="none"></audio>
 
-<script src="js/core.js?v=79dbe880"></script>
+<script src="js/core.js?v=81765103"></script>
 <script src="js/router.js?v=e4aa483a"></script>
 <script src="js/player.js?v=78e5fc3e"></script>
 <script src="js/fx.js?v=6cad5fdc"></script>
@@ -1111,12 +1131,12 @@
 <script src="js/switchboard.js?v=0dc97ef8"></script>
 <script src="js/replay.js?v=7f22e61a"></script>
 <script src="js/lab.js?v=a4e680b6"></script>
-<script src="js/clipper.js?v=4ea9e9ba"></script>
+<script src="js/clipper.js?v=da79ce41"></script>
 <script src="js/clipboard.js?v=3fd1239b"></script>
-<script src="js/pages.js?v=4c3c1dab"></script>
+<script src="js/pages.js?v=96d5f294"></script>
 <script src="js/listen.js?v=a59e71d5"></script>
 <script src="js/bingo.js?v=e098cc1c"></script>
-<script src="js/downloads.js?v=01b8c4c8"></script>
+<script src="js/downloads.js?v=43db181c"></script>
 <script src="js/search.js?v=5d18fd1e"></script>
 <script src="js/wrapped.js?v=014a7ad1"></script>
 <script src="js/guess.js?v=c6535413"></script>
@@ -1125,6 +1145,7 @@
 <script src="js/hallvoice.js?v=549a1a5a"></script>
 <script src="js/hallsfx.js?v=22ac51b2"></script>
 <script src="js/hall.js?v=2d83c64b"></script>
-<script src="js/main.js?v=a59206f0"></script>
+<script src="js/subnav.js?v=969b486b"></script>
+<script src="js/main.js?v=b09c40a8"></script>
 </body>
 </html>

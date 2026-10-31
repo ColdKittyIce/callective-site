@@ -338,6 +338,8 @@ const Clipper = (() => {
     src = null; wave = null; $("clipper").hidden = true; document.body.classList.remove("clipping");
   }
   function init() {
+    $("ct-help").addEventListener("click", () => { const t = $("ct-helptxt"); t.hidden = !t.hidden; $("ct-help").setAttribute("aria-expanded", String(!t.hidden)); });
+    $("ct-helptxt").addEventListener("click", e => { if (e.target.closest("a")) { close(); requestAnimationFrame(() => { const d = $("howclip"); if (d) d.open = true; }); } });
     const tr = $("ct-track");
     $("ct-a-h").addEventListener("pointerdown", e => { e.stopPropagation(); dragIn("a", e); });
     $("ct-b-h").addEventListener("pointerdown", e => { e.stopPropagation(); dragIn("b", e); });

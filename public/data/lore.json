@@ -4,7 +4,7 @@
    "term": "PLA bell",
    "kind": "the queue",
    "since": "2024-12",
-   "stat": "Dropped about 3,100 times by more than 130 different people. The most-used emoji in the server.",
+   "stat": "Dropped about {bells} times by more than {bellPeople} different people. The most-used emoji in the server.",
    "def": "Your ticket to the phone. PLA is the Phone Losers of America, RBCP's crew and half the room's home base. Drop the PLA bell in chat and you're in line. The bot calls your name when it's your turn, and you'd better be in voice when it does.",
    "quote": {
     "text": "If you want to make a call, put a PLA bell emoji in chat.",

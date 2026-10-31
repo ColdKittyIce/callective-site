@@ -213,7 +213,7 @@ const Bill = {
     const FEES = [
       ["Long-distance prank surcharge (every call, every time)", 4.20 * totN * 100],
       ["Buttslam activation fees", 101.10 * totN * 10],
-      ["PLA bell rental, ~3,100 bells", 3100 * 69],
+      [`PLA bell rental, ~${C.stats.bells.toLocaleString()} bells`, C.stats.bells * 69],
       ["Drunk and abusive removal service (rule 5)", 50000],
       ["Hold music royalties (Ira Reads the Rules, on loop)", 31337],
       ["\"Bathroom bathroom\" noise ordinance violation", 9999],
@@ -252,6 +252,7 @@ const Directory = (() => {
     $("listings").innerHTML = S.map(e => `<div class="lst"><a class="tt" href="#show/${e.id}">${esc(niceTitle(e))}</a><span class="dots"><span class="d">${esc(fmtDate(e.d))}</span><span class="len">${fmtLen(e.sec || 0)}</span></span>${e.h ? `<span class="h">Host: ${esc(e.h)}${e.hq ? ` <i title="Worked out from the Discord chat">(${esc(e.hq)})</i>` : ""}</span>` : ""}${C.calls[e.id]?.desc ? `<span class="n">${esc(C.calls[e.id].desc)}</span>` : e.n ? `<span class="n">${esc(e.n)}</span>` : ""}${C.calls[e.id] ? `<span class="n cl">${callsFor(e.id).filter(c => !c.skip).length} calls: ${esc([...new Set(callsFor(e.id).filter(c => !c.skip).map(c => c.by))].join(", "))}</span>` : ""}<span class="acts"><a href="#show/${e.id}">${C.calls[e.id] ? "Call list & details" : "Details"}</a>${isRecent(e.id) ? `<button type="button" data-replay="${e.id}">▶ Play here with chat</button><a href="${PC_POST}${e.id}" target="_blank" rel="noopener">Prankcast ↗</a>` : `<a href="${PC_POST}${e.id}" target="_blank" rel="noopener">▶ Listen on Prankcast ↗</a>`}</span></div>`).join("")
       || `<div class="lst"><span class="tt">No listings.</span><span class="h">Try another word, or pick All.</span></div>`;
     $("yp-count").textContent = `${S.length} of ${L.length} listings`; $("yp-more").hidden = all || L.length <= 30;
+    const go = $("yp-search"); go.hidden = !q; go.href = `#search/${encodeURIComponent(q)}`; go.textContent = `Search every call, clip and drop for “${q}” →`; // the Search page knows nicknames and typos (audit R5)
   }
   function init() {
     const byId = Object.fromEntries(C.episodes.map(e => [e.id, e]));
@@ -294,13 +295,24 @@ const DNC = {
 };
 
 /* ---------- the glossary: running bits, from the show's own history ---------- */
+// Shared counts (audit R3): {bells} and friends in any text come from data/stats.json; shows and turns come from the show and call lists.
+const statFill = t => String(t).replace(/\{(\w+)\}/g, (m, k) => C.stats && C.stats[k] != null ? Number(C.stats[k]).toLocaleString() : m);
+const StoryStats = {
+  init() {
+    const nights = new Set(C.episodes.map(e => e.d || e.id)).size;
+    const turns = Object.values(C.calls).reduce((n, s) => n + (s.calls || []).filter(c => !c.skip).length, 0);
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set("st-shows", nights.toLocaleString()); set("st-turns", (Math.floor(turns / 100) * 100).toLocaleString() + "+");
+    set("st-chat", (C.stats.chatters || 300).toLocaleString() + "+"); set("st-bells", "~" + (C.stats.bells || 3100).toLocaleString());
+  }
+};
 const Glossary = (() => {
   let bits = [];
   const mon = ym => { if (!ym) return ""; const [y, m] = ym.split("-").map(Number); return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "numeric" }); };
   function card(b) {
     const q = b.quote ? `<blockquote><p>“${esc(b.quote.text)}”</p><cite>${esc(b.quote.who)}${b.quote.d ? `, ${esc(b.quote.d)}` : ""}</cite></blockquote>` : "";
     return `<article class="gl-card hud"><header><b>${esc(b.term)}</b><i>${esc(b.kind)}</i></header>${b.img ? `<a class="gl-img" href="img/${b.img}" target="_blank" rel="noopener"><img src="img/${b.img}" alt="${esc(b.imgAlt || b.term)}" loading="lazy"></a>` : ""}<p class="gl-def">${esc(b.def)}</p>${q}
-      <footer><span>Since ${esc(mon(b.since))}. ${esc(b.stat || "")}</span>${b.search ? `<a href="#search/${encodeURIComponent(b.search)}">Find the calls →</a>` : ""}</footer></article>`;
+      <footer><span>Since ${esc(mon(b.since))}. ${esc(statFill(b.stat || ""))}</span>${b.search ? `<a href="#search/${encodeURIComponent(b.search)}">Find the calls →</a>` : ""}</footer></article>`;
   }
   function render() {
     const q = $("gl-q").value.trim().toLowerCase();
