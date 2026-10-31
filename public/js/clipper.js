@@ -41,14 +41,14 @@ const Clipper = (() => {
   }
 
   /* ---------- sources ---------- */
-  // A show on the radio or in the replay terminal. It keeps playing while you clip.
+  // A show on the radio or in the replay terminal. It pauses while the clip editor is up; previews play just the piece you pick.
   function episodeSource(el, ep, { radio = false, label } = {}) {
     if (C.api) fetch(`${C.api}/cut/${ep.id}?from=${Math.max(0, Math.floor(el.currentTime) - 1)}&to=${Math.max(1, Math.floor(el.currentTime))}`).catch(() => {}); // warm up the cutter
     return {
       kind: "ep", max: 1200, ep, title: label || `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, dur: ep.sec || el.duration || el.currentTime + 60, el,
       pos: () => el.currentTime, isPlaying: () => !el.paused,
       play(s) { el.currentTime = s; Media.claim(el); return el.play(); },
-      resume(t) { if (radio) Listen.tuneIn(); else if (t != null) { el.currentTime = t; el.play().catch(() => {}); } },
+      hush() { el.pause(); }, unhush(t) { if (radio) Listen.tuneIn(); else if (t != null) { el.currentTime = t; el.play().catch(() => {}); } },
       async get(s, e) { const pad = 1, from = Math.max(0, s - pad), buf = await cutBuffer(ep, from, e + pad), lead = s - from; return sliceBuf(buf, lead, Math.min(buf.duration, lead + (e - s))); },
       async peaks(s, e) { return peaksOf(await cutBuffer(ep, s, e), s); },
       async chat() {
@@ -65,7 +65,7 @@ const Clipper = (() => {
       kind: "file", max: EDIT_MAX, title: label, dur: el.duration || 0, el, whole: true,
       pos: () => el.ended ? (el.duration || 0) : el.currentTime, isPlaying: () => !el.paused,
       play(s) { el.currentTime = s; Media.claim(el); return el.play(); },
-      resume(t) { if (t != null) { el.currentTime = t; el.play().catch(() => {}); } },
+      hush() { el.pause(); }, unhush(t) { if (t != null) { el.currentTime = t; el.play().catch(() => {}); } },
       async get(s, e) { return sliceBuf(await load(), s, e); },
       async peaks() { return peaksOf(await load(), 0); },
       async chat() { return null; }, meta: () => null
@@ -77,9 +77,9 @@ const Clipper = (() => {
     return {
       kind: "live", max: EDIT_MAX, title: label, dur: buf.duration, whole: true,
       pos: () => node ? s0 + (ac().currentTime - t0) : buf.duration, isPlaying: () => !!node,
-      play(s) { this.stopNode(); const c = ac(); node = c.createBufferSource(); node.buffer = buf; node.connect(c.destination); node.start(0, s); t0 = c.currentTime; s0 = s; node.onended = () => { node = null; }; if (liveEl) liveEl.volume = 0; return Promise.resolve(); },
-      stopNode() { if (node) { try { node.onended = null; node.stop(); } catch (e) {} node = null; } if (liveEl) liveEl.volume = 1; },
-      resume() { this.stopNode(); },
+      play(s) { this.stopNode(); const c = ac(); node = c.createBufferSource(); node.buffer = buf; node.connect(c.destination); node.start(0, s); t0 = c.currentTime; s0 = s; node.onended = () => { node = null; }; return Promise.resolve(); },
+      stopNode() { if (node) { try { node.onended = null; node.stop(); } catch (e) {} node = null; } },
+      hush() { if (liveEl) { this.vol = liveEl.volume; liveEl.volume = 0; } }, unhush() { this.stopNode(); if (liveEl) liveEl.volume = this.vol ?? 1; },
       async get(s, e) { return sliceBuf(buf, s, e); },
       async peaks() { return peaksOf(buf, 0); },
       async chat() { return null; }, meta: () => ({ live: true })
@@ -220,7 +220,6 @@ const Clipper = (() => {
   }
   async function previewRange(s, e, btn) {
     if (previewing) { const same = btn && $(btn).classList.contains("is-playing"); stopPreview(); if (same) return; }
-    resumeAt = src.el && !src.el.paused ? src.el.currentTime : null;
     previewing = true; pvEnd = e; follow = e - s > (v1 - v0) * .8;
     document.querySelectorAll("#clipper .is-playing").forEach(x => x.classList.remove("is-playing")); if (btn) $(btn).classList.add("is-playing");
     try { await src.play(s); } catch (err) {}
@@ -228,8 +227,7 @@ const Clipper = (() => {
   function stopPreview() {
     if (!previewing) return; previewing = false;
     document.querySelectorAll("#clipper .is-playing").forEach(x => x.classList.remove("is-playing"));
-    if (src.kind === "live") src.resume(); else if (resumeAt != null) src.resume(resumeAt); else src.el?.pause();
-    resumeAt = null;
+    if (src.kind === "live") src.stopNode(); else src.el?.pause(); // the stream stays quiet until the editor closes
   }
   function here(which) {
     stopPreview(); const p = src.pos();
@@ -303,7 +301,7 @@ const Clipper = (() => {
     msg("> Pulling this piece into the clip lab…");
     try {
       const buf = await src.get(a, b), m = src.meta(a), label = $("ct-name").value.trim() || `${src.title} @ ${hms(a, true)}`;
-      close(); Lab.loadBuffer(buf, label, m); SFX.shutter(); go("lab");
+      close(false); Lab.loadBuffer(buf, label, m); SFX.shutter(); go("lab");
     } catch (e) { busy = false; paintAll(); msg("> That piece didn't come through. Try again in a moment."); }
   }
 
@@ -312,6 +310,8 @@ const Clipper = (() => {
     if (!source) return; if (src) close();
     src = source; busy = false; previewing = false; wave = null; heat = null; waveToken++;
     const now = range ? range.from : src.pos();
+    resumeAt = src.kind === "live" ? 0 : src.el && !src.el.paused ? src.el.currentTime : null; // what was playing, to pick back up when you close
+    src.hush(); // the radio / replay / song stops while you clip
     if (src.whole || src.dur <= 1200) { w0 = 0; w1 = Math.max(src.dur, MIN * 2); }
     else if (range) { w0 = Math.max(0, range.from - 60); w1 = Math.min(src.dur, Math.max(range.to + 60, w0 + 300)); }
     else { w1 = Math.min(src.dur, Math.max(now + 300, 1200)); w0 = Math.max(0, w1 - 1200); }
@@ -330,9 +330,11 @@ const Clipper = (() => {
     requestAnimationFrame(() => { fitClip(); if (src.kind === "ep") src.chat().then(t => { if (src && t) { heat = t; paintAll(); } }); });
     cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
   }
-  function close() {
+  function close(resume = true) {
     if (!src) return; stopPreview(); cancelAnimationFrame(raf); clearTimeout(waveTimer); waveToken++;
     if (typeof Listen !== "undefined") Listen.hold = false;
+    if (resume && resumeAt != null) src.unhush(resumeAt); else if (src.kind === "live") src.unhush(); // the radio rejoins the live loop; a replay picks up where it was
+    resumeAt = null;
     src = null; wave = null; $("clipper").hidden = true; document.body.classList.remove("clipping");
   }
   function init() {
