@@ -120,14 +120,14 @@
 "sec": 2.7
 },
 {
-"k": "drake-yes-no",
-"who": "Drake Dragsaw",
+"k": "moxie-yes-no",
+"who": "Moxie",
 "line": "This is a yes or no question, dude.",
 "sec": 1.5
 },
 {
-"k": "drake-did-that",
-"who": "Drake Dragsaw",
+"k": "moxie-did-that",
+"who": "Moxie",
 "line": "Did that happen?",
 "sec": 0.8
 },

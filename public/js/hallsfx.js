@@ -21,7 +21,7 @@ const HallSB = (() => {
   const SFX = [["s:ring", "Phone ring"], ["s:pickup", "Pick up"], ["s:hangup", "Hang up"], ["s:slam", "Phone slam"], ["s:coin", "Coin drop"], ["s:page", "Page"], ["s:drop", "Drop"], ["s:setdown", "Set it down"]];
   const CREW = { // [pad color, text color]
     "Phone": ["#1c3d78", "#ffd700"], "Ira": ["#cc0000", "#ffffff"], "IceCat": ["#2f80ed", "#ffffff"], "DespicableDogs": ["#f0a020", "#000000"],
-    "Dr. Tom Servo": ["#767067", "#ffffff"], "Andy Anderson": ["#ff6644", "#000000"], "Drake Dragsaw": ["#20b85a", "#000000"], "AnteaterTpose": ["#8c625b", "#ffffff"],
+    "Dr. Tom Servo": ["#767067", "#ffffff"], "Andy Anderson": ["#ff6644", "#000000"], "Moxie": ["#20b85a", "#000000"], "AnteaterTpose": ["#8c625b", "#ffffff"],
     "CrieFaux": ["#6a35b8", "#ffffff"], "Rozin": ["#87a5dc", "#000000"], "GreenImp": ["#9be15d", "#000000"], "PoopMyPee": ["#5c3a1e", "#ffffff"],
     "IDontKnow": ["#000000", "#ffffff"], "The Callective": ["#ff2bd6", "#000000"], "On the other end": ["#c4dffd", "#000000"] };
   const COLS = 8, NEW_ROWS = 4, MAX_SLOTS = 64, MAX_BOARDS = 12, MAX_MB = 15, MAX_SEC = 180, PAD_BG = "#2b2650", PAD_TX = "#ffffff";
@@ -325,7 +325,7 @@ const HallSB = (() => {
     let drops = [];
     try { drops = (await getJSON("data/clips.json")).map(c => ({ k: "c:" + c.k, t: c.line, who: c.who })); } catch (e) {}
     // Crew drops, laid out like a Broadcast Backpack board: filled down each column, one color per person. Colors are fixed.
-    const order = ["Phone", "Ira", "IceCat", "DespicableDogs", "Dr. Tom Servo", "Andy Anderson", "Drake Dragsaw", "AnteaterTpose", "CrieFaux", "Rozin", "GreenImp", "PoopMyPee", "IDontKnow", "The Callective", "On the other end"];
+    const order = ["Phone", "Ira", "IceCat", "DespicableDogs", "Dr. Tom Servo", "Andy Anderson", "Moxie", "AnteaterTpose", "CrieFaux", "Rozin", "GreenImp", "PoopMyPee", "IDontKnow", "The Callective", "On the other end"];
     const crew = [...SFX.map(([k, t]) => ({ k, t, who: "Phone" })), ...drops].sort((a, b) => (order.indexOf(a.who) + 1 || 99) - (order.indexOf(b.who) + 1 || 99));
     const rows = 8, cols = Math.max(6, Math.ceil(crew.length / rows));
     crew.forEach((x, i) => { const c = CREW[x.who] || [PAD_BG, PAD_TX]; x.pos = (i % rows) * cols + Math.floor(i / rows); x.color = c[0]; x.text = c[1]; });

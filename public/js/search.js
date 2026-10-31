@@ -15,7 +15,7 @@ const Search = (() => {
     dogs: "despicabledogs", dd: "despicabledogs", ddogs: "despicabledogs", despicable: "despicabledogs",
     ant: "anteatertpose", anteater: "anteatertpose", tpose: "anteatertpose", anty: "anteatertpose",
     imp: "greenimp", quackers: "greenimp", bucees: "bucee", bucee: "bucee", lally: "lallybirdie", birdie: "lallybirdie",
-    wildone: "wildone", wild: "wildone", ned: "neddy", hellraiser: "neddy", andy: "andyanderson", drake: "dragsaw",
+    wildone: "wildone", wild: "wildone", ned: "neddy", hellraiser: "neddy", andy: "andyanderson", drake: "moxie", dragsaw: "moxie", drakedragsaw: "moxie",
     criefaux: "criefaux", crie: "criefaux", cryfawkes: "criefaux", deltron: "deltron3000", starry: "starry", stacy: "starry"
   };
   const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];

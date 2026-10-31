@@ -153,7 +153,8 @@ const first = x => Array.isArray(x) ? x[0] : x;
 const clean = (s, n) => String(s || "").replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, n);
 
 const HOSTS = { drtomservo: "Dr. Tom Servo", iregretjumping: "iregretjumping", iragarrettjumping: "iregretjumping", rbcp: "RBCP", criefaux: "CrieFaux", andyanderson: "Andy Anderson",
-  milkbox: "milkbox", despicabledogs: "DespicableDogs", drakedragsaw: "Drake Dragsaw", icecat: "IceCat", wildone: "wild-one", ronmexico: "RonMexico", nerdstrong: "Nerdstrong", devonanustart: "DevonAnustart" };
+  milkbox: "milkbox", despicabledogs: "DespicableDogs", drakedragsaw: "Moxie", moxie: "Moxie", moxietxt: "Moxie", icecat: "IceCat", wildone: "wild-one", ronmexico: "RonMexico", nerdstrong: "Nerdstrong", devonanustart: "DevonAnustart" };
+const renameT = t => t.replace(/drake ?dragsaw/gi, "Moxie"); // Drake Dragsaw goes by Moxie now (Oct 31 2026)
 function hostOf(title) { const m = String(title).match(/hosted by @?([A-Za-z .\-]+?)(?: -|\)|$|\s\d| \()/i); if (!m) return null; return HOSTS[m[1].replace(/[ .\-]/g, "").toLowerCase()] || m[1].trim(); }
 function dateOf(title, start) {
   const m = String(title).match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/);
@@ -163,7 +164,7 @@ function dateOf(title, start) {
 }
 function secs(b) { if (!b || !b.start_date || !b.end_date) return 0; return Math.max(0, (Date.parse(b.end_date.replace(" ", "T") + "Z") - Date.parse(b.start_date.replace(" ", "T") + "Z")) / 1000); }
 function toEpisode(po) { let b = null; try { b = first(parse(po.broadcast_contents_json)); } catch (e) {}
-  return { id: po.post_id, t: (po.post_title || "").trim(), d: dateOf(po.post_title, b && b.start_date), h: hostOf(po.post_title), sec: Math.round(secs(b)), n: (po.post_description || "").slice(0, 200), chat: 0 }; }
+  return { id: po.post_id, t: renameT((po.post_title || "").trim()), d: dateOf(po.post_title, b && b.start_date), h: hostOf(po.post_title), sec: Math.round(secs(b)), n: (po.post_description || "").slice(0, 200), chat: 0 }; }
 
 /* ---------- Prankcast routes ---------- */
 // Prankcast's own player plays `${stream_url_active}pl-0.m3u8` (HLS) while a show is live.
