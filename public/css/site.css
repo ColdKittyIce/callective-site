@@ -1356,3 +1356,23 @@ body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void
 .hl-lobby .hl-err{grid-column:1/-1}
 .hl-sbfrom .hl-leg{display:inline-flex;align-items:center;gap:5px;margin:0 12px 4px 0;white-space:nowrap}
 .hl-sbfrom .hl-leg i{width:12px;height:12px;border:1px solid #ffffff44;display:inline-block}
+/* Soundboard, Oct 31 2026: right-click menu, your own boards */
+.hl-ctx{position:fixed;z-index:400;min-width:220px;max-width:280px;display:flex;flex-direction:column;padding:6px;background:#07061a;border:1px solid #18f0ff77;box-shadow:0 10px 40px #000c,0 0 18px #18f0ff33}
+.hl-ctx[hidden]{display:none}
+.hl-ctx button{font:inherit;font-size:14px;text-align:left;background:none;border:0;color:var(--text);padding:7px 10px;cursor:pointer}
+.hl-ctx button:hover:not(:disabled),.hl-ctx button:focus-visible{background:#18f0ff1c;color:var(--cyan);outline:none}
+.hl-ctx button:disabled{opacity:.35;cursor:default}
+.hl-ctx hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+.hl-ctxt{margin:2px 10px 6px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;color:var(--pink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hl-ctxn{margin:4px 10px 2px;font-size:12px;color:var(--muted)}
+.hl-ctxc{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 10px;font-size:14px;color:var(--text)}
+.hl-ctxc input{width:44px;height:26px;padding:0;border:1px solid var(--line);background:none;cursor:pointer}
+.hl-sbtip{margin:0;font-size:12.5px;color:var(--muted)}
+.hl-sbtabs .own{color:var(--volt)}
+.hl-sbtabs .own[aria-selected="true"]{color:var(--volt);border-color:#e9ff3b88;background:#e9ff3b12}
+.hl-sbtabs .hl-sbnew{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:none;color:var(--cyan);border:1px dashed #18f0ff55;border-bottom:none;padding:7px 12px;cursor:pointer}
+.hl-pads.grid .hl-pad.on{outline:2px solid var(--volt);box-shadow:0 0 16px #e9ff3b99;animation:hlLive 1.2s ease-in-out infinite}
+.hl-pads.mine .hl-pad.empty{min-height:58px;border:1px dashed #18f0ff44;background:transparent;color:var(--muted);align-items:center;justify-content:center}
+.hl-pads.mine .hl-pad.empty b{font-size:20px;color:#18f0ff88}
+.hl-pads.mine .hl-pad[draggable]{cursor:pointer}
+#hl-sbvoln{min-width:3.2em;color:var(--text)}

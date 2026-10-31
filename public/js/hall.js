@@ -150,6 +150,7 @@ const Hall = (() => {
       else if (d.type === "msg") addMsg(d.msg);
       else if (d.type === "rtc") HallVoice.onSignal(d.from, d.sig);
       else if (d.type === "sfx") HallSB.onSfx(d);
+      else if (d.type === "sfxvol") HallSB.onVol(d);
       else if (d.type === "forcemute") HallVoice.onForceMute(d.except);
       else if (d.type === "voiceoff") HallVoice.off(d.why);
       else if (d.type === "voicefull") { HallVoice.off(`Voice is full (${d.max} max).`); }

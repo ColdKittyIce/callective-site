@@ -774,7 +774,7 @@
           <button type="button" class="btn sm" id="hl-sbroom" aria-pressed="true" title="Everyone in the room hears it">🔊 Room</button>
           <button type="button" class="btn sm red" id="hl-sbline" aria-pressed="false" title="Plays into your phone line">📞 My line</button>
           <button type="button" class="btn sm ghost" id="hl-sbhear" aria-pressed="true">👂 Hearing room sounds</button>
-          <label class="hl-sbvol">Volume <input type="range" id="hl-sbvol" min="0" max="1" step="0.05" value="0.9"></label>
+          <label class="hl-sbvol" title="One volume for everything: what the room hears from you, what you hear, and your phone line">Volume <input type="range" id="hl-sbvol" min="0" max="1" step="0.05" value="0.9"> <span id="hl-sbvoln">90%</span></label>
         </div>
         <div class="hl-sbdev" id="hl-sbdevrow" hidden>
           <label>📞 Phone line output<select id="hl-sbdev"><option value="">Choose your phone line output…</option></select></label>
@@ -783,12 +783,20 @@
         </div>
         <div class="hl-sbtabs" id="hl-sbtabs" role="tablist" aria-label="Boards"></div>
         <div class="hl-mine" id="hl-mine" hidden>
-          <p><b>Your own board.</b> Drag sound files from your computer onto a pad (or anywhere here), or tap an empty pad to pick files. Drag a pad onto another to swap them, ✎ to rename, ✕ to clear. They stay in this browser until you leave the room. When 🔊 Room is on, your own sounds go out through your voice, so join voice first.</p>
-          <div class="hl-mineacts"><button type="button" class="btn sm" id="hl-mineadd">＋ Add sounds…</button><button type="button" class="btn sm ghost" id="hl-mineclear">Clear board</button></div>
+          <p><b>Your board.</b> Drag sound files from your computer onto a pad (or anywhere here), or tap an empty pad to pick one. Drag a pad onto another to swap them. <b>Right-click</b> a pad (long-press on a phone) for loop mode, colors, rename, cut, copy and paste. Copy a built-in pad and paste it here to keep your favorites together. Your boards are saved in this browser and follow you to every room.</p>
+          <div class="hl-mineacts">
+            <button type="button" class="btn sm" id="hl-mineadd">＋ Add sounds…</button>
+            <button type="button" class="btn sm" id="hl-mineaddrow">＋ Add a row</button>
+            <button type="button" class="btn sm ghost" id="hl-minename">✎ Rename board</button>
+            <button type="button" class="btn sm ghost" id="hl-mineclear">Clear board</button>
+            <button type="button" class="btn sm ghost red" id="hl-minedel">🗑 Delete board</button>
+          </div>
           <input type="file" id="hl-file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac,.aac,.opus,.webm" multiple hidden>
         </div>
         <div class="hl-pads" id="hl-pads"></div>
         <p class="hl-sbfrom" id="hl-sbfrom"></p>
+        <p class="hl-sbtip">Press a pad to play, press it again to stop. Right-click (or long-press) a pad for loop mode and more.</p>
+        <div class="hl-ctx" id="hl-ctx" role="menu" hidden></div>
       </div>
     </div>
   </div>

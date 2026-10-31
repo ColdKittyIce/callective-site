@@ -70,10 +70,10 @@ const HallVoice = (() => {
     for (const P of peers.values()) if (P.sender && P.sending !== sending) { P.sending = sending; P.sender.replaceTrack(sending ? out : null).catch(() => {}); } // nothing open = send nothing
   }
   // Play a decoded sound into your voice, so everyone in voice hears it (used by custom soundboard pads).
-  function playInto(buffer, gain = 0.9) {
+  function playInto(buffer, gain = 0.9, loop = false) { // returns the source node; .gainNode lets the soundboard change its volume live
     if (!inVoice || !sfxBus) return false; if (smute) { toast("A mod muted you, so your sounds don't go out either."); return false; }
-    const c = ctx(), src = c.createBufferSource(), g = c.createGain(); src.buffer = buffer; g.gain.value = gain; src.connect(g).connect(sfxBus);
-    sfxN++; applyMute(); src.onended = () => setTimeout(() => { sfxN = Math.max(0, sfxN - 1); applyMute(); }, 250);
+    const c = ctx(), src = c.createBufferSource(), g = c.createGain(); src.buffer = buffer; src.loop = !!loop; g.gain.value = gain; src.connect(g).connect(sfxBus); src.gainNode = g;
+    sfxN++; applyMute(); src.addEventListener("ended", () => setTimeout(() => { sfxN = Math.max(0, sfxN - 1); applyMute(); }, 250));
     src.start(); return src;
   }
   function setMuted(m) {

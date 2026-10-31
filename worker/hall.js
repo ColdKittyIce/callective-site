@@ -175,13 +175,15 @@ export class Hall extends DurableObject {
   }
   /* ---------- soundboard: tells every browser in the room to play a sound. Rule 7: during a call only the caller and mods can. ---------- */
   sfx(ws, id, d) {
-    const s = this.s, m = s.members[id], k = String(d.k || ""); if (!/^[bcs]:[a-z0-9-]{1,40}$/.test(k)) return;
-    if (d.stop) return this.broadcast({ type: "sfx", k, by: m.name, uid: id, stop: true }); // stopping your own loop is always fine
+    const s = this.s, m = s.members[id], v = Math.round(Math.max(0, Math.min(1, Number.isFinite(+d.v) ? +d.v : 0.9)) * 100) / 100;
+    if (d.vol) { const t = now(); if (t - (m.svAt || 0) < 120) return; m.svAt = t; return this.broadcast({ type: "sfxvol", uid: id, v }); } // the sender moved their volume slider
+    const k = String(d.k || ""); if (!/^[bcs]:[a-z0-9-]{1,40}$/.test(k)) return;
+    if (d.stop) return this.broadcast({ type: "sfx", k, by: m.name, uid: id, stop: true }); // stopping your own sound is always fine
     const mode = s.sfxMode || "open", caller = s.cur && s.cur.id === id;
     if (mode === "off" && !m.host) return this.whisper(ws, "The host turned the room soundboard off. Your sounds still play on your own line.");
     if (!m.mod && !caller && (mode === "mods" || s.cur)) return this.whisper(ws, mode === "mods" ? "Only mods and the person on the phone can play sounds to the room right now." : "Rule 7: no sound effects during someone's call unless you're invited. Your sounds still play on your own line.");
     const t = now(); if (!m.mod && t - (m.sfxAt || 0) < SFX_COOLDOWN) return; m.sfxAt = t;
-    this.broadcast({ type: "sfx", k, by: m.name, uid: id, loop: !!d.loop });
+    this.broadcast({ type: "sfx", k, by: m.name, uid: id, loop: !!d.loop, v });
   }
   async webSocketClose(ws) { if (this.s) this.broadcastState(); }
   async webSocketError(ws) { if (this.s) this.broadcastState(); }
