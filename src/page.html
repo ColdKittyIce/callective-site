@@ -774,7 +774,10 @@
           <button type="button" class="btn sm" id="hl-sbroom" aria-pressed="true" title="Everyone in the room hears it">🔊 Room</button>
           <button type="button" class="btn sm red" id="hl-sbline" aria-pressed="false" title="Plays into your phone line">📞 My line</button>
           <button type="button" class="btn sm ghost" id="hl-sbhear" aria-pressed="true">👂 Hearing room sounds</button>
-          <label class="hl-sbvol" title="One volume for everything: what the room hears from you, what you hear, and your phone line">Volume <input type="range" id="hl-sbvol" min="0" max="1" step="0.05" value="0.9"> <span id="hl-sbvoln">90%</span></label>
+          <div class="hl-sbvols">
+            <label class="hl-sbvol" title="Your sounds: what the room hears from you, what you hear of them, and your phone line">My sounds <input type="range" id="hl-sbvol" min="0" max="1" step="0.05" value="0.9"> <span id="hl-sbvoln">90%</span></label>
+            <label class="hl-sbvol" title="How loud other people's soundboard sounds are for you. Only changes what you hear.">Others <input type="range" id="hl-sbhvol" min="0" max="1" step="0.05" value="1"> <span id="hl-sbhvoln">100%</span></label>
+          </div>
         </div>
         <div class="hl-sbdev" id="hl-sbdevrow" hidden>
           <label>📞 Phone line output<select id="hl-sbdev"><option value="">Choose your phone line output…</option></select></label>

@@ -7,10 +7,11 @@
    📞 My line: out of an audio device you pick, like a Voicemeeter or VB-Cable input that feeds your phone line (see the Audio Bible).
    With both off it just previews in your own ears.
    Volume is one global slider: it sets what the room hears from you, what you hear, and what goes down your phone line, live.
+   "Others" is your own listening level for everybody else's room sounds (it multiplies their volume, only for you).
    Your own boards are saved in this browser (IndexedDB) and follow you from room to room. Keys 1–9 and 0 hit the first ten pads. */
 const HallSB = (() => {
   let send = () => false, getMe = () => null, st = null, room = null;
-  const o = { room: true, line: false, hear: true, dev: "", vol: 0.9, board: "drops" };
+  const o = { room: true, line: false, hear: true, hearVol: 1, dev: "", vol: 0.9, board: "drops" };
   try { Object.assign(o, JSON.parse(localStorage.getItem("cx-hall-sb") || "{}")); } catch (e) {}
   const save = () => { try { localStorage.setItem("cx-hall-sb", JSON.stringify(o)); } catch (e) {} };
   const ov = { loop: {} }; // your loop on/off choices for built-in pads
@@ -120,18 +121,20 @@ const HallSB = (() => {
   function setVol(v) {
     o.vol = clampV(v); save();
     for (const E of act.values()) { E.els.forEach(a => { a.volume = a.dataset && a.dataset.mon ? o.vol * 0.8 : o.vol; }); E.nodes.forEach(n => { if (n.gainNode) n.gainNode.gain.value = o.vol; }); }
-    const me = getMe(); if (me) for (const [key, set] of roomAud) if (key.startsWith(me.id + "|")) set.forEach(a => { a.volume = o.vol; });
+    const me = getMe(); if (me) for (const [key, set] of roomAud) if (key.startsWith(me.id + "|")) set.forEach(a => { a.dataset.sv = o.vol; a.volume = o.vol; });
     if ([...act.values()].some(E => E.room) && Date.now() - volT > 150) { volT = Date.now(); send({ type: "sfx", vol: true, v: o.vol }); }
     clearTimeout(setVol.t); setVol.t = setTimeout(() => { if ([...act.values()].some(E => E.room)) send({ type: "sfx", vol: true, v: o.vol }); }, 200); // make sure the last spot lands
   }
-  function onVol(d) { for (const [key, set] of roomAud) if (key.startsWith(d.uid + "|")) set.forEach(a => { a.volume = clampV(d.v); }); }
+  const heard = (uid, v) => { const me = getMe(); return clampV(me && uid === me.id ? v : v * o.hearVol); }; // your own echo follows Volume; other people's sounds also follow "Others"
+  function onVol(d) { for (const [key, set] of roomAud) if (key.startsWith(d.uid + "|")) set.forEach(a => { a.dataset.sv = d.v; a.volume = heard(d.uid, d.v); }); }
+  function setHear(v) { o.hearVol = clampV(v); save(); for (const [key, set] of roomAud) { const uid = key.split("|")[0]; set.forEach(a => { a.volume = heard(uid, +(a.dataset.sv || 0.9)); }); } }
   function onSfx(d) { // someone (maybe you) played a built-in sound to the room
     const key = d.uid + "|" + d.k, me = getMe(), mineSnd = me && d.uid === me.id;
     if (d.stop) { (roomAud.get(key) || new Set()).forEach(a => a.pause()); roomAud.delete(key); if (!mineSnd) flashKey(d.k); return; }
     let E = null;
     if (mineSnd) { for (const [pk, x] of act) if (x.k === d.k && x.room) { E = [pk, x]; break; } if (!E) return; } // you already stopped it
     if (o.hear) {
-      const a = playTo(url(d.k), "", d.v === undefined ? o.vol : d.v, d.loop);
+      const sv = d.v === undefined ? 0.9 : d.v, a = playTo(url(d.k), "", heard(d.uid, sv), d.loop); a.dataset.sv = sv;
       let set = roomAud.get(key); if (!set) roomAud.set(key, set = new Set()); set.add(a);
       a.addEventListener("ended", () => set.delete(a));
       if (d.loop) setTimeout(() => { a.pause(); set.delete(a); }, 125000);
@@ -296,6 +299,7 @@ const HallSB = (() => {
     $("hl-sbroom").setAttribute("aria-pressed", String(o.room)); $("hl-sbline").setAttribute("aria-pressed", String(o.line)); $("hl-sbhear").setAttribute("aria-pressed", String(o.hear));
     $("hl-sbhear").textContent = o.hear ? "👂 Hearing room sounds" : "🙉 Room sounds off";
     $("hl-sbvol").value = o.vol; $("hl-sbvoln").textContent = Math.round(o.vol * 100) + "%";
+    $("hl-sbhvol").value = o.hearVol; $("hl-sbhvoln").textContent = Math.round(o.hearVol * 100) + "%"; $("hl-sbhvol").disabled = !o.hear;
     const m = st ? st.sfx : "open";
     $("hl-sbmode").textContent = !st ? "" : m === "off" ? "Room soundboard: off" : m === "mods" ? "Room: mods + caller only" : st.cur ? "Room: caller + mods only (call in progress)" : "Room: open";
     const host = st && st.you && st.you.host; $("hl-sbhost").hidden = !host; if (host) $("hl-sbhost").value = m;
@@ -405,6 +409,7 @@ const HallSB = (() => {
     $("hl-sbline").addEventListener("click", () => { o.line = !o.line; save(); paint(); $("hl-sbdevrow").hidden = !o.line; if (o.line) devices(true); });
     $("hl-sbhear").addEventListener("click", () => { o.hear = !o.hear; save(); paint(); });
     $("hl-sbvol").addEventListener("input", e => { setVol(+e.target.value); $("hl-sbvoln").textContent = Math.round(o.vol * 100) + "%"; });
+    $("hl-sbhvol").addEventListener("input", e => { setHear(+e.target.value); $("hl-sbhvoln").textContent = Math.round(o.hearVol * 100) + "%"; });
     $("hl-sbdev").addEventListener("change", e => { o.dev = e.target.value; save(); if (o.dev) playTo("sfx/ring.mp3", o.dev, o.vol * 0.6); });
     $("hl-sbtest").addEventListener("click", () => o.dev ? playTo("sfx/ring.mp3", o.dev, o.vol) : devices(true));
     $("hl-sbhost").addEventListener("change", e => send({ type: "cmd", text: "!soundboard " + e.target.value }));

@@ -1376,3 +1376,8 @@ body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void
 .hl-pads.mine .hl-pad.empty b{font-size:20px;color:#18f0ff88}
 .hl-pads.mine .hl-pad[draggable]{cursor:pointer}
 #hl-sbvoln{min-width:3.2em;color:var(--text)}
+.hl-sbvols{display:flex;flex-direction:column;gap:4px;margin-left:auto}
+.hl-sbvols .hl-sbvol{margin-left:0;justify-content:flex-end}
+#hl-sbhvoln{min-width:3.2em;color:var(--text)}
+.hl-sbvol input:disabled{opacity:.35}
+@media (max-width:600px){.hl-sbvols{margin-left:0;width:100%}.hl-sbvols .hl-sbvol{justify-content:flex-start}}
