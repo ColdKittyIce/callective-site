@@ -2,6 +2,14 @@ name = "callective"
 main = "worker/index.js"
 compatibility_date = "2025-09-01"
 
+# thecallective.com (bought Oct 31, 2026). Cloudflare makes the DNS records and HTTPS certificate itself.
+# The old callective.zoocrewprankradio.workers.dev address keeps working too.
+workers_dev = true
+routes = [
+  { pattern = "thecallective.com", custom_domain = true },
+  { pattern = "www.thecallective.com", custom_domain = true },
+]
+
 # The site itself. Only /api/... and /c/... (clip share links) run the worker; every other file is served
 # straight from Cloudflare's static assets, which are free and don't count
 # toward the daily request limit.
