@@ -61,6 +61,16 @@ const FX = (() => {
       const el = vis[(Math.random() * vis.length) | 0]; if (!el) return;
       el.classList.add("glitching"); setTimeout(() => el.classList.remove("glitching"), 380);
     }, 3800);
+    // the home headline gets its own on-off flicker: a burst of 2 to 4 quick hits every 3 to 7 seconds
+    const hero = document.querySelector(".hero h1 .glitch"); if (!hero) return;
+    const burst = () => {
+      if (!document.hidden && document.body.dataset.page === "home") {
+        let n = 2 + ((Math.random() * 3) | 0), t = 0;
+        while (n--) { const on = 70 + Math.random() * 110, off = 50 + Math.random() * 120; setTimeout(() => hero.classList.add("flick"), t); setTimeout(() => hero.classList.remove("flick"), t + on); t += on + off; }
+      }
+      setTimeout(burst, 3000 + Math.random() * 4000);
+    };
+    setTimeout(burst, 1500);
   }
 
   function ticker() {

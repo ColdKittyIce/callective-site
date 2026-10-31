@@ -1382,7 +1382,7 @@ body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void
 .hl-sbvol input:disabled{opacity:.35}
 @media (max-width:600px){.hl-sbvols{margin-left:0;width:100%}.hl-sbvols .hl-sbvol{justify-content:flex-start}}
 /* Audit batch 1, Oct 31 2026 */
-.hero h1 .glitch{display:inline} /* B2: the glitch layer only covers the first part, so it wraps exactly like the real text */
+.hero h1 .glitch{display:block} /* block: the glitch layers get the exact same width as the real text, so they wrap the same at every screen size */
 .hero h1 .glitch::before,.hero h1 .glitch::after{white-space:normal}
 .cb-acts{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px} /* B3: one row of actions under the clip */
 .cb-acts .cb-rep{margin-left:auto}
@@ -1473,3 +1473,7 @@ body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void
   .booth[data-tab="chat"] .deck .ttl,.booth[data-tab="chat"] .deck .meta,.booth[data-tab="chat"] .deck .heat,.booth[data-tab="chat"] .deck .heat-legend,.booth[data-tab="chat"] #rp-peak{display:none}
 }
 .gl-card footer{padding:0;margin:4px 0 0;border:0;background:none;box-shadow:none;min-height:0} /* the site footer style was leaking in and padding every card */
+/* Hero headline: the glitch flickers on and off in short bursts (fx.js) */
+.hero h1 .glitch.flick::before,.hero h1 .glitch.flick::after{opacity:.95;animation:gl1 .18s steps(2) infinite}
+.hero h1 .glitch.flick::after{animation-name:gl2}
+.hero h1 .glitch.flick{text-shadow:-2px 0 #ff2bd6aa,2px 0 #18f0ffaa}
