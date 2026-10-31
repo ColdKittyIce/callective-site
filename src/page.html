@@ -16,9 +16,9 @@
   <div class="wrap">
     <a class="brand" href="#home" aria-label="The Callective, home"><img src="img/mark.webp" alt=""><b id="brandname">THE CALLECTIVE</b></a>
     <nav class="sections" aria-label="Pages" id="nav">
-      <a href="#home">Home</a><a href="#listen" class="nav-listen">Listen<i aria-hidden="true"></i></a><a href="#archive">Archive</a><a href="#lab">Clip lab</a><a href="#clips">Clips</a><a href="#bingo">Games</a><a href="#host">Host</a><a href="#downloads">Downloads</a><a href="#lore">Lore</a><a href="#search" class="nav-search" title="Search (shortcut: /)">🔍 Search</a>
+      <a href="#home">Home</a><a href="#listen" class="nav-listen">Listen<i aria-hidden="true"></i></a><a href="#archive">Archive</a><a href="#lab">Clip lab</a><a href="#clips">Clip board</a><a href="#bingo">Games</a><a href="#host">The Hall</a><a href="#downloads">Downloads</a><a href="#lore">Lore</a><a href="#search" class="nav-search" title="Search (shortcut: /)">🔍 Search</a>
     </nav>
-    <a class="lamp" id="lamp" href="#listen"><i aria-hidden="true"></i><span id="lamptxt">Off the hook</span></a>
+    <a class="lamp" id="lamp" href="#listen"><i aria-hidden="true"></i><span id="lamptxt">Not live</span></a>
   </div>
   <div class="ticker" aria-hidden="true"><div id="tickertxt"></div></div>
   <a class="livebar" id="livebar" href="#listen" hidden><i aria-hidden="true"></i><span>We're LIVE. Somebody's about to get buttslammed. Tap to tune in.</span></a>
@@ -30,13 +30,13 @@
   <div class="wrap">
     <div class="hero-copy">
       <p class="kicker">Community prank calls · Saturdays 7pm ET · broadcasting on 101.1 The Butt</p>
-      <h1 class="glitch" data-text="We dial to make you smile.">We dial to make you <em>smile.</em></h1>
-      <p class="lede">The Callective is a prank call show where <b>any fleshbag with a mic can take a turn on the phone</b>. A different host every week, live from the World of Prank Calls Discord, broadcast on Prankcast, and cheered on by a chat that thinks the rules are the best part. They might be right.</p>
+      <h1><span class="glitch" data-text="We dial to make you">We dial to make you</span> <em>smile.</em></h1>
+      <p class="lede">The Callective is a prank call show where <b>anybody with a mic can take a turn on the phone</b>. A different host every week, live from the World of Prank Calls Discord, broadcast on Prankcast, and cheered on by a chat that thinks the rules are the best part. They might be right.</p>
       <div class="next" id="next" aria-live="polite">
         <div><small id="next-label">Next show in</small><strong id="next-time">–</strong></div>
         <div><small>Your time</small><strong id="next-local">Saturday</strong></div>
       </div>
-      <a class="nowcard" href="#listen" id="nowcard"><span class="onair" id="nc-badge"><i aria-hidden="true"></i><span>Radio</span></span><span class="nc-txt"><small id="nc-label">Callective Radio is playing</small><b id="nc-title">The newest shows, around the clock</b></span><span class="nc-go" aria-hidden="true">▶</span></a>
+      <a class="nowcard" href="#listen" id="nowcard"><span class="onair" id="nc-badge"><i aria-hidden="true"></i><span>Radio</span></span><span class="nc-txt"><small id="nc-label">On Callective Radio now</small><b id="nc-title">The newest shows, around the clock</b></span><span class="nc-go" aria-hidden="true">▶</span></a>
       <div class="hero-actions">
         <a class="btn red solid" href="https://discord.gg/NCHd2Mp5km" target="_blank" rel="noopener">Jack in: WOPC Discord</a>
         <a class="btn" href="#listen">Radio's on 24/7</a>
@@ -70,7 +70,7 @@
     <div class="line-grid">
       <ol class="how">
         <li class="hud"><span class="n">1</span><div><h3>Jack into the WOPC Discord</h3><p>Hop in the voice channel called <b>The Callective (Saturdays at 7pm EST)</b>. There's no separate Callective server. Stop looking for it.</p></div></li>
-        <li class="hud"><span class="n">2</span><div><h3>Drop a PLA bell</h3><p>Put the PLA bell emoji in the voice channel's text chat, or type <code>/join</code>. You're in line. Patrick Fucking Howard has his eye on you.</p></div></li>
+        <li class="hud"><span class="n">2</span><div><h3>Drop a PLA bell</h3><p>Put the PLA bell emoji in the voice channel's text chat, or type <code>!join</code>. You're in line. Patrick Fucking Howard has his eye on you.</p></div></li>
         <li class="hud"><span class="n">3</span><div><h3>Wait for your ticket</h3><p>The host runs <code>!next</code>, the bot pings whoever's up, and Patrick reminds everybody he's got a badge and a schedule. Keep your mic muted until then. Rule 1, baby.</p></div></li>
         <li class="hud"><span class="n">4</span><div><h3>Make the call</h3><p>The host dials, you do the bit. If it dies, it dies. On an <b>All Call</b>, the whole room piles onto one line like a clown car. When it's over, tell them they just got buttslammed.</p></div></li>
       </ol>
@@ -89,6 +89,7 @@
       <h2 class="glitch" data-text="Patch bay">Patch bay</h2>
       <p class="lede">Forty mystery lines, every one a real moment ripped off the air. No names, no labels: you don't know who's on a line until you patch it. Every patch goes on the tape in order. Play the tape back, put the whole tape on one line for a conference call from hell, or splice it into one clip in the clip lab.</p>
     </div>
+    <p class="sb-hint">Each jack is a real moment off the air. Tap one to patch it through.</p>
     <div class="board hud" id="board">
       <div class="panel" id="panel">
         <div class="strips" id="strips"></div>
@@ -177,7 +178,7 @@
     <div class="sec-head">
       <p class="kicker">Party line replay</p>
       <h2 class="glitch" data-text="Replay terminal">Replay terminal</h2>
-      <p class="lede">Play any of the 10 newest shows with the Prankcast chat scrolling along, right where people typed it, typos and all. Hear something good? Hit Clip it, mark the start and end (up to 20 minutes, a whole call), and download it or post it.</p>
+      <p class="lede">Play any of the 10 newest shows with the Prankcast chat scrolling along, right where people typed it, typos and all. Hear something good? Hit Clip it, mark the start and end (up to 10 minutes), and download it or post it.</p>
     </div>
     <div class="booth">
       <div class="deck hud">
@@ -303,7 +304,7 @@
               <button class="btn sm red solid" type="submit" id="s-go" data-dest="board" disabled>Post to the clip board</button>
               <button class="btn sm" type="submit" id="s-crew" data-dest="crew" disabled>Send to the crew only</button>
             </div>
-            <p class="ext" id="s-msg">Edited clips up to 2 minutes. Clean ones go straight on the board; anything that trips the filter waits for a crew member to sober up and listen. Crew-only clips stay private.</p>
+            <p class="ext" id="s-msg">Clips up to 10 minutes. Clean ones go straight on the board; anything that trips the filter waits for a crew member to sober up and listen. Crew-only clips stay private.</p>
           </form>
         </div>
       </div>
@@ -395,7 +396,7 @@
     <div class="sec-head">
       <p class="kicker">Order in the court</p>
       <h2 class="glitch" data-text="Callective Court">Callective Court</h2>
-      <p class="lede">Ten cases. Ten fleshbags who broke the Callmandments. You're the judge: read the charge, point at the rule they broke, and Ira reads them the law. Get it wrong and the defendant walks. One objection per trial.</p>
+      <p class="lede">Ten cases. Ten callers who broke the Callmandments. You're the judge: read the charge, point at the rule they broke, and Ira reads them the law. Get it wrong and the defendant walks. One objection per trial.</p>
     </div>
     <div class="court">
       <div class="bench" id="bench">
@@ -628,7 +629,7 @@
         <h3>Join with a code</h3>
         <p>Got a code from the host? Punch it in.</p>
         <label>Room code<input class="lab-in hl-code" id="hl-join-code" maxlength="12" placeholder="BUTT-1234" autocapitalize="characters" spellcheck="false" required></label>
-        <label>Your name<input class="lab-in" id="hl-join-name" maxlength="24" autocomplete="nickname" placeholder="Fleshbag" required></label>
+        <label>Your name<input class="lab-in" id="hl-join-name" maxlength="24" autocomplete="nickname" placeholder="Your caller name" required></label>
         <button class="btn solid" type="submit">🔔 Join the room</button>
       </form>
       <p id="hl-err" class="hl-err" role="alert" hidden></p>
@@ -865,7 +866,7 @@
         <div><b>~100</b><span>episodes on Prankcast</span></div>
         <div><b>1,400+</b><span>turns on the phone, logged</span></div>
         <div><b>300+</b><span>people who've typed in chat</span></div>
-        <div><b>~2,700</b><span>PLA bells dropped</span></div>
+        <div><b>~3,100</b><span>PLA bells dropped</span></div>
         <div><b>1</b><span>rule 5. You know who you are.</span></div>
       </div>
     </div>
@@ -883,7 +884,7 @@
         <h3>The Callective rules</h3>
         <p class="ext">All ten, as read by Ira, the Governor, at the top of every show. Tap &#9654; to hear him read one.</p>
         <ol class="rlist">
-          <li><b>Keep muted unless it's your turn.</b><span>Open mics will be muted. All conversation should be done in text chat. The roycipient doesn't need to hear you breathing.</span><button class="rl-play" type="button" data-rule="1" aria-label="Hear Ira read rule 1">&#9654; Ira</button></li>
+          <li><b>Keep muted unless it's your turn.</b><span>Open mics will be muted. All conversation should be done in text chat. The person on the other end doesn't need to hear you breathing.</span><button class="rl-play" type="button" data-rule="1" aria-label="Hear Ira read rule 1">&#9654; Ira</button></li>
           <li><b>If you want to make a call, put a PLA bell emoji (:PLA:) in the chat and Patrick Howard will add you to the queue.</b><span>That's the whole sign-up. He's got a badge and he's usin' it.</span><button class="rl-play" type="button" data-rule="2" aria-label="Hear Ira read rule 2">&#9654; Ira</button></li>
           <li><b>When making a call, follow the rules of the World of Prank Calls Discord server and Phone Losers of America.</b><span>Examples: no slurs, no threatening violence, no involving police. The full rules of prank calling are right next door.</span><button class="rl-play" type="button" data-rule="3" aria-label="Hear Ira read rule 3">&#9654; Ira</button></li>
           <li><b>Be nice to each other.</b><span>Sometimes calls don't work out, sometimes people are new. We support each other in our prank call journey. Clap anyway.</span><button class="rl-play" type="button" data-rule="4" aria-label="Hear Ira read rule 4">&#9654; Ira</button></li>
@@ -972,7 +973,7 @@
     <div class="sec-head">
       <p class="kicker">The year in numbers</p>
       <h2 class="glitch" data-text="Callective Wrapped">Callective Wrapped</h2>
-      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every fresh fleshbag who made their first call. Tap a name to hear the evidence.</p>
+      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every first-timer who made their first call. Tap a name to hear the evidence.</p>
     </div>
     <div class="yp-chips wr-years" id="wr-years" role="group" aria-label="Year"></div>
     <div id="wr-body" class="wr-body"></div>
@@ -1029,7 +1030,6 @@
       <a href="https://discord.gg/NCHd2Mp5km" target="_blank" rel="noopener">WOPC Discord ↗</a>
       <a href="https://prankcast.com/thecallective" target="_blank" rel="noopener">Prankcast ↗</a>
       <a href="1998.html">Our old homepage (1998) ↗</a>
-      <button class="btn sm ghost" type="button" data-dial="663">Crew login</button>
     </div>
   </div>
 </footer>

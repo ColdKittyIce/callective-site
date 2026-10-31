@@ -31,7 +31,7 @@ const Lab = (() => {
     stopPlay(); buf = b; name = label; meta = m || null; undo = []; sel = null; cursor = 0;
     $("wempty").hidden = true; $("lab-save").disabled = false; $("lab-mp3").disabled = false; $("s-go").disabled = $("s-crew").disabled = !C.api;
     $("li-src").textContent = meta?.live ? "From the live show" : meta?.ep ? `From the show at ${hms(meta.at, true)}` : "";
-    $("s-msg").textContent = C.api ? "Edited clips up to 2 minutes. Board posts go up after the crew gives them a listen. Crew-only clips stay private." : "Sending works on the live site. You can still download it here.";
+    $("s-msg").textContent = C.api ? "Clips up to 10 minutes. Board posts go up after the crew gives them a listen. Crew-only clips stay private." : "Sending works on the live site. You can still download it here.";
     draw(); info();
     msg(`> ${label} loaded. Drag across the waveform to pick a piece.`);
   }
@@ -185,11 +185,12 @@ const Lab = (() => {
     lameP = new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"; sc.onload = ok; sc.onerror = () => { lameP = null; no(new Error("encoder")); }; document.head.appendChild(sc); });
     return lameP;
   }
-  async function mp3Blob(b) {
+  async function mp3Blob(b, kbps = 128, mono = false) { // downloads: 128 kbps stereo. Uploads: 64 kbps mono, so 10 minutes stays under 5 MB
     await lame();
-    const ch = Math.min(2, b.numberOfChannels), enc = new lamejs.Mp3Encoder(ch, b.sampleRate, 128), out = [];
+    const ch = mono ? 1 : Math.min(2, b.numberOfChannels), enc = new lamejs.Mp3Encoder(ch, b.sampleRate, kbps), out = [];
     const to16 = d => { const o = new Int16Array(d.length); for (let i = 0; i < d.length; i++) { const v = clamp(d[i], -1, 1); o[i] = v < 0 ? v * 0x8000 : v * 0x7fff; } return o; };
-    const L = to16(b.getChannelData(0)), R = ch > 1 ? to16(b.getChannelData(1)) : null;
+    const mix = () => { if (b.numberOfChannels < 2) return b.getChannelData(0); const a = b.getChannelData(0), c = b.getChannelData(1), m = new Float32Array(a.length); for (let i = 0; i < a.length; i++) m[i] = (a[i] + c[i]) / 2; return m; };
+    const L = to16(mono ? mix() : b.getChannelData(0)), R = ch > 1 ? to16(b.getChannelData(1)) : null;
     for (let i = 0; i < L.length; i += 1152) { const m = ch > 1 ? enc.encodeBuffer(L.subarray(i, i + 1152), R.subarray(i, i + 1152)) : enc.encodeBuffer(L.subarray(i, i + 1152)); if (m.length) out.push(m); }
     const end = enc.flush(); if (end.length) out.push(end);
     return new Blob(out, { type: "audio/mpeg" });
@@ -210,8 +211,8 @@ const Lab = (() => {
     if (!title) { $("s-title").focus(); $("s-msg").textContent = "Give it a name first."; return; }
     $("s-go").disabled = $("s-crew").disabled = true; $("s-msg").textContent = "Rendering and sending…";
     try {
-      const out = await render(); if (out.duration > 122) { $("s-msg").textContent = `That's ${Math.round(out.duration)} seconds. Edited clips can be 2 minutes at most.`; $("s-go").disabled = $("s-crew").disabled = false; return; }
-      const fd = new FormData(); fd.append("file", await mp3Blob(out), "clip.mp3");
+      const out = await render(); if (out.duration > 602) { $("s-msg").textContent = `That's ${Math.round(out.duration / 60)} minutes. Clips can be 10 minutes at most.`; $("s-go").disabled = $("s-crew").disabled = false; return; }
+      const fd = new FormData(); fd.append("file", await mp3Blob(out, 64, true), "clip.mp3");
       fd.append("meta", JSON.stringify({ title, by, note, dest, live: !!meta?.live, ep: meta?.ep || null, at: meta?.at ?? null, sec: +out.duration.toFixed(1), peaks: peaks(out) }));
       const r = await fetch(`${C.api}/clips`, { method: "POST", body: fd }); const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || r.status);

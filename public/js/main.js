@@ -8,7 +8,7 @@
   function countdown() {
     const m = etMinute(), live = C.live ? C.live.live : (m >= START && m < END), box = $("next");
     box.classList.toggle("live", live);
-    const lamp = $("lamp"); lamp.classList.toggle("live", live); $("lamptxt").textContent = live ? "Live now" : "Off the hook";
+    const lamp = $("lamp"); lamp.classList.toggle("live", live); $("lamptxt").innerHTML = live ? "Live now" : 'Not live<span class="lamp-x"> · Sat 7pm</span>';
     if (live) { $("next-label").textContent = C.live ? "On the air now" : "Show time"; $("next-time").textContent = C.live ? "Listen on Prankcast" : "Should be on now"; $("next-local").textContent = "Until midnight ET"; return; }
     const left = (START - m + WEEK) % WEEK, d = Math.floor(left / 1440), h = Math.floor(left % 1440 / 60), mm = left % 60;
     $("next-label").textContent = "Next show in";

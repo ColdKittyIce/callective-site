@@ -99,7 +99,7 @@ const Replay = (() => {
     const pen = (attr, what) => ed ? `<button type="button" class="call-ed" ${attr} title="Edit ${what}" aria-label="Edit ${what}">✎</button>` : "";
     box.innerHTML = `${info.desc || ed ? `<p class="calls-desc">${esc(info.desc || "No show blurb yet.")} ${pen('data-desc="1"', "the show blurb")}</p>` : ""}<div class="calls-head"><b>${L.filter(c => !c.skip).length} calls</b><span>${ed ? "Crew mode: ✎ fixes a title or name" : "Tap to jump · ✂ clips the whole turn"}</span></div><ol>${L.map((c, i) => c.skip
       ? `<li class="call skip"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b><em>skipped</em></span></li>`
-      : `<li class="call${ideasOpen === c.t ? " open" : ""}" data-i="${i}"><button type="button" class="call-go" data-t="${c.at}"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b>${c.title ? `<em>${esc(c.title)}${c.community ? ` <i class="cm" title="Title suggested by listeners">community</i>` : ""}</em>` : ""}</span><small>${fmtLen(c.end - c.t)}</small></button>${pen(`data-i="${i}"`, `${esc(c.by)}'s call`)}${C.api && (!c.title || c.community) ? `<button type="button" class="call-idea" data-idea="${c.t}" title="${c.title ? "Vote on the title or suggest a better one" : "Know what this call was? Name it"}" aria-label="Name this call">${c.title ? "💡" : "💡+"}</button>` : ""}<button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂</button>${ideasOpen === c.t ? ideasPanel(c) : ""}</li>`).join("")}</ol>
+      : `<li class="call${ideasOpen === c.t ? " open" : ""}" data-i="${i}"><button type="button" class="call-go" data-t="${c.at}"><time>${hms(c.at, true)}</time><span><b>${esc(c.by)}</b>${c.title ? `<em>${esc(c.title)}${c.community ? ` <i class="cm" title="Title suggested by listeners">community</i>` : ""}</em>` : ""}</span><small>${fmtLen(c.end - c.t)}</small></button>${pen(`data-i="${i}"`, `${esc(c.by)}'s call`)}${C.api && (!c.title || c.community) ? `<button type="button" class="call-idea" data-idea="${c.t}" title="${c.title ? "Vote on the title or suggest a better one" : "Know what this call was? Name it"}" aria-label="Name this call">${c.title ? "💡" : "💡+"}<small>${c.title ? "Vote" : "Name it"}</small></button>` : ""}<button type="button" class="call-clip" data-i="${i}" title="Clip this whole call" aria-label="Clip ${esc(c.by)}'s call">✂<small>Clip</small></button>${ideasOpen === c.t ? ideasPanel(c) : ""}</li>`).join("")}</ol>
       ${C.api && L.some(c => !c.skip && !c.title) ? `<p class="calls-help">💡+ = no title yet. Heard the call? Name it. Titles show up right away, and the one with the most votes wins.</p>` : ""}`;
   }
   async function editCall(i, desc) {
@@ -123,7 +123,7 @@ const Replay = (() => {
   function clipCall(i) {
     const c = callsFor(ep.id, dur)[i]; if (!c) return;
     if (!hasAudio || !C.api) { toast("Clipping works on the live site, where the episode audio plays."); return; }
-    if (c.end - c.t > 1200) toast("Clips top out at 20 minutes, so this one has the first 20. Drag the markers if you want a different part.");
+    if (c.end - c.t > 600) toast("Clips top out at 10 minutes, so this one has the first 10. Drag the markers if you want a different part.");
     Clipper.open(Clipper.episodeSource(aud(), ep), 30, { from: c.t, to: c.end, name: callLabel(c) });
   }
 

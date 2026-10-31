@@ -36,7 +36,7 @@ const Hold = (() => {
     { k: "operator-connect-me", g: "IceCat's phone songs", t: "Operator, Connect Me Please", s: "By IceCat and Suno", d: "2:26" },
     { k: "this-should-be-hold-music", g: "IceCat's phone songs", t: "This Should Be Hold Music", s: "By IceCat and Suno · it should", d: "1:41" },
     { k: "music-for-dialing", g: "IceCat's phone songs", t: "Music for Dialing", s: "By IceCat and Suno", d: "1:42" },
-    { k: "stalling", g: "IceCat's phone songs", t: "Stalling", s: "By IceCat and Suno · for when the roycipient says hold on", d: "2:06" }];
+    { k: "stalling", g: "IceCat's phone songs", t: "Stalling", s: "By IceCat and Suno · for when they say hold on", d: "2:06" }];
   const T = Object.fromEntries(TRACKS.map(t => [t.k, t]));
   const url = t => t.src || `audio/${t.k}.mp3`;
   let cur = null; const aud = () => $("holdaud");
@@ -89,7 +89,7 @@ const Court = (() => {
     [4, "the Talent Show Judge", "typed \"boooo\" in chat after a brand-new caller's first call died."],
     [4, "a guy who's been here since 2024", "told a first-timer their voice was \"too normal\" and to \"maybe not.\""],
     [5, "a guy nine beers deep", "rolled into the channel insulting everybody and wouldn't stop."],
-    [5, "the Drunk Uncle", "kept harassing the roycipient after the bit was over, just to be mean."],
+    [5, "the Drunk Uncle", "kept harassing the person they called after the bit was over, just to be mean."],
     [6, "a caller on laptop speakers", "made the whole call echo twice, then got mad the room couldn't hear him."],
     [6, "a soundboard enthusiast", "left Noise Suppression on, and every sound effect came out as a sad little whisper."],
     [6, "a man six feet from his microphone", "did his entire bit from across the room. Somewhere in there was a joke, probably."],
@@ -213,7 +213,7 @@ const Bill = {
     const FEES = [
       ["Long-distance prank surcharge (every call, every time)", 4.20 * totN * 100],
       ["Buttslam activation fees", 101.10 * totN * 10],
-      ["PLA bell rental, ~2,700 bells", 2700 * 69],
+      ["PLA bell rental, ~3,100 bells", 3100 * 69],
       ["Drunk and abusive removal service (rule 5)", 50000],
       ["Hold music royalties (Ira Reads the Rules, on loop)", 31337],
       ["\"Bathroom bathroom\" noise ordinance violation", 9999],

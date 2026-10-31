@@ -56,7 +56,8 @@ export { Hall } from "./hall.js";
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
 const UA = { "user-agent": "CallectiveSite/2.0 (+thecallective site worker)" };
-const MAX_CLIP_BYTES = 2_600_000, MAX_CLIP_SEC = 122, MAX_REF_SEC = 1200, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 4000;
+// One limit everywhere: 10 minutes. Uploads come in as 64 kbps mono (≈4.8 MB for 10 min); 1,000 stored clips tops out near 5 GB, inside R2's free 10 GB.
+const MAX_CLIP_BYTES = 5_200_000, MAX_CLIP_SEC = 602, MAX_REF_SEC = 600, UPLOADS_PER_HOUR = 6, UPLOADS_PER_DAY = 200, MAX_STORED_CLIPS = 1000;
 const RADIO_EPOCH = Date.UTC(2026, 0, 1);
 const RADIO_SHOWS = 10; // Callective Radio plays the newest 10 shows, from the site's own copies in R2
 
@@ -357,7 +358,7 @@ async function slice(env, ctx, request, id, from, to, extra = {}) {
 }
 async function cut(env, id, url, ctx, request) {
   const from = Math.max(0, +url.searchParams.get("from") || 0), to = +url.searchParams.get("to") || 0;
-  if (!(to > from) || to - from > MAX_REF_SEC + 10) return json({ error: "Pick a piece between 1 second and 20 minutes long" }, 400);
+  if (!(to > from) || to - from > MAX_REF_SEC + 10) return json({ error: "Pick a piece between 1 second and 10 minutes long" }, 400);
   const extra = url.searchParams.get("dl") ? { "content-disposition": `attachment; filename="${fileName(url.searchParams.get("name"))}"` } : {};
   return slice(env, ctx, request, id, from, to, extra);
 }
@@ -585,11 +586,11 @@ async function clipsPost(request, env, ctx) {
   let form; try { form = await request.formData(); } catch (e) { return json({ error: "Send the clip as a form" }, 400); }
   const file = form.get("file"); let meta = {}; try { meta = JSON.parse(form.get("meta") || "{}"); } catch (e) {}
   if (!file || typeof file === "string") return json({ error: "No audio attached" }, 400);
-  if (file.size > MAX_CLIP_BYTES) return json({ error: "Edited clips can be 2 minutes at most" }, 413);
+  if (file.size > MAX_CLIP_BYTES) return json({ error: "Clips can be 10 minutes at most" }, 413);
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (!looksLikeMp3(bytes)) return json({ error: "That isn't an MP3" }, 415);
   const title = clean(meta.title, 80); if (!title) return json({ error: "Give the clip a name" }, 400);
-  const sec = Math.min(MAX_CLIP_SEC, Math.max(0, +meta.sec || 0)); if (sec > MAX_CLIP_SEC - 0.5) return json({ error: "Edited clips can be 2 minutes at most" }, 400);
+  const sec = Math.min(MAX_CLIP_SEC, Math.max(0, +meta.sec || 0)); if (sec > MAX_CLIP_SEC - 0.5) return json({ error: "Clips can be 10 minutes at most" }, 400);
   const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 6);
   const dest = meta.dest === "crew" ? "crew" : "board";
   const md = { title, by: clean(meta.by, 40), ep: Number.isInteger(meta.ep) ? meta.ep : null, at: Number.isFinite(+meta.at) && meta.at !== null ? Math.round(+meta.at) : null,
@@ -662,7 +663,7 @@ async function refPost(request, env, ctx, rl) {
   let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
   const ep = Number.isInteger(b.ep) ? b.ep : null, from = +b.from, to = +b.to;
   if (!ep || !(from >= 0) || !(to > from)) return json({ error: "That clip is missing its show or times" }, 400);
-  if (to - from > MAX_REF_SEC + 1) return json({ error: "Clips can be 20 minutes at most" }, 400);
+  if (to - from > MAX_REF_SEC + 1) return json({ error: "Clips can be 10 minutes at most" }, 400);
   const title = clean(b.title, 80); if (!title) return json({ error: "Give the clip a name" }, 400);
   const id = Date.now().toString(36) + "-" + crypto.randomUUID().slice(0, 6), dest = b.dest === "crew" ? "crew" : "board";
   const md = { title, by: clean(b.by, 40), ep, at: Math.round(from), sec: +(to - from).toFixed(1), ref: { ep, from: +from.toFixed(2), to: +to.toFixed(2) }, created: Date.now(), dest, note: clean(b.note, 300) };

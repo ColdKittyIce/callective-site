@@ -3,9 +3,9 @@ const FX = (() => {
   const touch = matchMedia("(pointer: coarse)").matches;
 
   function boot() {
-    let seen = false; try { seen = sessionStorage.getItem("cx-booted") === "1"; } catch (e) {}
+    let seen = false; try { seen = localStorage.getItem("cx-booted") === "1"; } catch (e) {} // first visit only
     if (seen || reduceMotion) return;
-    try { sessionStorage.setItem("cx-booted", "1"); } catch (e) {}
+    try { localStorage.setItem("cx-booted", "1"); } catch (e) {}
     const el = $("boot"); el.hidden = false;
     const lines = [
       "&gt; CALLECTIVE OS v4.20 // COLD BOOT",
@@ -18,9 +18,9 @@ const FX = (() => {
     el.innerHTML = `<div class="skip">tap to skip</div>`;
     let i = 0, done = false;
     const finish = () => { if (done) return; done = true; el.classList.add("out"); setTimeout(() => { el.hidden = true; el.classList.remove("out"); }, 520); };
-    const step = () => { if (done) return; if (i < lines.length) { const d = document.createElement("div"); d.className = "ln"; d.innerHTML = lines[i++]; el.insertBefore(d, el.lastChild); setTimeout(step, 210); } else setTimeout(finish, 650); };
+    const step = () => { if (done) return; if (i < lines.length) { const d = document.createElement("div"); d.className = "ln"; d.innerHTML = lines[i++]; el.insertBefore(d, el.lastChild); setTimeout(step, 150); } else setTimeout(finish, 650); };
     el.addEventListener("click", finish); document.addEventListener("keydown", finish, { once: true });
-    step(); setTimeout(finish, 3200);
+    step(); setTimeout(finish, 1700);
   }
 
   function rain() {
@@ -96,6 +96,7 @@ const FX = (() => {
   function init() {
     boot(); rain(); trail(); glitches(); ticker(); idleViz();
     $("holdaud").addEventListener("play", hookViz);
+    const cv = $("viz"); if (cv && window.ResizeObserver) new ResizeObserver(() => { if (!an && cv.clientWidth) idleViz(); }).observe(cv); // Downloads starts hidden, so draw the idle line once it has a size
   }
   return { init };
 })();

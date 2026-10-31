@@ -17,7 +17,7 @@ const ShowPage = (() => {
     const O = order(), i = O.findIndex(x => x.id === e.id), prev = O[i - 1], next = O[i + 1];
     const desc = info?.desc || e.n || "";
     const act = c => rec
-      ? `<button class="btn sm" type="button" data-go="${c.t}" title="Play from ${hms(c.t, true)}">▶ Play</button><button class="btn sm ghost" type="button" data-clip="${c.t}" data-end="${c.end}" data-name="${esc(callLabel(c))}" title="Clip this whole call">✂</button>`
+      ? `<button class="btn sm" type="button" data-go="${c.t}" title="Play from ${hms(c.t, true)}">▶ Play</button><button class="btn sm ghost" type="button" data-clip="${c.t}" data-end="${c.end}" data-name="${esc(callLabel(c))}" title="Clip this whole call">✂ Clip</button>`
       : `<a class="btn sm" href="${PC_POST}${e.id}?t=${Math.round(c.t)}" target="_blank" rel="noopener" title="Opens on Prankcast at ${hms(c.t, true)}">▶ Prankcast ↗</a>`;
     box.innerHTML = `
       <nav class="sp-nav"><a href="#directory">← All shows</a><span>${prev ? `<a href="#show/${prev.id}">‹ ${esc(fmtDate(prev.d))}</a>` : ""}${next ? `<a href="#show/${next.id}">${esc(fmtDate(next.d))} ›</a>` : ""}</span></nav>
@@ -31,7 +31,7 @@ const ShowPage = (() => {
       </div>
       ${real.length ? `<ol class="sp-calls">${L.map((c, n) => c.skip
         ? `<li class="sp-call skip"><time>${hms(c.t, true)}</time><div><b>${esc(c.by)}</b><em>skipped</em></div></li>`
-        : `<li class="sp-call"><span class="sp-n">${L.slice(0, n + 1).filter(x => !x.skip).length}</span><time>${hms(c.t, true)}</time><div><b>${esc(c.by)}</b>${c.title ? `<em>${esc(c.title)}${c.community ? ` <i class="cm">community</i>` : ""}</em>` : `<em class="sp-untitled">No title yet</em>`}<small>${fmtLen(c.end - c.t)}</small></div><span class="sp-a">${C.api && (!c.title || c.community) ? `<button class="btn sm ghost" type="button" data-idea="${c.t}" title="Name this call">${c.title ? "💡" : "💡+"}</button>` : ""}${act(c)}</span>${open === c.t ? ideas(c) : ""}</li>`).join("")}</ol>`
+        : `<li class="sp-call"><span class="sp-n">${L.slice(0, n + 1).filter(x => !x.skip).length}</span><time>${hms(c.t, true)}</time><div><b>${esc(c.by)}</b>${c.title ? `<em>${esc(c.title)}${c.community ? ` <i class="cm">community</i>` : ""}</em>` : `<em class="sp-untitled">No title yet</em>`}<small>${fmtLen(c.end - c.t)}</small></div><span class="sp-a">${C.api && (!c.title || c.community) ? `<button class="btn sm ghost" type="button" data-idea="${c.t}" title="Name this call">${c.title ? "💡 Vote" : "💡+ Name it"}</button>` : ""}${act(c)}</span>${open === c.t ? ideas(c) : ""}</li>`).join("")}</ol>`
         : `<p class="feed-empty">No call list for this one. ${e.d && e.d < "2025-04-12" ? "It's from before the queue bot started logging turns." : "The queue bot didn't log turns that night."}</p>`}
       ${real.some(c => !c.title) ? `<p class="ext">Know what one of these calls was? ${rec ? "Play it, then tap 💡+ to name it." : "Listen on Prankcast, then tap 💡+ to name it."}</p>` : ""}`;
   }

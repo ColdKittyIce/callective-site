@@ -42,7 +42,7 @@ const Wrapped = (() => {
       <div class="wr-hero"><small>${now ? `${year} so far` : year}</small><b>${S.N.length} shows. ${S.turns.length.toLocaleString()} turns on the phone. Zero regrets.</b>
         <span>${Math.round(S.hours)} hours of Saturday nights you're never getting back, ${S.callers.length} different callers${S.firsts.length ? `, and ${S.firsts.length} of them made their first call this year` : ""}.</span></div>
       <div class="wr-tiles">
-        ${S.longest ? tile(fmtLen(S.longest.end - S.longest.t), `Longest turn: <b>${esc(S.longest.by)}</b> on ${esc(fmtDate(S.longest.e.d))}${S.longest.title ? `, “${esc(S.longest.title)}”` : ""}. Somebody check on that roycipient.`, "pink") : ""}
+        ${S.longest ? tile(fmtLen(S.longest.end - S.longest.t), `Longest turn: <b>${esc(S.longest.by)}</b> on ${esc(fmtDate(S.longest.e.d))}${S.longest.title ? `, “${esc(S.longest.title)}”` : ""}. Somebody check on whoever they called.`, "pink") : ""}
         ${S.busiest?.n ? tile(S.busiest.n, `turns on the busiest night, ${esc(fmtDate(S.busiest.e.d))}${S.busiest.e.h ? `, hosted by ${esc(S.busiest.e.h)}` : ""}`) : ""}
         ${S.streak.n > 2 ? tile(S.streak.n, `shows in a row: <b>${esc(S.streak.name)}</b> never missed a turn. Does this person sleep?`, "volt") : ""}
         ${S.longShow ? tile(fmtLen(S.longShow.sec || 0), `Longest show: ${esc(fmtDate(S.longShow.d))}${S.longShow.h ? `, ${esc(S.longShow.h)}` : ""}`) : ""}

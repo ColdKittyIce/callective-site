@@ -1381,3 +1381,19 @@ body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void
 #hl-sbhvoln{min-width:3.2em;color:var(--text)}
 .hl-sbvol input:disabled{opacity:.35}
 @media (max-width:600px){.hl-sbvols{margin-left:0;width:100%}.hl-sbvols .hl-sbvol{justify-content:flex-start}}
+/* Audit batch 1, Oct 31 2026 */
+.hero h1 .glitch{display:inline} /* B2: the glitch layer only covers the first part, so it wraps exactly like the real text */
+.hero h1 .glitch::before,.hero h1 .glitch::after{white-space:normal}
+.cb-acts{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px} /* B3: one row of actions under the clip */
+.cb-acts .cb-rep{margin-left:auto}
+.cb-acts .cb-remix{grid-column:auto}
+@media (min-width:861px){nav.sections a{padding:8px 6px;letter-spacing:.06em;font-size:12.5px}header.top .wrap{gap:10px}.lamp{padding:6px 9px;letter-spacing:.06em}} /* B4 */
+@media (min-width:861px) and (max-width:1000px){nav.sections a{padding:8px 4px;font-size:12px;letter-spacing:.04em}}
+@media (min-width:861px) and (max-width:1180px){.brand b{display:none}}
+.upnext li span{white-space:normal;overflow:visible} /* B9: host on its own line, never cut */
+.upnext li .un-h{display:block;font-size:.85em;color:#cfe6ff;line-height:1.1}
+.call-idea,.call-clip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-basis:52px;line-height:1.1} /* L10 */
+.call-idea small,.call-clip small{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase}
+@media (max-width:520px){.readout output{font-size:20px;letter-spacing:.08em}} /* L11 */
+.sb-hint{margin:0 0 10px;font-family:var(--f-mono);font-size:13px;color:var(--muted)} /* L12 */
+@media (min-width:861px) and (max-width:1000px){.lamp-x{display:none}}

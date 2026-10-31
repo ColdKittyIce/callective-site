@@ -151,7 +151,7 @@ const Listen = (() => {
     // home page card
     $("nowcard").classList.toggle("live", live);
     $("nc-badge").classList.toggle("live", live); $("nc-badge").querySelector("span").textContent = live ? "Live" : "Radio";
-    $("nc-label").textContent = live ? "On the air right now" : playing ? "You're tuned in" : "Callective Radio is playing";
+    $("nc-label").textContent = live ? "On the air right now" : playing ? "You're tuned in" : "On Callective Radio now";
     $("nc-title").textContent = live ? "The Callective is live. Watch it here." : e ? radioTitle(e) : "The newest shows, around the clock";
     if (Player.current?.kind === "radio" && e) Player.update({ title: radioTitle(e) });
     lastCall = undefined;
@@ -159,7 +159,7 @@ const Listen = (() => {
   function paintNext() {
     if (!sched) return;
     const fmt = t => new Date(t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    $("ls-next").innerHTML = sched.next.map(n => `<li><time>${fmt(n.at)}</time><span><b>${esc(fmtDate(n.d))}</b>${n.h ? ` · ${esc(n.h)}` : ""}</span><em>${fmtLen(n.sec)}</em></li>`).join("");
+    $("ls-next").innerHTML = sched.next.map(n => `<li><time>${fmt(n.at)}</time><span><b>${esc(fmtDate(n.d))}</b>${n.h ? `<small class="un-h">${esc(n.h)}</small>` : ""}</span><em>${fmtLen(n.sec)}</em></li>`).join("");
   }
   let lastCall;
   document.addEventListener("calls-changed", () => { lastCall = undefined; });

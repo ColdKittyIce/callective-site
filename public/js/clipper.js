@@ -4,10 +4,10 @@
    - Start here / End here mark wherever the show is playing, so you can clip a whole call while it plays.
    - Auto-trim snaps both ends to the nearest quiet spot. "First 3s / last 3s" let you check the edges by ear.
    - Then download it, post it, send it to the crew, or open it in the clip lab for effects.
-   Clips from a show can be 20 minutes and are saved as "show X, from A to B" (no storage).
-   Live, song and drop clips are recorded audio and top out at 2 minutes. */
+   Every clip tops out at 10 minutes (Oct 31 2026: one limit everywhere).
+   Clips from a show are saved as "show X, from A to B" (no storage). Live, song and drop clips are recorded audio, sent as 64 kbps mono. */
 const Clipper = (() => {
-  const MIN = 1, EDIT_MAX = 120, LAB_MAX = 600, WAVE_MAX = 180, PPS = 40; // waveform loads when the close-up shows 3 minutes or less; 40 peaks a second
+  const MIN = 1, EDIT_MAX = 600, LAB_MAX = 600, WAVE_MAX = 180, PPS = 40; // waveform loads when the close-up shows 3 minutes or less; 40 peaks a second
   let src = null, w0 = 0, w1 = 0, v0 = 0, v1 = 0, a = 0, b = 0, busy = false;
   let previewing = false, pvEnd = 0, resumeAt = null, raf = null, follow = false;
   let wave = null, waveTimer = null, waveToken = 0, heat = null;
@@ -45,7 +45,7 @@ const Clipper = (() => {
   function episodeSource(el, ep, { radio = false, label } = {}) {
     if (C.api) fetch(`${C.api}/cut/${ep.id}?from=${Math.max(0, Math.floor(el.currentTime) - 1)}&to=${Math.max(1, Math.floor(el.currentTime))}`).catch(() => {}); // warm up the cutter
     return {
-      kind: "ep", max: 1200, ep, title: label || `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, dur: ep.sec || el.duration || el.currentTime + 60, el,
+      kind: "ep", max: 600, ep, title: label || `${fmtDate(ep.d)} · ${ep.h || niceTitle(ep)}`, dur: ep.sec || el.duration || el.currentTime + 60, el,
       pos: () => el.currentTime, isPlaying: () => !el.paused,
       play(s) { el.currentTime = s; Media.claim(el); return el.play(); },
       hush() { el.pause(); }, unhush(t) { if (radio) Listen.tuneIn(); else if (t != null) { el.currentTime = t; el.play().catch(() => {}); } },
@@ -282,9 +282,9 @@ const Clipper = (() => {
       if (src.kind === "ep") {
         r = await fetch(`${C.api}/clips`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ep: src.ep.id, from: +a.toFixed(2), to: +b.toFixed(2), title, by, note, dest }) });
       } else {
-        if (b - a > EDIT_MAX + .5) throw new Error("Recorded clips can be 2 minutes at most");
+        if (b - a > EDIT_MAX + .5) throw new Error("Clips can be 10 minutes at most");
         const buf = await src.get(a, b), fd = new FormData();
-        fd.append("file", await Lab.mp3Blob(buf), "clip.mp3");
+        fd.append("file", await Lab.mp3Blob(buf, 64, true), "clip.mp3"); // small upload: 10 minutes ≈ 4.8 MB
         fd.append("meta", JSON.stringify({ title, by, note, dest, ...(src.meta(a) || {}), sec: +buf.duration.toFixed(1), peaks: Lab.peaks(buf) }));
         r = await fetch(`${C.api}/clips`, { method: "POST", body: fd });
       }

@@ -44,7 +44,7 @@ const Guess = (() => {
   }
   function finish() {
     aud().pause(); const b = best(); if (score > b) try { localStorage.setItem("cx-guess-best", score); } catch (e) {}
-    const max = ROUNDS * 20, rank = score >= max * .7 ? "Certified regular. Patrick knows your name. Go touch grass." : score >= max * .4 ? "You know the voices. Mostly. Tiff would be proud-ish." : score > 0 ? "Fresh fleshbag on the line. Keep listening." : "Zero. Were you even listening, or just vibing to the hold music?";
+    const max = ROUNDS * 20, rank = score >= max * .7 ? "Certified regular. Patrick knows your name. Go touch grass." : score >= max * .4 ? "You know the voices. Mostly. Tiff would be proud-ish." : score > 0 ? "Fresh caller on the line. Keep listening." : "Zero. Were you even listening, or just vibing to the hold music?";
     $("gx-q").innerHTML = `<div class="gx-end"><b>${score}</b><p>${rank}${score > b ? " New personal best." : ""}</p><button class="btn red solid" type="button" id="gx-again">Play again</button></div>`;
     cur = null; paintScore();
   }
