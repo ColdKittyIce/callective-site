@@ -22,7 +22,7 @@ const Line = (() => {
   function waiting() {
     clearAll(); stage("wait", "Waiting room"); S.queue = []; S.strikes = 0; S.muted = true;
     $b().innerHTML = `<div class="bt-center"><p class="bt-big">Saturday, 7:00 PM. The voice channel is packed.</p>
-      <button class="bt-bell" type="button" id="bt-bell" aria-label="Drop a PLA bell">🔔<span>Drop a PLA bell</span></button>
+      <button class="bt-bell" type="button" id="bt-bell" aria-label="Drop a PLA bell"><img src="img/pla-bell-lg.png" alt="" width="72" height="72"><span>Drop a PLA bell</span></button>
       <p class="bt-hint">That's how you get in line for real, too: the PLA bell emoji in the voice channel's text chat.</p></div>`;
     log("The booth is a rehearsal. Nobody in it is real, and nobody can hear you.");
   }

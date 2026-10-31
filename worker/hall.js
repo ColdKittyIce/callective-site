@@ -14,7 +14,7 @@ const tidy = (s, n) => String(s ?? "").replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, "
 const low = s => String(s || "").toLowerCase().replace(/^@/, "");
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
-const HELP_USER = "**Everyone:** `!join` (or drop 🔔 / :PLA: in chat) · `!leave` · `!queue` · `!position` · `!allcall` (or :TheCallectiveTitle:) · `!flair <emoji|off>` · `!mystats` · `!dm <name> <message>` (private: numbers and links are OK in DMs) · `!block <name>` / `!unblock <name>`\n**Voice:** join from the Voice box. Rule 1: stay muted unless it's your turn.";
+const HELP_USER = "**Everyone:** `!join` (or drop 🔔 / :PLA: in chat) · `!leave` · `!queue` · `!position` · `!allcall` (or :TheCallectiveTitle:) · `!flair <emoji|off>` · `!mystats` · `!dm <name> <message>` (private: numbers and links are OK in DMs) · `!block <name>` / `!unblock <name>`\n**Voice:** tap 🎙️ Join voice at the top of the room list. Rule 1: stay muted unless it's your turn.";
 const HELP_MOD = "**Mods:** `!next` · `!remove <name|#pos>` · `!move <name> <pos>` · `!swap <a> <b>` · `!shuffle` · `!reverse` · `!lock` · `!unlock` · `!clear` · `!allcall <pos>` · `!kick <name>` · `!blacklist <name>` · `!unblacklist <name>` · `!blacklistlist` · `!mute <name>` / `!unmute <name>` (voice) · `!muteall`\n**Host:** `!mod <name>` · `!unmod <name>` · `!title <text>` · `!soundboard open|mods|off` · `!close`";
 
 export class Hall extends DurableObject {

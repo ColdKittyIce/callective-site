@@ -156,26 +156,30 @@ const HallVoice = (() => {
   /* ---------- screen ---------- */
   function render() {
     if (!$("hl-voice")) return;
-    const me = getMe(), list = st ? st.members.filter(m => m.v) : [], full = st && list.length >= (st.vmax || 12) && !inVoice;
-    $("hl-vcount").textContent = st ? `${list.length}/${st.vmax || 12}` : "";
+    const list = st ? st.members.filter(m => m.v) : [], full = st && list.length >= (st.vmax || 12) && !inVoice;
+    $("hl-vcount").textContent = st && list.length ? `🎙️ ${list.length}/${st.vmax || 12}` : "";
     $("hl-vjoin").hidden = inVoice; $("hl-vjoin").disabled = !!full; $("hl-vjoin").textContent = full ? "Voice is full" : "🎙️ Join voice";
     $("hl-vmute").hidden = $("hl-vleave").hidden = $("hl-vptt").hidden = !inVoice;
     const live = inVoice && !muted && !smute;
     $("hl-vmute").textContent = smute ? "🔇 Mod muted" : muted ? "🔇 Muted · tap to talk" : "🎙️ Live · tap to mute";
     $("hl-vmute").classList.toggle("live", live); $("hl-vmute").setAttribute("aria-pressed", String(!muted));
-    $("hl-vlist").innerHTML = list.length ? list.map(m => {
-      const self = me && m.id === me.id, P = peers.get(m.id), cs = P ? P.pc.connectionState : "";
-      const status = m.v.smute ? "🔇 mod muted" : m.v.muted ? "🔇" : "🎙️";
-      const conn = self ? "" : !inVoice ? "" : cs === "connected" ? "" : cs === "failed" ? " · can't connect" : " · connecting…";
-      const modBtn = st.you && st.you.mod && !self && !m.host ? `<button type="button" data-cmd="!${m.v.smute ? "unmute" : "mute"} ${esc(m.name)}" title="${m.v.smute ? "Let them talk" : "Mute them for everyone"}">${m.v.smute ? "🔊" : "🔇"}</button>` : "";
-      const slider = !self && inVoice ? `<input type="range" min="0" max="1" step="0.05" value="${vol.has(m.id) ? vol.get(m.id) : 1}" data-vol="${esc(m.id)}" aria-label="Volume for ${esc(m.name)}">` : "";
-      return `<li data-vid="${esc(m.id)}"><i class="hl-ring" aria-hidden="true"></i><span>${esc(m.name)}${self ? " (you)" : ""}<small>${status}${conn}</small></span>${slider}${modBtn}</li>`;
-    }).join("") : `<li class="hl-empty">Nobody's in voice yet.</li>`;
+    document.dispatchEvent(new Event("hall-voice")); // the room list (hall.js) redraws the voice icons
+  }
+  // What the room list shows for someone in voice: icon, status line, volume slider, mod mute button.
+  function info(m, viewer) {
+    if (!m.v) return null;
+    const me = getMe(), self = me && m.id === me.id, P = peers.get(m.id), cs = P ? P.pc.connectionState : "";
+    const icon = m.v.smute ? "🔇" : m.v.muted ? "🔇" : "🎙️";
+    const status = m.v.smute ? "mod muted" : m.v.muted ? "muted" : "live";
+    const conn = self || !inVoice ? "" : cs === "connected" ? "" : cs === "failed" ? " · can't connect" : " · connecting…";
+    const slider = !self && inVoice ? `<label class="hl-vol">🔈<input type="range" min="0" max="1" step="0.05" value="${vol.has(m.id) ? vol.get(m.id) : 1}" data-vol="${esc(m.id)}" aria-label="Volume for ${esc(m.name)}"></label>` : "";
+    const modBtn = viewer && viewer.mod && !self && !m.host ? `<button type="button" data-cmd="!${m.v.smute ? "unmute" : "mute"} ${esc(m.name)}" title="${m.v.smute ? "Let them talk" : "Mute them for everyone"}">${m.v.smute ? "🔊 Unmute" : "🔇 Mute"}</button>` : "";
+    return { icon, status: status + conn, slider, modBtn };
   }
   // speaking rings, 10× a second
   setInterval(() => {
-    if (!$("hl-vlist")) return; const me = getMe();
-    for (const li of $("hl-vlist").querySelectorAll("[data-vid]")) {
+    const box = $("hl-mem"); if (!box) return; const me = getMe();
+    for (const li of box.querySelectorAll("[data-vid]")) {
       const id = li.dataset.vid; let lv = 0;
       if (me && id === me.id) lv = localMeter && micOpen() ? level(localMeter) : 0;
       else { const P = peers.get(id); lv = P && P.node && !P.audio.muted ? level(P.node) : 0; }
@@ -220,9 +224,9 @@ const HallVoice = (() => {
     sv.addEventListener("change", () => { opts.saver = sv.checked; saveOpts(); for (const P of peers.values()) capSender(P); toast(sv.checked ? "Data saver on: 16 kbps voice." : "Data saver off: 24 kbps voice."); });
     $("hl-vmic").addEventListener("change", e => { opts.mic = e.target.value; saveOpts(); restartMic(); });
     $("hl-vout").addEventListener("change", e => { opts.out = e.target.value; saveOpts(); for (const P of peers.values()) if (P.audio.setSinkId) P.audio.setSinkId(opts.out).catch(() => {}); });
-    $("hl-vlist").addEventListener("input", e => { const r = e.target.closest("[data-vol]"); if (!r) return; vol.set(r.dataset.vol, +r.value); volFor(r.dataset.vol); });
+    $("hl-mem").addEventListener("input", e => { const r = e.target.closest("[data-vol]"); if (!r) return; vol.set(r.dataset.vol, +r.value); volFor(r.dataset.vol); });
     addEventListener("pagehide", () => leave(true));
   }
-  return { playInto, ctx, _pcs: () => [...peers.values()].map(P => P.pc), init, onState, onSignal, onReconnect, onForceMute, leave, fillDevices, get inVoice() { return inVoice; },
+  return { info, playInto, ctx, _pcs: () => [...peers.values()].map(P => P.pc), init, onState, onSignal, onReconnect, onForceMute, leave, fillDevices, get inVoice() { return inVoice; },
     off(why) { leave(true); if (why) toast(why); } };
 })();

@@ -22,7 +22,7 @@ const Hall = (() => {
   }
   function err(msg) { const e = $("hl-err"); e.textContent = msg || ""; e.hidden = !msg; }
   function status(msg) { const e = $("hl-status"); e.textContent = msg || ""; e.hidden = !msg; }
-  function show(inRoom) { $("hl-lobby").hidden = inRoom; $("hl-room").hidden = !inRoom; }
+  function show(inRoom) { $("hl-lobby").hidden = inRoom; $("hl-guide").hidden = inRoom; $("hl-room").hidden = !inRoom; }
 
   function addMsg(m) {
     const log = $("hl-log"), stick = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
@@ -78,6 +78,37 @@ const Hall = (() => {
     }
     tabs(); $("hl-in").focus();
   }
+  // The room list: people in voice first (with live mic icons, like Discord), then everyone else here, then people who stepped away.
+  // Tap a name to open their actions (DM, volume, mod tools).
+  const opened = new Set();
+  function members() {
+    if (!st) return;
+    const y = st.you || {}, mod = !!y.mod, box = $("hl-mem");
+    if (box.contains(document.activeElement) && document.activeElement.type === "range") return; // don't yank a slider mid-drag
+    const on = st.members.filter(m => m.on).length;
+    $("hl-mn").textContent = `(${on})`;
+    const row = m => {
+      const tag = m.host ? '<i class="hl-tag host">HOST</i>' : m.mod ? '<i class="hl-tag mod">MOD</i>' : "";
+      const v = HallVoice.info(m, y), open = opened.has(m.id), self = m.id === y.id;
+      let acts = "";
+      if (!self) acts += `<button type="button" data-dm="${esc(m.id)}">✉️ DM</button>`;
+      if (v && v.slider) acts += v.slider;
+      if (v && v.modBtn) acts += v.modBtn;
+      if (mod && !self && !m.host && (y.host || !m.mod)) {
+        if (y.host) acts += `<button type="button" data-cmd="!${m.mod ? "unmod" : "mod"} ${esc(m.name)}">🛡️ ${m.mod ? "Unmod" : "Make mod"}</button>`;
+        acts += `<button type="button" data-cmd="!kick ${esc(m.name)}" data-confirm="Remove ${esc(m.name)} from the room?">👢 Kick</button><button type="button" data-cmd="!blacklist ${esc(m.name)}" data-confirm="Blacklist ${esc(m.name)}? They can't come back in.">⛔ Blacklist</button>`;
+      }
+      if (!self) acts += `<button type="button" data-blk="${esc(m.id)}">${blocked(m.id) ? "Unblock" : "🚫 Block"}</button>`;
+      const icon = v ? `<i class="hl-vic${v.status.startsWith("live") ? " live" : ""}" aria-hidden="true">${v.icon}</i>` : `<i class="hl-dot" aria-hidden="true"></i>`;
+      return `<li class="${m.on ? "" : "off"}${self ? " me" : ""}${blocked(m.id) ? " blocked" : ""}${v ? " vc" : ""}${open ? " open" : ""}"${v ? ` data-vid="${esc(m.id)}"` : ""}>
+        <button type="button" class="hl-who" data-row="${esc(m.id)}" aria-expanded="${open}">${icon}<span class="hl-nm">${m.flair ? esc(m.flair) + " " : ""}${esc(m.name)}${self ? " <small>(you)</small>" : ""}</span>${tag}${v ? `<small class="hl-vst">${esc(v.status)}</small>` : ""}</button>
+        ${open && acts ? `<div class="hl-acts2">${acts}</div>` : ""}</li>`;
+    };
+    const inV = st.members.filter(m => m.v), here = st.members.filter(m => !m.v && m.on), away = st.members.filter(m => !m.v && !m.on);
+    const grp = (label, list) => list.length ? `<li class="hl-grp">${label}</li>${list.map(row).join("")}` : "";
+    box.innerHTML = grp(`🔊 Voice · ${inV.length}/${st.vmax || 12}`, inV) + grp(`Here · ${here.length}`, here) + grp(`Stepped away · ${away.length}`, away);
+  }
+  document.addEventListener("hall-voice", members);
   function render() {
     if (!st) return;
     const y = st.you || {}, mod = !!y.mod;
@@ -97,16 +128,7 @@ const Hall = (() => {
         ${mod ? `<span class="hl-qctl"><button type="button" data-cmd="!up #${i + 1}" aria-label="Move up" ${i ? "" : "disabled"}>▲</button><button type="button" data-cmd="!down #${i + 1}" aria-label="Move down" ${i < st.queue.length - 1 ? "" : "disabled"}>▼</button><button type="button" data-cmd="!remove #${i + 1}" aria-label="Remove">✕</button></span>` : ""}</li>`).join("")
       : `<li class="hl-empty">Empty. ${st.locked ? "The line is locked." : 'Drop the <img class="hl-pla" src="img/pla-bell.png" alt="PLA bell"> in chat to get in.'}</li>`;
     const on = st.members.filter(m => m.on).length;
-    $("hl-mn").textContent = `(${on})`;
-    $("hl-mem").innerHTML = st.members.map(m => {
-      const tag = m.host ? '<i class="hl-tag host">HOST</i>' : m.mod ? '<i class="hl-tag mod">MOD</i>' : "";
-      let ctl = "";
-      if (mod && m.id !== y.id && !m.host && (y.host || !m.mod)) {
-        ctl = `<span class="hl-mctl">${y.host ? `<button type="button" data-cmd="!${m.mod ? "unmod" : "mod"} ${esc(m.name)}" title="${m.mod ? "Take away mod" : "Make mod"}">🛡️</button>` : ""}<button type="button" data-cmd="!kick ${esc(m.name)}" data-confirm="Remove ${esc(m.name)} from the room?" title="Remove from room">👢</button><button type="button" data-cmd="!blacklist ${esc(m.name)}" data-confirm="Blacklist ${esc(m.name)}? They can't come back in." title="Blacklist">⛔</button></span>`;
-      }
-      const dmb = m.id !== y.id ? `<button type="button" class="hl-dmbtn" data-dm="${esc(m.id)}" title="Send ${esc(m.name)} a private message">✉️</button>` : "";
-      return `<li class="${m.on ? "" : "off"}${m.id === y.id ? " me" : ""}${blocked(m.id) ? " blocked" : ""}"><i class="hl-dot" aria-hidden="true"></i><span>${m.flair ? esc(m.flair) + " " : ""}${esc(m.name)}${tag}</span>${dmb}${ctl}</li>`;
-    }).join("");
+    members();
     for (const div of $("hl-log").querySelectorAll("[data-uid]")) div.hidden = blocked(div.dataset.uid);
     st.members.forEach(m => names.set(m.id, m.name));
     if (view !== "room") $("hl-block").textContent = blocked(view) ? "Unblock" : "🚫 Block";
@@ -208,7 +230,11 @@ const Hall = (() => {
       const x = e.target.closest("[data-closedm]"); if (x) { e.stopPropagation(); const id = x.dataset.closedm; closed.add(id); unread.delete(id); if (view === id) openView("room"); else tabs(); return; }
       const b = e.target.closest("[data-view]"); if (b) openView(b.dataset.view);
     });
-    $("hl-mem").addEventListener("click", e => { const b = e.target.closest("[data-dm]"); if (b) openView(b.dataset.dm); });
+    $("hl-mem").addEventListener("click", e => {
+      const d = e.target.closest("[data-dm]"); if (d) return openView(d.dataset.dm);
+      const k = e.target.closest("[data-blk]"); if (k) return send({ type: blocked(k.dataset.blk) ? "unblock" : "block", to: k.dataset.blk });
+      const r = e.target.closest("[data-row]"); if (r) { const id = r.dataset.row; opened.has(id) ? opened.delete(id) : opened.add(id); members(); }
+    });
     $("hl-block").addEventListener("click", () => { if (view !== "room") send({ type: blocked(view) ? "unblock" : "block", to: view }); });
     try { sound = localStorage.getItem("cx-hall-sound") !== "0"; } catch (e) {}
     const sb = $("hl-sound"), paint = () => { sb.setAttribute("aria-pressed", sound); sb.textContent = sound ? "🔊 Ring me" : "🔇 Ring me"; };

@@ -11,6 +11,11 @@ const HallSB = (() => {
   try { Object.assign(o, JSON.parse(localStorage.getItem("cx-hall-sb") || "{}")); } catch (e) {}
   const save = () => { try { localStorage.setItem("cx-hall-sb", JSON.stringify(o)); } catch (e) {} };
   const SFX = [["s:ring", "Phone ring"], ["s:pickup", "Pick up"], ["s:hangup", "Hang up"], ["s:slam", "Phone slam"], ["s:coin", "Coin drop"], ["s:page", "Page"], ["s:drop", "Drop"], ["s:setdown", "Set it down"]];
+  const CREW = { // [pad color, text color]
+    "Phone": ["#1c3d78", "#ffd700"], "Ira": ["#cc0000", "#ffffff"], "IceCat": ["#2f80ed", "#ffffff"], "DespicableDogs": ["#f0a020", "#000000"],
+    "Dr. Tom Servo": ["#767067", "#ffffff"], "Andy Anderson": ["#ff6644", "#000000"], "Drake Dragsaw": ["#20b85a", "#000000"], "AnteaterTpose": ["#8c625b", "#ffffff"],
+    "CrieFaux": ["#6a35b8", "#ffffff"], "Rozin": ["#87a5dc", "#000000"], "GreenImp": ["#9be15d", "#000000"], "PoopMyPee": ["#5c3a1e", "#ffffff"],
+    "IDontKnow": ["#000000", "#ffffff"], "The Callective": ["#ff2bd6", "#000000"], "On the other end": ["#c4dffd", "#000000"] };
   const SLOTS = 16, MAX_MB = 15, MAX_SEC = 180;
   let boards = [];                       // [{id, name, pads:[{k,t,who,src}]}]
   const mine = new Array(SLOTS).fill(null); // {name, blob, url, buf}
@@ -146,8 +151,8 @@ const HallSB = (() => {
       const at = new Map(b.pads.map(p => [p.pos, p]));
       pads.innerHTML = Array.from({ length: b.size }, (_, i) => { const x = at.get(i); if (!x) return `<span class="hl-pad blank" aria-hidden="true"></span>`;
         const n = b.pads.indexOf(x);
-        return `<button type="button" class="hl-pad${x.loop ? " loop" : ""}${loops.has(x.k) ? " on" : ""}" data-sfx="${esc(x.k)}" data-q="${esc(x.t.toLowerCase())}" style="--pc:${esc(x.color || "#2b2650")};--pt:${esc(ink(x.color || "#2b2650", x.text || "#ffffff"))}" title="${esc(x.t)}${x.loop ? " (loop: tap again to stop)" : ""}${n < 10 ? ` (key ${(n + 1) % 10})` : ""}"><b>${esc(x.t)}</b>${x.loop ? "<small>⟳ loop</small>" : ""}</button>`; }).join("");
-      $("hl-sbfrom").textContent = b.from ? `Layout from ${b.from}` : "";
+        return `<button type="button" class="hl-pad${x.loop ? " loop" : ""}${loops.has(x.k) ? " on" : ""}" data-sfx="${esc(x.k)}" data-q="${esc((x.t + " " + (x.who || "")).toLowerCase())}" style="--pc:${esc(x.color || "#2b2650")};--pt:${esc(ink(x.color || "#2b2650", x.text || "#ffffff"))}" title="${x.who && x.who !== "Phone" ? esc(x.who) + ": " : ""}${esc(x.t)}${x.loop ? " (loop: tap again to stop)" : ""}${n < 10 ? ` (key ${(n + 1) % 10})` : ""}"><b>${esc(x.t)}</b>${x.loop ? "<small>⟳ loop</small>" : ""}</button>`; }).join("");
+      $("hl-sbfrom").innerHTML = b.legend ? b.legend.map(w => `<span class="hl-leg"><i style="background:${esc((CREW[w] || ["#13233a"])[0])}"></i>${esc(w === "Phone" ? "Phone sounds" : w)}</span>`).join("") : b.from ? `Layout from ${esc(b.from)}` : "";
       const q = $("hl-sbq").value.trim().toLowerCase(); if (q) for (const el of pads.querySelectorAll("[data-q]")) el.classList.toggle("dim", !el.dataset.q.includes(q));
       return;
     }
@@ -183,7 +188,12 @@ const HallSB = (() => {
     send = opts.send; getMe = opts.me;
     let drops = [];
     try { drops = (await getJSON("data/clips.json")).map(c => ({ k: "c:" + c.k, t: c.line, who: c.who })); } catch (e) {}
-    boards = [{ id: "drops", name: "Crew drops", pads: [...SFX.map(([k, t]) => ({ k, t, who: "Phone" })), ...drops] }];
+    // Crew drops, laid out like a Broadcast Backpack board: filled down each column, one color per person. Colors are fixed.
+    const order = ["Phone", "Ira", "IceCat", "DespicableDogs", "Dr. Tom Servo", "Andy Anderson", "Drake Dragsaw", "AnteaterTpose", "CrieFaux", "Rozin", "GreenImp", "PoopMyPee", "IDontKnow", "The Callective", "On the other end"];
+    const crew = [...SFX.map(([k, t]) => ({ k, t, who: "Phone" })), ...drops].sort((a, b) => (order.indexOf(a.who) + 1 || 99) - (order.indexOf(b.who) + 1 || 99));
+    const rows = 8, cols = Math.max(6, Math.ceil(crew.length / rows));
+    crew.forEach((x, i) => { const c = CREW[x.who] || ["#13233a", "#ffffff"]; x.pos = (i % rows) * cols + Math.floor(i / rows); x.color = c[0]; x.text = c[1]; });
+    boards = [{ id: "drops", name: "Crew drops", grid: cols, size: cols * rows, pads: crew, legend: order.filter(w => crew.some(x => x.who === w)) }];
     try { // preset boards: {boards:[{id, name, pads:[{k:"b:<file>", t, file}]}]}, audio in sfx/boards/
       const pre = await getJSON("data/hall-boards.json");
       for (const b of pre.boards || []) boards.push({ id: b.id, name: b.name, grid: b.cols || 8, size: (b.cols || 8) * (b.rows || 8), from: b.from || "",
