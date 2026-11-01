@@ -70,7 +70,10 @@ export default {
     catch (e) { return json({ error: "Upstream error", detail: String(e && e.message || e) }, 502); }
   },
   // Every 15 minutes: copy at most one new show into R2 and drop copies that fell out of the newest 10.
-  async scheduled(event, env, ctx) { ctx.waitUntil(mirrorStep(env).catch(e => console.log("mirror:", e && e.message))); }
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(mirrorStep(env).catch(e => console.log("mirror:", e && e.message)));
+    ctx.waitUntil(mixSync(env, false).catch(e => console.log("mix:", e && e.message))); // the Suno playlist, about once an hour
+  }
 };
 
 async function route(request, env, ctx, url) {
@@ -94,6 +97,8 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/cut\/(\d+)$/))) return cut(env, m[1], url, ctx, request);
       if ((m = p.match(/^\/api\/g98\/([a-z0-9]+)\.gif$/))) return gif98(env, m[1]);
       if ((m = p.match(/^\/api\/media\/([a-z0-9-]+)\.mp3$/))) return mediaAudio(env, m[1], request);
+      if (p === "/api/mix") return json(await mixGet(env, ctx), 200, 300);
+      if ((m = p.match(/^\/api\/mix\/([0-9a-f-]{36})\.mp3$/))) return mixAudio(env, m[1], request, url);
       if (p === "/api/hall" && M === "POST") return hallNew(request, env);
       if (p === "/api/hall-ice") return hallIce(env, ctx);
       if ((m = p.match(/^\/api\/hall\/([A-Za-z]{2,6}-\d{4})(\/ws)?$/))) return hallGo(request, env, m[1].toUpperCase(), !!m[2]);
@@ -710,4 +715,56 @@ async function modAct(env, id, action) {
     if (!k.metadata?.ref) { await env.CLIPS.delete(`clips/${id}.mp3`); await env.DB.put("count", String(Math.max(0, (+(await env.DB.get("count")) || 1) - 1))); }
   }
   return json({ ok: true });
+}
+
+
+/* ---------- The Callective Mix: IceCat's Suno playlist, kept in sync (Nov 2026) ----------
+   About once an hour (cron) the worker reads the public playlist through the same endpoint suno.com's own page uses
+   (unofficial: if Suno changes it, the last good list stays up). Only songs Suno lets anyone play are listed: a song
+   has to be public on Suno, or its audio comes back "forbidden". Audio streams from Suno's CDN through /api/mix/<id>.mp3,
+   so nothing is stored in R2. */
+const MIX_PLAYLIST = "5296ac6d-e931-443f-8824-526220aef2eb", MIX_EVERY = 55 * 60 * 1000;
+async function mixFetchPage(n) {
+  const hdr = { "user-agent": "Mozilla/5.0 (compatible; CallectiveSite/1.0; +https://thecallective.com)", accept: "application/json" };
+  let last = null;
+  for (const base of ["https://suno.com/a/api", "https://studio-api.prod.suno.com/api"]) {
+    try { const r = await fetch(`${base}/playlist/${MIX_PLAYLIST}/?page=${n}`, { headers: hdr }); if (r.ok) return await r.json(); last = `${base} ${r.status}`; } catch (e) { last = `${base} ${e.message}`; }
+  }
+  throw new Error("playlist: " + last);
+}
+async function mixSync(env, force) {
+  const old = env.DB ? JSON.parse(await env.DB.get("mix") || "null") : null;
+  if (!force && old && Date.now() - (old.at || 0) < MIX_EVERY) return old;
+  const songs = [], seen = new Set(); let total = 0, hidden = 0, name = "", page = 0;
+  while (page < 10) {
+    const j = await mixFetchPage(page); name = j.name || name; total = j.num_total_results || total;
+    const L = (j.playlist_clips || []).map(x => x.clip || x); if (!L.length) break;
+    for (const c of L) {
+      if (!c || !c.id || seen.has(c.id) || c.status !== "complete" || c.is_trashed) continue; seen.add(c.id);
+      const open = c.is_public || (/^https:\/\/cdn\d?\.suno\.ai\//.test(c.audio_url || ""));
+      if (!open) { hidden++; continue; }
+      songs.push({ id: c.id, t: clean(c.title || "Untitled", 80), sec: Math.round(c.metadata?.duration || 0), img: /^https:\/\/cdn\d?\.suno\.ai\//.test(c.image_url || "") ? c.image_url : "" });
+    }
+    if (songs.length + hidden >= total) break; page++;
+  }
+  const out = { at: Date.now(), name, total, hidden, songs, playlist: `https://suno.com/playlist/${MIX_PLAYLIST}` };
+  if (env.DB) await env.DB.put("mix", JSON.stringify(out));
+  return out;
+}
+async function mixGet(env, ctx) {
+  const old = env.DB ? JSON.parse(await env.DB.get("mix") || "null") : null;
+  if (old && Date.now() - (old.at || 0) < MIX_EVERY) return old;
+  try { return await mixSync(env, true); }
+  catch (e) { if (old && env.DB) { old.at = Date.now() - MIX_EVERY + 10 * 60 * 1000; old.lastError = e.message; await env.DB.put("mix", JSON.stringify(old)); } return old || { songs: [], error: e.message }; } // try again in 10 minutes
+}
+async function mixAudio(env, id, request, url) {
+  const mix = env.DB ? JSON.parse(await env.DB.get("mix") || "null") : null;
+  const song = mix && mix.songs.find(x => x.id === id); if (!song) return json({ error: "Not in the mix" }, 404);
+  const h = {}; const rg = request.headers.get("range"); if (rg) h.range = rg;
+  const r = await fetch(`https://cdn1.suno.ai/${id}.mp3`, { headers: h, cf: { cacheTtl: 86400, cacheEverything: true } });
+  if (!r.ok && r.status !== 206) return json({ error: "Suno didn't send the song" }, 502);
+  const out = new Headers(); for (const k of ["content-type", "content-length", "content-range", "accept-ranges", "etag", "last-modified"]) { const v = r.headers.get(k); if (v) out.set(k, v); }
+  out.set("content-type", "audio/mpeg"); out.set("cache-control", "public, max-age=86400"); out.set("access-control-allow-origin", "*");
+  if (url.searchParams.get("dl")) out.set("content-disposition", `attachment; filename="callective-${song.t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}.mp3"`);
+  return new Response(r.body, { status: r.status, headers: out });
 }
