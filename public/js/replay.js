@@ -159,6 +159,7 @@ const Replay = (() => {
   function init() {
     fillSelect();
     $("cl-quick").addEventListener("click", () => clip());
+    $("rp-moment").addEventListener("click", async () => { if (!ep) return; const t = Math.floor(now()), u = momentUrl(ep.id, t); const ok = await copyText(u); toast(ok ? `Link copied: opens at ${hms(t, true)}` : u); });
     $("ep-calls").addEventListener("submit", e => { const f = e.target.closest(".idea-f"); if (!f) return; e.preventDefault(); const v = f.querySelector("input").value.trim(); if (v) ideaAct(+f.closest(".ideas").dataset.t, "add", { title: v }); });
     $("ep-calls").addEventListener("click", e => {
       const idea = e.target.closest("[data-idea]"); if (idea) { ideasOpen = ideasOpen === +idea.dataset.idea ? null : +idea.dataset.idea; paintCalls(); curCall = undefined; tick(); if (ideasOpen != null) $("idea-in")?.focus(); return; }

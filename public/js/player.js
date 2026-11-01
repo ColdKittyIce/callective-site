@@ -7,9 +7,28 @@ const Player = (() => {
     $("pb-kind").textContent = KIND[info.kind] || ""; $("pb-title").textContent = info.title || "";
     $("pb-go").href = "#" + (info.page || "listen");
     $("pb-seek").hidden = !info.seek; $("pb-clip").hidden = !info.clip;
-    document.body.classList.add("has-pbar"); sync();
+    document.body.classList.add("has-pbar"); meta(); sync();
   }
-  function update(patch) { if (!cur) return; Object.assign(cur, patch); if (patch.title != null) $("pb-title").textContent = patch.title; sync(); }
+  // Lock screen / notification controls (Media Session): title, art and play / pause / skip ±15 s on phones and media keys.
+  const MS = "mediaSession" in navigator ? navigator.mediaSession : null;
+  function meta() {
+    if (!MS || !cur || !window.MediaMetadata) return;
+    try { MS.metadata = new MediaMetadata({ title: cur.title || KIND[cur.kind] || "The Callective", artist: KIND[cur.kind] ? `${KIND[cur.kind]} · The Callective` : "The Callective", album: "The Callective",
+      artwork: [{ src: "img/cover-512.png", sizes: "512x512", type: "image/png" }] }); } catch (e) {}
+  }
+  function msState() {
+    if (!MS || !cur) return; const on = playing(); try { MS.playbackState = on ? "playing" : "paused"; } catch (e) {}
+    const el = cur.el; if (cur.seek && el && isFinite(el.duration) && el.duration > 0 && MS.setPositionState) { try { MS.setPositionState({ duration: el.duration, playbackRate: el.playbackRate || 1, position: Math.min(el.currentTime, el.duration) }); } catch (e) {} }
+  }
+  function msInit() {
+    if (!MS) return;
+    const toggle = want => { if (!cur) return; const on = playing(); if (want === on) return; $("pb-btn").click(); };
+    const skip = d => { const el = cur?.el; if (cur?.seek && el && isFinite(el.duration)) el.currentTime = Math.max(0, Math.min(el.duration - 1, el.currentTime + d)); };
+    const H = { play: () => toggle(true), pause: () => toggle(false), stop: () => $("pb-x").click(), seekbackward: e => skip(-(e && e.seekOffset || 15)), seekforward: e => skip(e && e.seekOffset || 15),
+      seekto: e => { const el = cur?.el; if (cur?.seek && el && e && isFinite(e.seekTime)) el.currentTime = e.seekTime; } };
+    for (const [k, fn] of Object.entries(H)) { try { MS.setActionHandler(k, fn); } catch (e) {} }
+  }
+  function update(patch) { if (!cur) return; Object.assign(cur, patch); if (patch.title != null) { $("pb-title").textContent = patch.title; meta(); } sync(); }
   function playing() { return cur && (cur.isPlaying ? cur.isPlaying() : cur.el && !cur.el.paused); }
   function sync() {
     if (!cur) return; const on = playing();
@@ -18,6 +37,7 @@ const Player = (() => {
     if (cur.time) $("pb-time").textContent = cur.time();
     else if (el && isFinite(el.duration) && el.duration) $("pb-time").textContent = `${hms(el.currentTime)} / ${hms(el.duration)}`;
     if (cur.seek && el && el.duration) $("pb-seek").value = Math.round(el.currentTime / el.duration * 1000);
+    msState();
     // 💡: name the call that's on right now (only calls with no title, or a title the listeners picked)
     const c = onLine(), b = $("pb-idea");
     b.hidden = !(c && (!c.title || c.community));
@@ -41,8 +61,9 @@ const Player = (() => {
     try { await suggestAct(action, ep, t, extra); toast(action === "add" ? "Thanks! Your title is up." : action === "vote" ? "Voted." : "Reported. Thanks."); ideaBox(ep, t); sync(); }
     catch (e) { toast(e.message); }
   }
-  function hide() { cur = null; $("pbar").hidden = true; document.body.classList.remove("has-pbar"); }
+  function hide() { cur = null; $("pbar").hidden = true; document.body.classList.remove("has-pbar"); if (MS) try { MS.playbackState = "none"; MS.metadata = null; } catch (e) {} }
   function init() {
+    msInit();
     $("pb-btn").addEventListener("click", () => { if (!cur) return; if (cur.toggle) cur.toggle(); else if (cur.el) cur.el.paused ? (Media.claim(cur.el), cur.el.play().catch(() => {})) : cur.el.pause(); sync(); });
     $("pb-x").addEventListener("click", () => { if (!cur) return; cur.stop ? cur.stop() : cur.el?.pause(); SFX.hangup(); hide(); document.dispatchEvent(new CustomEvent("player-stopped")); });
     $("pb-clip").addEventListener("click", () => cur?.clip && cur.clip());

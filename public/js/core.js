@@ -163,3 +163,7 @@ async function mergeLatest() {
     if (added) { C.episodes.sort((a, b) => b.id - a.id); document.dispatchEvent(new CustomEvent("episodes-changed")); }
   } catch (e) {}
 }
+
+/* Link to a moment (audit I6): #at/<show id>/<seconds> opens the show right there. Newest 10 play on the site; older ones open on Prankcast at that time. */
+const momentUrl = (id, t) => `${location.origin}${location.pathname}#at/${id}/${Math.max(0, Math.floor(t))}`;
+async function copyText(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { return false; } }

@@ -17,8 +17,8 @@ const ShowPage = (() => {
     const O = order(), i = O.findIndex(x => x.id === e.id), prev = O[i - 1], next = O[i + 1];
     const desc = info?.desc || e.n || "";
     const act = c => rec
-      ? `<button class="btn sm" type="button" data-go="${c.t}" title="Play from ${hms(c.t, true)}">▶ Play</button><button class="btn sm ghost" type="button" data-clip="${c.t}" data-end="${c.end}" data-name="${esc(callLabel(c))}" title="Clip this whole call">✂ Clip</button>`
-      : `<a class="btn sm" href="${PC_POST}${e.id}?t=${Math.round(c.t)}" target="_blank" rel="noopener" title="Opens on Prankcast at ${hms(c.t, true)}">▶ Prankcast ↗</a>`;
+      ? `<button class="btn sm" type="button" data-go="${c.t}" title="Play from ${hms(c.t, true)}">▶ Play</button><button class="btn sm ghost" type="button" data-clip="${c.t}" data-end="${c.end}" data-name="${esc(callLabel(c))}" title="Clip this whole call">✂ Clip</button><button class="btn sm ghost" type="button" data-moment="${c.t}" title="Copy a link straight to this call">🔗</button>`
+      : `<a class="btn sm" href="${PC_POST}${e.id}?t=${Math.round(c.t)}" target="_blank" rel="noopener" title="Opens on Prankcast at ${hms(c.t, true)}">▶ Prankcast ↗</a><button class="btn sm ghost" type="button" data-moment="${c.t}" title="Copy a link straight to this call">🔗</button>`;
     box.innerHTML = `
       <nav class="sp-nav"><a href="#directory">← All shows</a><span>${prev ? `<a href="#show/${prev.id}">‹ ${esc(fmtDate(prev.d))}</a>` : ""}${next ? `<a href="#show/${next.id}">${esc(fmtDate(next.d))} ›</a>` : ""}</span></nav>
       <div class="sp-head hud">
@@ -27,6 +27,7 @@ const ShowPage = (() => {
         ${desc ? `<p class="sp-desc">${esc(desc)}</p>` : ""}
         <p class="sp-meta"><span>${fmtLen(e.sec || 0)}</span>${real.length ? `<span>${real.length} calls</span>` : ""}${real.length ? `<span>${[...new Set(real.map(c => c.by))].length} callers</span>` : ""}</p>
         <div class="sp-acts">${rec ? `<button class="btn red solid" type="button" data-go="0">▶ Play this show here</button>` : ""}<a class="btn sm${rec ? " ghost" : ""}" href="${PC_POST}${e.id}" target="_blank" rel="noopener">Open on Prankcast ↗</a><button class="btn sm ghost" type="button" id="sp-share">Copy link to this show</button></div>
+        ${atT != null && atId === e.id && !rec ? `<p class="sp-moment">Someone shared a moment from this show: <a class="btn red solid" href="${PC_POST}${e.id}?t=${Math.round(atT)}" target="_blank" rel="noopener">▶ Open it on Prankcast at ${hms(atT, true)} ↗</a></p>` : ""}
         ${!rec && real.length ? `<p class="sp-note">This show plays on Prankcast. Each call's <b>▶ Prankcast</b> button opens it there with the marker on that call. Just hit play.</p>` : ""}
       </div>
       ${real.length ? `<ol class="sp-calls">${L.map((c, n) => c.skip
@@ -35,7 +36,17 @@ const ShowPage = (() => {
         : `<p class="feed-empty">No call list for this one. ${e.d && e.d < "2025-04-12" ? "It's from before the queue bot started logging turns." : "The queue bot didn't log turns that night."}</p>`}
       ${real.some(c => !c.title) ? `<p class="ext">Know what one of these calls was? ${rec ? "Play it, then tap 💡+ to name it." : "Listen on Prankcast, then tap 💡+ to name it."}</p>` : ""}`;
   }
-  function fromHash() { const m = location.hash.match(/^#show\/(\d+)/); if (!m) return; if (+m[1] !== id) open = null; id = +m[1]; render(); window.scrollTo(0, 0); }
+  // #at/<id>/<seconds>: a shared moment. Newest 10 load in the replay terminal at that spot (press play: browsers won't autostart);
+  // older shows land on their show page with a button that opens Prankcast at that time.
+  let atT = null, atId = null;
+  function fromAt() {
+    const m = location.hash.match(/^#at\/(\d+)\/(\d+)/); if (!m) return false;
+    const sid = +m[1], t = +m[2], e = C.episodes.find(x => x.id === sid); if (!e) return false;
+    if (isRecent(sid)) { Replay.loadAt(sid, t, false); toast(`Shared moment: ${hms(t, true)}. Hit play.`); }
+    else { atT = t; atId = sid; location.replace("#show/" + sid); if (Router.page === "show" && id === sid) render(); }
+    return true;
+  }
+  function fromHash() { if (fromAt()) return; const m = location.hash.match(/^#show\/(\d+)/); if (!m) return; if (+m[1] !== id) open = null; id = +m[1]; render(); window.scrollTo(0, 0); }
   async function copy(t) { try { await navigator.clipboard.writeText(t); return true; } catch (e) { return false; } }
   function init() {
     $("sp-body").addEventListener("click", async ev => {
@@ -44,10 +55,11 @@ const ShowPage = (() => {
       const ib = ev.target.closest("[data-idea]"); if (ib) { open = open === +ib.dataset.idea ? null : +ib.dataset.idea; render(); $("sp-idea-in")?.focus(); return; }
       const vt = ev.target.closest("[data-vote]"); if (vt) { ideaAct(+vt.closest(".ideas").dataset.t, "vote", { id: vt.dataset.vote }); return; }
       const rp = ev.target.closest("[data-rep]"); if (rp) { if (confirm("Report this title as spam or nasty?")) ideaAct(+rp.closest(".ideas").dataset.t, "report", { id: rp.dataset.rep }); return; }
+      const mo = ev.target.closest("[data-moment]"); if (mo) { const u = momentUrl(id, +mo.dataset.moment), ok = await copyText(u); toast(ok ? `Link copied: opens at ${hms(+mo.dataset.moment, true)}` : u); return; }
       if (ev.target.closest("#sp-share")) { const ok = await copy(location.href.split("#")[0] + "#show/" + id); toast(ok ? "Link copied." : location.href); }
     });
     $("sp-body").addEventListener("submit", ev => { const f = ev.target.closest(".idea-f"); if (!f) return; ev.preventDefault(); const v = f.querySelector("input").value.trim(); if (v) ideaAct(+f.closest(".ideas").dataset.t, "add", { title: v }); });
-    addEventListener("hashchange", fromHash);
+    addEventListener("hashchange", fromHash); fromAt();
     document.addEventListener("calls-changed", () => id && Router.page === "show" && render());
     document.addEventListener("episodes-changed", () => id && Router.page === "show" && render());
     fromHash();
