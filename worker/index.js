@@ -799,8 +799,8 @@ async function mixFetchPage(n) {
 }
 async function mixSync(env, force) {
   const old = env.DB ? JSON.parse(await env.DB.get("mix") || "null") : null;
-  if (!force && old && old.v === 2 && Date.now() - (old.at || 0) < MIX_EVERY) return old;
-  const songs = [], seen = new Set(); let total = 0, hidden = 0, name = "", page = 0;
+  if (!force && old && old.v === 3 && Date.now() - (old.at || 0) < MIX_EVERY) return old;
+  const songs = [], seen = new Set(); let total = 0, hidden = 0, noaudio = 0, name = "", page = 0;
   while (page < 10) {
     const j = await mixFetchPage(page); name = j.name || name; total = j.num_total_results || total;
     const L = (j.playlist_clips || []).map(x => x.clip || x); if (!L.length) break;
@@ -808,28 +808,28 @@ async function mixSync(env, force) {
       if (!c || !c.id || seen.has(c.id) || c.status !== "complete" || c.is_trashed) continue; seen.add(c.id);
       const open = c.is_public || (/^https:\/\/cdn\d?\.suno\.ai\//.test(c.audio_url || ""));
       if (!open) { hidden++; continue; }
-      // newer Suno songs have no mp3 on cdn1; their audio is an .m4a in media_urls (Suno's CloudFront)
-      const m4a = (c.media_urls || []).map(x => x && x.url).find(u => /^https:\/\/[a-z0-9]+\.cloudfront\.net\/[\w/.-]+\.m4a$/.test(u || "")) || "";
-      songs.push({ id: c.id, t: clean(c.title || "Untitled", 80), sec: Math.round(c.metadata?.duration || 0), img: /^https:\/\/cdn\d?\.suno\.ai\//.test(c.image_url || "") ? c.image_url : "", ...(m4a ? { m4a } : {}) });
+      // Newer Suno songs have no public mp3 on cdn1 (their app streams a scrambled .m4a instead), so only songs with a real mp3 count.
+      const ok = await fetch(`https://cdn1.suno.ai/${c.id}.mp3`, { method: "HEAD" }).then(r => r.ok).catch(() => false);
+      if (!ok) { noaudio++; continue; }
+      songs.push({ id: c.id, t: clean(c.title || "Untitled", 80), sec: Math.round(c.metadata?.duration || 0), img: /^https:\/\/cdn\d?\.suno\.ai\//.test(c.image_url || "") ? c.image_url : "" });
     }
-    if (songs.length + hidden >= total) break; page++;
+    if (songs.length + hidden + noaudio >= total) break; page++;
   }
-  const out = { v: 2, at: Date.now(), name, total, hidden, songs, playlist: `https://suno.com/playlist/${MIX_PLAYLIST}` };
+  const out = { v: 3, at: Date.now(), name, total, hidden, noaudio, songs, playlist: `https://suno.com/playlist/${MIX_PLAYLIST}` };
   if (env.DB) await env.DB.put("mix", JSON.stringify(out));
   return out;
 }
 async function mixGet(env, ctx) {
   const old = env.DB ? JSON.parse(await env.DB.get("mix") || "null") : null;
-  if (old && old.v === 2 && Date.now() - (old.at || 0) < MIX_EVERY) return old;
+  if (old && old.v === 3 && Date.now() - (old.at || 0) < MIX_EVERY) return old;
   try { return await mixSync(env, true); }
-  catch (e) { if (old && env.DB) { old.v = 2; old.at = Date.now() - MIX_EVERY + 10 * 60 * 1000; old.lastError = e.message; await env.DB.put("mix", JSON.stringify(old)); } return old || { songs: [], error: e.message }; } // try again in 10 minutes
+  catch (e) { if (old && env.DB) { old.v = 3; old.at = Date.now() - MIX_EVERY + 10 * 60 * 1000; old.lastError = e.message; await env.DB.put("mix", JSON.stringify(old)); } return old || { songs: [], error: e.message }; } // try again in 10 minutes
 }
 async function mixAudio(env, id, request, url) {
   const mix = env.DB ? JSON.parse(await env.DB.get("mix") || "null") : null;
   const song = mix && mix.songs.find(x => x.id === id); if (!song) return json({ error: "Not in the mix" }, 404);
   const h = {}; const rg = request.headers.get("range"); if (rg) h.range = rg;
-  let r = await fetch(`https://cdn1.suno.ai/${id}.mp3`, { headers: h, cf: { cacheTtl: 86400, cacheEverything: true } }), ext = "mp3", type = "audio/mpeg";
-  if (!r.ok && r.status !== 206 && song.m4a) { r = await fetch(song.m4a, { headers: h, cf: { cacheTtl: 86400, cacheEverything: true } }); ext = "m4a"; type = "audio/mp4"; }
+  const r = await fetch(`https://cdn1.suno.ai/${id}.mp3`, { headers: h, cf: { cacheTtl: 86400, cacheEverything: true } }), ext = "mp3", type = "audio/mpeg";
   if (!r.ok && r.status !== 206) return json({ error: "Suno didn't send the song" }, 502);
   const out = new Headers(); for (const k of ["content-type", "content-length", "content-range", "accept-ranges", "etag", "last-modified"]) { const v = r.headers.get(k); if (v) out.set(k, v); }
   out.set("content-type", type); out.set("cache-control", "public, max-age=86400"); out.set("access-control-allow-origin", "*");
