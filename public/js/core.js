@@ -123,19 +123,23 @@ function callsFor(id, dur) {
   return L.map((c, i) => { const nx = L.slice(i + 1).find(x => !x.skip); return { ...c, n: i + 1, at: c.t, end: nx ? nx.t : (end || c.t + 600) }; });
 }
 // Crew fixes (typed in on the site) sit on top of the built-in lists; community title ideas fill in calls that still have no title.
-let CALLS_BASE = null, CALL_FIX = {}, CALL_SG = {};
+let CALLS_BASE = null, CALL_FIX = {}, CALL_SG = {}, CALL_CF = {};
+// Every call keeps its original start as c.key: title ideas, crew fixes and community fixes are all filed under it,
+// so moving a call's start (a fix) never loses what was attached to it.
 function rebuildCalls() {
   if (!CALLS_BASE) CALLS_BASE = JSON.parse(JSON.stringify(C.calls));
   const out = JSON.parse(JSON.stringify(CALLS_BASE));
   for (const [ep, s] of Object.entries(out)) {
-    const f = CALL_FIX[ep], g = CALL_SG[ep] || {};
+    const f = CALL_FIX[ep], g = CALL_SG[ep] || {}, cf = CALL_CF[ep] || {};
     if (f?.desc != null) s.desc = f.desc;
     for (const c of s.calls) {
-      const x = f?.c?.[String(c.t)]; if (x) { if (x.title != null) c.title = x.title; if (x.by) c.by = x.by; }
-      const ideas = (g[String(c.t)] || []).slice().sort((a, b) => b.v - a.v);
-      c.ideas = ideas;
+      const k = c.key = c.t;
+      const x = f?.c?.[String(k)]; if (x) { if (x.title != null) c.title = x.title; if (x.by) c.by = x.by; if (x.at != null) { c.t = +x.at; c.moved = k; } }
+      const ideas = (g[String(k)] || []).slice().sort((a, b) => b.v - a.v);
+      c.ideas = ideas; c.fixes = cf[String(k)] || [];
       if (!c.title && ideas.length) { c.title = ideas[0].title; c.community = true; }
     }
+    s.calls.sort((a, b) => a.t - b.t);
   }
   C.calls = out; document.dispatchEvent(new CustomEvent("calls-changed"));
 }
@@ -143,15 +147,34 @@ function applyCallFixes(fix) { CALL_FIX = fix || {}; rebuildCalls(); }
 function applySuggestions(sg) { CALL_SG = sg || {}; rebuildCalls(); }
 async function loadCallFixes() {
   if (!C.api) return;
-  const [fix, sg] = await Promise.all([getJSON(C.api + "/calls", 6000).catch(() => null), getJSON(C.api + "/suggest", 6000).catch(() => null)]);
-  if (fix) CALL_FIX = fix; if (sg) CALL_SG = sg; if (fix || sg) rebuildCalls();
+  const [fix, sg, cf] = await Promise.all([getJSON(C.api + "/calls", 6000).catch(() => null), getJSON(C.api + "/suggest", 6000).catch(() => null), getJSON(C.api + "/fixes", 6000).catch(() => null)]);
+  if (fix) CALL_FIX = fix; if (sg) CALL_SG = sg; if (cf) CALL_CF = cf; rebuildCalls();
 }
+// A call's key (its original start) from where it starts now.
+const callKey = (ep, t) => { const c = (C.calls[ep]?.calls || []).find(x => x.t === +t); return c && c.key != null ? c.key : +t; };
 // Send a title idea, a +1, or a report. Returns the call's updated list of ideas.
 async function suggestAct(action, ep, t, extra) {
-  const r = await fetch(`${C.api}/suggest${action === "add" ? "" : "/" + action}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ep, t, ...extra }) });
+  const k = callKey(ep, t);
+  const r = await fetch(`${C.api}/suggest${action === "add" ? "" : "/" + action}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ep, t: k, ...extra }) });
   const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || "That didn't go through");
-  const show = CALL_SG[ep] || (CALL_SG[ep] = {}); show[String(t)] = j.call.map(({ mine, ...x }) => x); rebuildCalls(); return j.call;
+  const show = CALL_SG[ep] || (CALL_SG[ep] = {}); show[String(k)] = j.call.map(({ mine, ...x }) => x); rebuildCalls(); return j.call;
 }
+/* Community fixes (audit I2): who made a call, when it starts. action = add {k, val} | up | down {id}; crew: approve | reject.
+   Takes the call's key. When a fix goes through, the crew-fix list is reloaded so everyone's view moves with it. */
+const FIX_UP = 3, FIX_DOWN = 2;
+async function fixAct(action, ep, key, extra) {
+  const tok = (() => { try { return sessionStorage.getItem("cx-mod") || ""; } catch (e) { return ""; } })(), crew = action === "approve" || action === "reject";
+  const r = await fetch(`${C.api}/${crew ? "mod/fix/" + action : "fix" + (action === "add" ? "" : "/" + action)}`, { method: "POST",
+    headers: { "content-type": "application/json", ...(crew ? { authorization: `Bearer ${tok}` } : {}) }, body: JSON.stringify({ ep, t: key, ...extra }) });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(r.status === 401 ? "Wrong crew password. Log in again on the Clip board page." : j.error || "That didn't go through");
+  const show = CALL_CF[ep] || (CALL_CF[ep] = {}); show[String(key)] = j.call.map(({ mine, ...x }) => x);
+  try { const mine = JSON.parse(localStorage.getItem("cx-fixvotes") || "{}"); for (const x of j.call) if (x.mine) mine[x.id] = x.mine; localStorage.setItem("cx-fixvotes", JSON.stringify(mine)); } catch (e) {}
+  if (j.applied) { const fx = await getJSON(`${C.api}/calls?x=${Date.now()}`, 6000).catch(() => null); if (fx) CALL_FIX = fx; }
+  rebuildCalls(); return j;
+}
+const myFixVote = id => { try { return JSON.parse(localStorage.getItem("cx-fixvotes") || "{}")[id] || ""; } catch (e) { return ""; } };
+// "1:02:03", "62:03", "75" → seconds
+function parseHms(s) { const p = String(s).trim().split(":").map(x => x.trim()); if (!p.length || p.some(x => !/^\d+(\.\d+)?$/.test(x)) || p.length > 3) return NaN; return p.reduce((a, x) => a * 60 + +x, 0); }
 const callLabel = c => c.title ? `${c.by}: ${c.title}` : `${c.by}'s call`;
 function callAt(id, t, dur) { const L = callsFor(id, dur).filter(c => !c.skip); for (let i = L.length - 1; i >= 0; i--) if (t >= L[i].t) return L[i]; return null; }
 async function mergeLatest() {

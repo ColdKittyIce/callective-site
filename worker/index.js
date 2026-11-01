@@ -17,6 +17,10 @@
  *   POST /api/suggest/report    {ep, t, id}    3 reports hide it
  *   POST /api/mod/suggest       {ep, t, id}    crew hides one                    (ADMIN_TOKEN)
  *   GET  /api/calls             crew fixes to the call lists (titles, callers, blurbs)
+ *   GET  /api/fixes             community fixes to who made a call / when it starts, with votes
+ *   POST /api/fix               {ep, t, k:"by"|"at", val} suggest one (t = the call's original start, the key)
+ *   POST /api/fix/up|down       {ep, t, id}    3 ups (not the suggester) make it permanent; 2 downs send it to the crew
+ *   POST /api/mod/fix/approve|reject {ep, t, id}                        (ADMIN_TOKEN)
  *   POST /api/mod/calls         save one fix {ep, t, title, by} or {ep, desc}  (ADMIN_TOKEN)
  *   GET  /api/mod/guestbook     guestbook entries, posted and held        (ADMIN_TOKEN)
  *   POST /api/mod/gb/:id/approve|delete                                   (ADMIN_TOKEN)
@@ -105,6 +109,8 @@ async function route(request, env, ctx, url) {
       if (p === "/api/hits") return hits(env, M === "POST");
       if (p === "/api/suggest" && M === "GET") return cached(request, ctx, 30, () => sgAll(env));
       if ((m = p.match(/^\/api\/suggest(?:\/(vote|report))?$/)) && M === "POST") return sgPost(request, env, m[1] || "add");
+      if (p === "/api/fixes" && M === "GET") return cached(request, ctx, 30, () => cfAll(env));
+      if ((m = p.match(/^\/api\/fix(?:\/(up|down))?$/)) && M === "POST") return cfPost(request, env, m[1] || "add");
       if (p === "/api/calls" && M === "GET") return json(env.DB ? JSON.parse(await env.DB.get("callfix") || "{}") : {}, 200, 30);
       if (p === "/api/guestbook" && M === "GET") return cached(request, ctx, 20, () => gbList(env, "g:"));
       if (p === "/api/guestbook" && M === "POST") return gbPost(request, env);
@@ -117,6 +123,7 @@ async function route(request, env, ctx, url) {
         if (p === "/api/mod/pending") return clipsList(env, "p:");
         if (p === "/api/mod/public") return clipsList(env, "a:", true);
         if (p === "/api/mod/calls" && M === "POST") return callFix(request, env);
+        if ((m = p.match(/^\/api\/mod\/fix\/(approve|reject)$/)) && M === "POST") return cfPost(request, env, m[1], true);
         if (p === "/api/mod/suggest" && M === "POST") return sgPost(request, env, "remove", true);
         if (p === "/api/mod/guestbook") return json({ pub: (await gbList(env, "g:")).entries, held: (await gbList(env, "h:")).entries });
         if ((m = p.match(/^\/api\/mod\/gb\/([a-z0-9-]+)\/(approve|delete)$/)) && M === "POST") return gbAct(env, m[1], m[2]);
@@ -425,6 +432,64 @@ async function sgPost(request, env, action, crew) {
   }
   await env.DB.put(key, JSON.stringify(doc));
   return json({ ok: true, call: L.filter(x => !x.hide).map(x => ({ id: x.id, title: x.title, v: x.v.length, mine: x.v.includes(me) })) });
+}
+
+/* ---------- community fixes: who made a call and when it starts (audit I2, Nov 2026) ----------
+   Anyone can suggest a fix. 3 upvotes from other people make it permanent: it's written into "callfix", same as a crew fix.
+   2 downvotes stop it and send it to the crew to approve or reject. One vote per person per fix; the suggester's vote is
+   counted as theirs, not as one of the 3. One KV document per show ("cf:<show id>"), keyed by the call's original start. */
+const CF_UP = 3, CF_DOWN = 2, CF_OPEN_PER_CALL = 4, CF_MAX_SEC = 6 * 3600;
+const cfOut = (x, me) => ({ id: x.id, k: x.k, val: x.val, up: x.up.length, dn: x.dn.length, st: x.st, ...(me ? { mine: x.by === me ? "own" : x.up.includes(me) ? "up" : x.dn.includes(me) ? "down" : "" } : {}) });
+async function cfAll(env) {
+  if (!env.DB) return {}; const out = {}; let cursor;
+  do { const pg = await env.DB.list({ prefix: "cf:", cursor }); for (const k of pg.keys) { const doc = JSON.parse(await env.DB.get(k.name) || "{}"), show = {};
+      for (const [t, L] of Object.entries(doc)) { const vis = L.filter(x => x.st === "open" || x.st === "flag").map(x => cfOut(x)); if (vis.length) show[t] = vis; }
+      if (Object.keys(show).length) out[k.name.slice(3)] = show; }
+    cursor = pg.list_complete ? null : pg.cursor; } while (cursor);
+  return out;
+}
+async function cfApply(env, ep, t, x) {
+  const all = JSON.parse(await env.DB.get("callfix") || "{}"), show = all[ep] || (all[ep] = { c: {} }), c = show.c[t] || (show.c[t] = {});
+  if (x.k === "by") c.by = x.val; else c.at = +x.val;
+  await env.DB.put("callfix", JSON.stringify(all));
+}
+async function cfPost(request, env, action, crew) {
+  if (!env.DB) return json({ error: "Storage isn't set up" }, 500);
+  let b; try { b = await request.json(); } catch (e) { return json({ error: "Send JSON" }, 400); }
+  const ep = String(+b.ep || ""), t = String(Math.round(+b.t)); if (!ep || ep === "0" || !(+t >= 0)) return json({ error: "Which call?" }, 400);
+  const me = await who(request, env);
+  if (!crew) { const rl = `sgr:${me}:${new Date().toISOString().slice(0, 13)}`, used = +(await env.DB.get(rl) || 0);
+    if (used >= SG_ACTIONS_PER_HOUR) return json({ error: "Easy there. Try again in an hour" }, 429);
+    await env.DB.put(rl, String(used + 1), { expirationTtl: 3700 }); }
+  const key = "cf:" + ep, doc = JSON.parse(await env.DB.get(key) || "{}"), L = doc[t] || (doc[t] = []);
+  const live = () => L.filter(x => x.st === "open" || x.st === "flag");
+  let x, applied = false;
+  const up = y => { y.dn = y.dn.filter(v => v !== me); if (y.by !== me && !y.up.includes(me)) y.up.push(me); };
+  if (action === "add") {
+    const k = b.k === "at" ? "at" : b.k === "by" ? "by" : null; if (!k) return json({ error: "Fix who called, or when it starts" }, 400);
+    let val;
+    if (k === "by") { val = clean(b.val, 40); if (val.length < 2) return json({ error: "Type the caller's name" }, 400);
+      if (screen(val)) return json({ error: "That name tripped the filter (no links, numbers or slurs)" }, 400); }
+    else { val = Math.round(+b.val); if (!(val >= 0 && val <= CF_MAX_SEC)) return json({ error: "That time doesn't fit this show" }, 400); }
+    const norm = v => String(v).toLowerCase().replace(/[^a-z0-9]+/g, "");
+    x = live().find(y => y.k === k && norm(y.val) === norm(val));
+    if (x) up(x);
+    else { if (live().length >= CF_OPEN_PER_CALL) return json({ error: "This call has enough fixes waiting. Vote on one instead" }, 409);
+      x = { id: crypto.randomUUID().slice(0, 8), k, val, by: me, up: [], dn: [], st: "open", ts: Date.now() }; L.push(x); }
+  } else {
+    x = L.find(y => y.id === b.id); if (!x) return json({ error: "Not found" }, 404);
+    if (!crew && x.st !== "open" && x.st !== "flag") return json({ error: "That one's already settled" }, 409);
+    if (action === "up") up(x);
+    if (action === "down") { if (x.by === me) { x.st = "gone"; } else { x.up = x.up.filter(v => v !== me); if (!x.dn.includes(me)) x.dn.push(me); if (x.dn.length >= CF_DOWN) x.st = "flag"; } }
+    if (action === "approve") { x.st = "open"; applied = true; }
+    if (action === "reject") x.st = "no";
+  }
+  if (x.st === "open" && (applied || x.up.length >= CF_UP)) {
+    await cfApply(env, ep, t, x); x.st = "done"; applied = true;
+    for (const y of L) if (y !== x && y.k === x.k && (y.st === "open" || y.st === "flag")) y.st = "old"; // the call's settled now
+  }
+  await env.DB.put(key, JSON.stringify(doc));
+  return json({ ok: true, applied, call: live().map(y => cfOut(y, me)) });
 }
 
 /* ---------- real 90s GIFs for the 1998 page ----------

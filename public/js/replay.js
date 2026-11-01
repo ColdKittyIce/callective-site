@@ -106,7 +106,7 @@ const Replay = (() => {
     const tok = crew(); if (!tok) return; const body = { ep: ep.id };
     if (desc) { const v = prompt("Show blurb (one or two sentences):", C.calls[ep.id]?.desc || ""); if (v == null) return; body.desc = v; }
     else { const c = callsFor(ep.id, dur)[i]; const title = prompt(`Title for ${c.by}'s call at ${hms(c.t, true)} (leave empty for none):`, c.title || ""); if (title == null) return;
-      const by = prompt("Who made the call?", c.by); if (by == null) return; Object.assign(body, { t: c.t, title, by }); }
+      const by = prompt("Who made the call?", c.by); if (by == null) return; Object.assign(body, { t: c.key ?? c.t, title, by }); }
     try {
       const r = await fetch(`${C.api}/mod/calls`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${tok}` }, body: JSON.stringify(body) });
       if (r.status === 401) { toast("Wrong crew password. Log in again on the Clip board page."); return; }

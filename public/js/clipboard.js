@@ -101,9 +101,25 @@ const Mod = (() => {
       box.innerHTML = `<h4 class="mod-sec">Waiting for a look (${held.length})</h4>${held.map(c => row(c, "held")).join("") || `<p class="ext">Nothing held. Clean clips from shows post on their own.</p>`}
         <h4 class="mod-sec">Sent to the crew (${crew.length})</h4>${crew.map(c => row(c, "crew")).join("") || `<p class="ext">Nothing sent privately.</p>`}
         <h4 class="mod-sec">On the board (${pub.length})</h4>${pub.map(c => row(c, "pub")).join("") || `<p class="ext">The board is empty.</p>`}
+        <h4 class="mod-sec">Call fixes from listeners</h4><div id="mod-fx"><p class="ext">Loading…</p></div>
         <h4 class="mod-sec">1998 guestbook</h4><div id="mod-gb"><p class="ext">Loading…</p></div>`;
-      gbList();
+      fxList(); gbList();
     } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the inbox.</p>`; }
+  }
+  // Community fixes to who made a call / when it starts (audit I2). Flagged ones (2 votes down) wait here; open ones can be settled early.
+  async function fxList() {
+    const box = $("mod-fx"); if (!box) return;
+    try {
+      const all = await getJSON(`${C.api}/fixes?x=${Date.now()}`, 6000), rows = [];
+      for (const [ep, show] of Object.entries(all)) for (const [key, L] of Object.entries(show)) for (const x of L) rows.push({ ep: +ep, key: +key, ...x });
+      rows.sort((a, b) => (b.st === "flag") - (a.st === "flag") || b.ep - a.ep);
+      box.innerHTML = rows.map(x => { const e = C.episodes.find(y => y.id === x.ep), c = (C.calls[x.ep]?.calls || []).find(y => y.key === x.key);
+        return `<div class="mod-row" data-fxep="${x.ep}" data-fxkey="${x.key}" data-fxid="${esc(x.id)}"><div style="min-width:0"><span class="mod-tag">${x.st === "flag" ? "Voted down" : "Open"} · ▲ ${x.up} ▼ ${x.dn}</span>
+          <b>${x.k === "by" ? `Caller was ${esc(x.val)}` : `Starts at ${hms(+x.val, true)}`}</b>
+          <span class="ext"><a href="#show/${x.ep}">${esc(e ? fmtDate(e.d) : "show " + x.ep)}</a> · now: ${c ? `${esc(c.by)} at ${hms(c.t, true)}` : "call not found"}</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm solid" type="button" data-fxact="approve">Approve</button><button class="btn sm red" type="button" data-fxact="reject">Reject</button></div></div>`; }).join("")
+        || `<p class="ext">No fixes waiting.</p>`;
+    } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the call fixes.</p>`; }
   }
   async function gbList() {
     const box = $("mod-gb"); if (!box) return;
@@ -115,6 +131,10 @@ const Mod = (() => {
     } catch (e) { box.innerHTML = `<p class="ext">Couldn't load the guestbook.</p>`; }
   }
   async function act(e) {
+    const fa = e.target.closest("[data-fxact]");
+    if (fa) { const r0 = fa.closest("[data-fxid]"); fa.disabled = true;
+      try { await fixAct(fa.dataset.fxact, +r0.dataset.fxep, +r0.dataset.fxkey, { id: r0.dataset.fxid }); toast(fa.dataset.fxact === "approve" ? "Approved. The call list is fixed." : "Rejected."); fxList(); }
+      catch (err) { fa.disabled = false; toast(err.message); } return; }
     const ga = e.target.closest("[data-gbact]");
     if (ga) { const r0 = ga.closest("[data-gb]"); ga.disabled = true; const r = await fetch(`${C.api}/mod/gb/${encodeURIComponent(r0.dataset.gb)}/${ga.dataset.gbact}`, { method: "POST", headers: hdr() }); if (r.ok) { toast(ga.dataset.gbact === "approve" ? "Approved." : "Deleted."); gbList(); } else { ga.disabled = false; toast("That didn't go through."); } return; }
     // Clips waiting for a look need the crew password, which an <audio> tag can't send, so fetch the file first and play it from memory.

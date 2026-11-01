@@ -1507,3 +1507,15 @@ body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void
 @media (max-width:700px){.cl-call{grid-template-columns:minmax(0,1fr)}.cl-act{justify-content:flex-start}}
 .hl-preset{flex-direction:row!important;align-items:flex-start;gap:8px!important;text-transform:none!important;letter-spacing:0!important;font-family:var(--f-body)!important;font-size:14px!important;color:var(--text)!important}
 .hl-preset b{color:var(--volt);font-weight:500}
+/* community call fixes (audit I2) */
+.fx-box ol li{flex-wrap:wrap}
+.fx-row.flag span{color:var(--muted)}
+.fx-row small{color:var(--muted);font-size:12.5px;margin-left:4px}
+.fx-flag{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--pink);border:1px solid #ff2e9a66;padding:1px 6px;margin-left:4px}
+.fx-dn{font-family:var(--f-mono);font-size:12.5px;background:#0b0f1f;color:var(--muted);border:1px solid var(--line);padding:3px 8px;cursor:pointer;min-width:44px}
+.fx-dn:hover,.fx-dn.on{color:var(--pink);border-color:#ff2e9a88}
+.idea-v.on{background:#e9ff3b33}.idea-v:disabled{opacity:.55;cursor:default}
+.fx-f{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.fx-f label{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--muted);flex:1 1 140px;min-width:0}
+.fx-f input{background:#0b0f1f;color:var(--text);border:1px solid var(--line);padding:8px 10px;font:inherit;font-size:14.5px;min-width:0}
+.fx-box small{color:var(--muted)}
