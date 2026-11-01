@@ -115,6 +115,10 @@ export class Hall extends DurableObject {
     // flood control: 8 messages per 10 seconds
     const t = now(); me.burst = (me.burst || []).filter(x => t - x < 10000); if (me.burst.length >= 8) return this.whisper(ws, "Slow down a little. 🐢"); me.burst.push(t);
     me.seen = t;
+    if (d.type === "calllog") { // mods: the room's call log, to save (Hall extras, Nov 2026)
+      if (!me.mod) return this.whisper(ws, "Only mods can save the call log.");
+      return this.send(ws, { type: "calllog", title: this.s.title, code: this.s.code, created: this.s.created, rows: this.s.clog || [], cur: this.s.cur && this.s.cur.at ? { name: this.s.cur.name, start: this.s.cur.at } : null });
+    }
     if (d.type === "say") {
       const text = tidy(d.text, 800); if (!text) return;
       if (/^!(dm|msg|w)\s/i.test(text)) { await this.command(ws, a.id, text); return await this.save(); } // private: never echoed or filtered for numbers
@@ -185,6 +189,7 @@ export class Hall extends DurableObject {
     const t = now(); if (!m.mod && t - (m.sfxAt || 0) < SFX_COOLDOWN) return; m.sfxAt = t;
     this.broadcast({ type: "sfx", k, by: m.name, uid: id, loop: !!d.loop, v });
   }
+  logCall() { const s = this.s, c = s.cur; if (!c) return; (s.clog || (s.clog = [])).push({ name: c.name, start: c.at || null, end: now() }); if (s.clog.length > 400) s.clog.splice(0, s.clog.length - 400); }
   async webSocketClose(ws) { if (this.s) this.broadcastState(); }
   async webSocketError(ws) { if (this.s) this.broadcastState(); }
   async alarm() {
@@ -256,9 +261,9 @@ export class Hall extends DurableObject {
         if (needMod()) return;
         const prev = s.cur ? s.cur.name : null, e = s.queue.shift();
         if (s.cur && s.cur.id && s.members[s.cur.id]) s.members[s.cur.id].calls++;
-        if (s.cur) s.calls++;
+        if (s.cur) { s.calls++; this.logCall(); }
         if (!e) { s.cur = null; say(prev ? `✅ Done with **${prev}**. The line is empty. Drop 🔔 to get in.` : "The line is empty. Drop 🔔 to get in."); return done(); }
-        s.cur = e.all ? { all: true, name: `ALL CALL (by ${e.by})` } : { id: e.id, name: s.members[e.id]?.name || "?" };
+        s.cur = e.all ? { all: true, name: `ALL CALL (by ${e.by})`, at: now() } : { id: e.id, name: s.members[e.id]?.name || "?", at: now() };
         const up = s.queue[0] ? ` On deck: **${this.label(s.queue[0])}**.` : "";
         say(`${prev ? `✅ Done with **${prev}**… ` : ""}📞 Now calling **${e.all ? "📣 ALL CALL" : s.cur.name}**!${e.all ? " Everybody unmute when the host says so." : ""}${up}`);
         if (!e.all) for (const w of this.sockets(e.id)) this.send(w, { type: "ping", text: "You're up! 📞" });
@@ -266,7 +271,7 @@ export class Hall extends DurableObject {
       }
       case "done": case "end": {
         if (needMod()) return; if (!s.cur) return tell("Nobody's on the phone.");
-        if (s.cur.id && s.members[s.cur.id]) s.members[s.cur.id].calls++; s.calls++;
+        if (s.cur.id && s.members[s.cur.id]) s.members[s.cur.id].calls++; s.calls++; this.logCall();
         say(`✅ Done with **${s.cur.name}**.`); s.cur = null; return done();
       }
       case "remove": case "rm": {

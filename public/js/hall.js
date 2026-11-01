@@ -116,7 +116,7 @@ const Hall = (() => {
     $("hl-lock").hidden = !st.locked;
     $("hl-closed").hidden = !st.locked;
     const lb = $("hl-lockbtn"); lb.dataset.cmd = st.locked ? "!unlock" : "!lock"; lb.textContent = st.locked ? "🔓 Unlock" : "🔒 Lock";
-    $("hl-mod").hidden = !mod; $("hl-obs").hidden = !mod; $("hl-obs").href = `obs.html?room=${encodeURIComponent(st.code)}`;
+    $("hl-mod").hidden = !mod; $("hl-savesetup").hidden = !y.host; $("hl-obs").hidden = !mod; $("hl-obs").href = `obs.html?room=${encodeURIComponent(st.code)}`;
     $("hl-cur").textContent = st.cur ? st.cur.name : "Nobody yet";
     $("hl-cur").classList.toggle("me", !!(st.cur && st.cur.id && st.cur.id === y.id));
     $("hl-calls").textContent = st.calls ? `${st.calls} call${st.calls === 1 ? "" : "s"} so far` : "";
@@ -148,6 +148,7 @@ const Hall = (() => {
       if (d.type === "welcome") { const again = !!me; me = { id: d.id, name: d.name }; if (again) HallVoice.onReconnect(); else HallSB.enterRoom(code); store.put(code, { key: d.key, name: d.name }); store.setName(d.name); show(true); history.replaceState(null, "", "#host/" + code); }
       else if (d.type === "log") { $("hl-log").innerHTML = ""; lastN = 0; d.log.forEach(addMsg); $("hl-log").scrollTop = 1e9; }
       else if (d.type === "msg") addMsg(d.msg);
+      else if (d.type === "calllog") saveLog(d);
       else if (d.type === "rtc") HallVoice.onSignal(d.from, d.sig);
       else if (d.type === "sfx") HallSB.onSfx(d);
       else if (d.type === "sfxvol") HallSB.onVol(d);
@@ -157,7 +158,7 @@ const Hall = (() => {
       else if (d.type === "dms") { dms.clear(); d.list.forEach(x => addDM(x, true)); if (view !== "room") openView(view); }
       else if (d.type === "dm") addDM(d.dm);
       else if (d.type === "dmfail") addDM({ n: 0, at: Date.now(), sys: true, from: d.to, fromName: "", to: me && me.id, text: d.error }, true);
-      else if (d.type === "state") { st = d; render(); HallVoice.onState(d); HallSB.onState(d); }
+      else if (d.type === "state") { st = d; render(); HallVoice.onState(d); HallSB.onState(d); applyPreset(); }
       else if (d.type === "ping") { if (sound) { try { sample("ring", .8); } catch (x) {} } toast(d.text); flash(d.text); }
       else if (d.type === "error") fatal = d.error;
       else if (d.type === "closed") fatal = "The host closed the room.";
@@ -198,7 +199,45 @@ const Hall = (() => {
     const saved = store.room(c);
     if (saved && saved.key) enter(c); else { $("hl-join-name").focus(); }
   }
+  /* ---------- Hall extras (Nov 2026): call log download, saved host setup ---------- */
+  const PKEY = "cx-hall-preset";
+  const preset = () => { try { return JSON.parse(localStorage.getItem(PKEY) || "null"); } catch (e) { return null; } };
+  let pending = null; // a saved setup being applied to a room you just opened
+  function paintPreset() {
+    const P = preset(); $("hl-preset").hidden = !P; if (!P) return;
+    $("hl-preset-txt").textContent = [P.title || "no room name", `soundboard ${P.sfx || "open"}`, P.mods && P.mods.length ? `mods: ${P.mods.join(", ")}` : "no mods"].join(" · ");
+  }
+  function applyPreset() {
+    if (!pending || !st || !st.you || !st.you.host) return;
+    if (!pending.sfxDone) { pending.sfxDone = true; if (pending.sfx && pending.sfx !== (st.sfx || "open")) cmd("!soundboard " + pending.sfx); }
+    for (const n of [...pending.modsLeft]) { // hand out mod as each saved mod shows up
+      const m = st.members.find(x => x.on && x.name.toLowerCase() === n.toLowerCase()); if (!m) continue;
+      pending.modsLeft = pending.modsLeft.filter(x => x !== n); if (!m.mod) cmd("!mod " + m.name);
+    }
+    if (pending.sfxDone && !pending.modsLeft.length) pending = null;
+  }
+  function saveSetup() {
+    if (!st || !st.you || !st.you.host) return;
+    const P = { title: st.title, sfx: st.sfx || "open", mods: st.members.filter(m => m.mod && !m.host).map(m => m.name).slice(0, 20), saved: Date.now() };
+    try { localStorage.setItem(PKEY, JSON.stringify(P)); } catch (e) {}
+    paintPreset(); toast(`Saved: ${P.title}, soundboard ${P.sfx}${P.mods.length ? `, mods ${P.mods.join(", ")}` : ""}. Next time you open a room it's ready to go.`);
+  }
+  function saveLog(d) {
+    const t = ms => ms ? new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "?";
+    const len = (a, b) => a && b ? `${Math.max(1, Math.round((b - a) / 60000))}m` : "";
+    const rows = [...d.rows]; if (d.cur) rows.push({ name: d.cur.name + " (still on the phone)", start: d.cur.start, end: null });
+    const day = new Date(d.created || Date.now());
+    const txt = [`${d.title} · The Hall · room ${d.code}`, `Opened ${day.toLocaleString()}`, `${d.rows.length} call${d.rows.length === 1 ? "" : "s"}`, "",
+      ...rows.map((r, i) => `${String(i + 1).padStart(3)}. ${t(r.start)} – ${r.end ? t(r.end) : "now"}  ${len(r.start, r.end).padStart(4)}  ${r.name}`), "", "Saved from thecallective.com/#host"].join("\n");
+    if (!d.rows.length && !d.cur) return toast("No calls yet. The log fills up as the host hits Next.");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], { type: "text/plain" }));
+    a.download = `callective-hall-${d.code}-${day.toISOString().slice(0, 10)}.txt`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    toast("Call log saved.");
+  }
   function init() {
+    paintPreset();
+    $("hl-savelog").addEventListener("click", () => send({ type: "calllog" }));
+    $("hl-savesetup").addEventListener("click", saveSetup);
     const nm = store.name(); if (nm) { $("hl-new-name").value = nm; $("hl-join-name").value = nm; }
     $("hl-new").addEventListener("submit", async e => {
       e.preventDefault(); err("");
@@ -206,9 +245,12 @@ const Hall = (() => {
       if (name.length < 2) return err("Pick a name (2 to 24 characters).");
       const btn = e.submitter || e.target.querySelector("button"); btn.disabled = true;
       try {
-        const r = await fetch("/api/hall", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ title }) });
+        const P = $("hl-preset-on").checked ? preset() : null, t2 = title || (P && P.title) || "";
+        const r = await fetch("/api/hall", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: t2 }) });
         const o = await r.json(); if (!r.ok) throw new Error(o.error || "Couldn't open a room");
-        store.put(o.code, { key: o.hostKey, name }); store.setName(name); enter(o.code);
+        store.put(o.code, { key: o.hostKey, name }); store.setName(name);
+        pending = $("hl-preset-on").checked && preset() ? { ...preset(), modsLeft: [...(preset().mods || [])], sfxDone: false } : null;
+        enter(o.code);
       } catch (x) { err(x.message || "Couldn't open a room. Try again."); }
       btn.disabled = false;
     });

@@ -1505,3 +1505,5 @@ body[data-mode="hell"] .hero::before{background:linear-gradient(90deg,var(--void
 .cl-what{display:flex;flex-direction:column;gap:2px;min-width:0} .cl-what b{font-weight:600}
 .cl-act{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 @media (max-width:700px){.cl-call{grid-template-columns:minmax(0,1fr)}.cl-act{justify-content:flex-start}}
+.hl-preset{flex-direction:row!important;align-items:flex-start;gap:8px!important;text-transform:none!important;letter-spacing:0!important;font-family:var(--f-body)!important;font-size:14px!important;color:var(--text)!important}
+.hl-preset b{color:var(--volt);font-weight:500}
