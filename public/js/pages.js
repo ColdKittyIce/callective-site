@@ -53,8 +53,24 @@ const Hold = (() => {
     Player.set({ kind: "song", el: aud(), title: T[k].t, page: "downloads", seek: true, clip: () => Player.clipFrom(aud(), url(T[k]), T[k].t) });
     $("callerno").textContent = Math.max(1, TRACKS.length - TRACKS.findIndex(t => t.k === k) - 1);
   }
+  function render() {
+    $("tracks").innerHTML = TRACKS.map((t, i) => `${t.g && t.g !== TRACKS[i - 1]?.g ? `<li class="track-group" aria-hidden="true">${esc(t.g)}</li>` : ""}<li class="track" data-k="${t.k}"><button type="button" data-hold="${t.k}" aria-label="Play ${esc(t.t)}"><span class="tri" aria-hidden="true"></span></button><span class="ln">LINE ${i + 1}</span><div class="tt"><b>${esc(t.t)}</b><span>${esc(t.s)}</span></div><span class="d">${t.d}</span><a class="dl" href="${t.dl || url(t)}" download="callective-${t.k}.mp3" aria-label="Download ${esc(t.t)}">MP3 ↓</a></li>`).join("");
+  }
+  // The Callective Mix: IceCat's Suno playlist, synced by the worker (/api/mix). Once it has songs, it takes the place of
+  // IceCat's own phone songs and the megamix built from them. New songs on the playlist show up within about an hour.
+  const MINE = new Set(["IceCat's phone songs", "The Phone Book Megamix"]);
+  async function mix() {
+    if (!C.api) return;
+    let j; try { j = await getJSON(C.api + "/mix", 8000); } catch (e) { return; }
+    const L = (j && j.songs) || []; if (!L.length) return;
+    const mm = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+    const keep = TRACKS.filter(t => !MINE.has(t.g));
+    keep.push(...L.map(x => ({ k: "mix-" + x.id, g: "The Callective Mix", t: x.t, s: "From the Callective Soundtrack on Suno", d: x.sec ? mm(x.sec) : "", src: `${C.api}/mix/${x.id}.mp3`, dl: `${C.api}/mix/${x.id}.mp3?dl=1` })));
+    TRACKS.splice(0, TRACKS.length, ...keep); for (const k in T) delete T[k]; for (const t of TRACKS) T[t.k] = t;
+    render(); sync();
+  }
   function init() {
-    $("tracks").innerHTML = TRACKS.map((t, i) => `${t.g && t.g !== TRACKS[i - 1]?.g ? `<li class="track-group" aria-hidden="true">${esc(t.g)}</li>` : ""}<li class="track" data-k="${t.k}"><button type="button" data-hold="${t.k}" aria-label="Play ${esc(t.t)}"><span class="tri" aria-hidden="true"></span></button><span class="ln">LINE ${i + 1}</span><div class="tt"><b>${esc(t.t)}</b><span>${esc(t.s)}</span></div><span class="d">${t.d}</span><a class="dl" href="${url(t)}" download="callective-${t.k}.mp3" aria-label="Download ${esc(t.t)}">MP3 ↓</a></li>`).join("");
+    render(); mix();
     document.addEventListener("click", e => { const b = e.target.closest("[data-hold]"); if (b) play(b.dataset.hold); });
     document.addEventListener("player-stopped", () => { if (aud().paused) { cur = null; sync(); } });
     const a = aud();
