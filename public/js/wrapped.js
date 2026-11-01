@@ -63,7 +63,7 @@ const Wrapped = (() => {
     $("wr-years").innerHTML = ys.map(y => `<button class="yp-chip" type="button" data-y="${y}" aria-pressed="false">${y}</button>`).join("");
     $("wr-years").addEventListener("click", e => { const b = e.target.closest("[data-y]"); if (b) setYear(b.dataset.y); });
     $("wr-body").addEventListener("click", e => {
-      const w = e.target.closest("[data-who]"); if (w) { location.hash = "search/" + encodeURIComponent(`by:${w.dataset.who.replace(/\s+/g, "")} ${year}`); return; }
+      const w = e.target.closest("[data-who]"); if (w) { location.hash = "caller/" + encodeURIComponent(Callers.key(w.dataset.who)); return; }
       const h = e.target.closest("[data-host]"); if (h) location.hash = "search/" + encodeURIComponent(`host:${h.dataset.host.replace(/\s+/g, "")} ${year}`);
     });
     const m = location.hash.match(/^#wrapped\/(\d{4})/); setYear(m && ys.includes(m[1]) ? m[1] : ys[ys.length - 1]);

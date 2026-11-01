@@ -20,7 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Monoton&family=Share+Tech+Mono&family=VT323&display=swap">
-<link rel="stylesheet" href="css/site.css?v=c88a66d8">
+<link rel="stylesheet" href="css/site.css?v=5770e32b">
 
 <div class="bg" aria-hidden="true"><div class="sun"></div><canvas class="rain" id="rain"></canvas><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
@@ -236,7 +236,7 @@
       <p class="lede">Every Callective ever, from the first nervous dial in December 2024 to last Saturday's crimes against hotel front desks. The 10 newest play right here. Everything older opens on Prankcast, right at the call. Click any show for the full call list.</p>
     </div>
     <div class="yp hud">
-      <div class="yp-head"><h3>The Callective Directory</h3><p>Every show · every host · since 2024</p></div>
+      <div class="yp-head"><h3>The Callective Directory</h3><p>Every show · every host · since 2024 · <a href="#callers">everyone who's called →</a></p></div>
       <div class="ads" id="ads"></div>
       <div class="yp-ctl">
         <label class="sr" for="yp-q">Search the directory</label>
@@ -843,6 +843,20 @@
 <div class="page" id="page-show" data-page="show" hidden>
 <section class="band" id="showpage"><div class="wrap" id="sp-body"></div></section>
 </div>
+<div class="page" id="page-caller" data-page="caller" hidden>
+<section class="band" id="callers"><div class="wrap">
+  <div id="cls-box">
+    <div class="sec-head">
+      <p class="kicker">Caller files</p>
+      <h2 class="glitch" data-text="Everyone who's called">Everyone who's called</h2>
+      <p class="lede">Every person who's taken a turn on the phone, busiest first. Tap a name for their calls, their first call, their longest call and their drops.</p>
+    </div>
+    <div class="cls-ctl"><label class="sr" for="cls-q">Find a caller</label><input id="cls-q" type="search" placeholder="> find a caller" autocomplete="off"><span id="cls-count"></span></div>
+    <ol class="cls-list" id="cls-list"></ol>
+  </div>
+  <div id="cl-body" hidden></div>
+</div></section>
+</div>
 <div class="page" id="page-search" data-page="search" hidden>
 <section class="band" id="search">
   <div class="wrap">
@@ -1008,7 +1022,7 @@
     <div class="sec-head">
       <p class="kicker">The year in numbers</p>
       <h2 class="glitch" data-text="Callective Wrapped">Callective Wrapped</h2>
-      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every first-timer who made their first call. Tap a name to hear the evidence.</p>
+      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every first-timer who made their first call. Tap a name to open their caller file.</p>
     </div>
     <div class="yp-chips wr-years" id="wr-years" role="group" aria-label="Year"></div>
     <div id="wr-body" class="wr-body"></div>
@@ -1137,15 +1151,16 @@
 <script src="js/listen.js?v=a59e71d5"></script>
 <script src="js/bingo.js?v=e098cc1c"></script>
 <script src="js/downloads.js?v=43db181c"></script>
-<script src="js/search.js?v=971f5cdd"></script>
-<script src="js/wrapped.js?v=014a7ad1"></script>
+<script src="js/search.js?v=6b76ed3d"></script>
+<script src="js/wrapped.js?v=e9d351b3"></script>
 <script src="js/guess.js?v=c6535413"></script>
-<script src="js/showpage.js?v=d3466e93"></script>
+<script src="js/showpage.js?v=f53ef9d0"></script>
 <script src="js/premise.js?v=2d8eb628"></script>
 <script src="js/hallvoice.js?v=549a1a5a"></script>
 <script src="js/hallsfx.js?v=83be1049"></script>
 <script src="js/hall.js?v=2d83c64b"></script>
+<script src="js/callers.js?v=0d65be1c"></script>
 <script src="js/subnav.js?v=969b486b"></script>
-<script src="js/main.js?v=b09c40a8"></script>
+<script src="js/main.js?v=899890c6"></script>
 </body>
 </html>

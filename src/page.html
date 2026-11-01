@@ -220,7 +220,7 @@
       <p class="lede">Every Callective ever, from the first nervous dial in December 2024 to last Saturday's crimes against hotel front desks. The 10 newest play right here. Everything older opens on Prankcast, right at the call. Click any show for the full call list.</p>
     </div>
     <div class="yp hud">
-      <div class="yp-head"><h3>The Callective Directory</h3><p>Every show · every host · since 2024</p></div>
+      <div class="yp-head"><h3>The Callective Directory</h3><p>Every show · every host · since 2024 · <a href="#callers">everyone who's called →</a></p></div>
       <div class="ads" id="ads"></div>
       <div class="yp-ctl">
         <label class="sr" for="yp-q">Search the directory</label>
@@ -827,6 +827,20 @@
 <div class="page" id="page-show" data-page="show" hidden>
 <section class="band" id="showpage"><div class="wrap" id="sp-body"></div></section>
 </div>
+<div class="page" id="page-caller" data-page="caller" hidden>
+<section class="band" id="callers"><div class="wrap">
+  <div id="cls-box">
+    <div class="sec-head">
+      <p class="kicker">Caller files</p>
+      <h2 class="glitch" data-text="Everyone who's called">Everyone who's called</h2>
+      <p class="lede">Every person who's taken a turn on the phone, busiest first. Tap a name for their calls, their first call, their longest call and their drops.</p>
+    </div>
+    <div class="cls-ctl"><label class="sr" for="cls-q">Find a caller</label><input id="cls-q" type="search" placeholder="> find a caller" autocomplete="off"><span id="cls-count"></span></div>
+    <ol class="cls-list" id="cls-list"></ol>
+  </div>
+  <div id="cl-body" hidden></div>
+</div></section>
+</div>
 <div class="page" id="page-search" data-page="search" hidden>
 <section class="band" id="search">
   <div class="wrap">
@@ -992,7 +1006,7 @@
     <div class="sec-head">
       <p class="kicker">The year in numbers</p>
       <h2 class="glitch" data-text="Callective Wrapped">Callective Wrapped</h2>
-      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every first-timer who made their first call. Tap a name to hear the evidence.</p>
+      <p class="lede">Who hogged the phone, the longest turns, the busiest nights and every first-timer who made their first call. Tap a name to open their caller file.</p>
     </div>
     <div class="yp-chips wr-years" id="wr-years" role="group" aria-label="Year"></div>
     <div id="wr-body" class="wr-body"></div>
@@ -1129,5 +1143,6 @@
 <script src="js/hallvoice.js"></script>
 <script src="js/hallsfx.js"></script>
 <script src="js/hall.js"></script>
+<script src="js/callers.js"></script>
 <script src="js/subnav.js"></script>
 <script src="js/main.js"></script>

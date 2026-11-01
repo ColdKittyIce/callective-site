@@ -114,7 +114,7 @@ const Search = (() => {
       <dl><div><dt>Turns</dt><dd>${mine.length}</dd></div><div><dt>Shows</dt><dd>${shows.size}</dd></div>${hosted ? `<div><dt>Hosted</dt><dd>${hosted}</dd></div>` : ""}
       <div><dt>First</dt><dd>${esc(fmtDate(dates[0]))}</dd></div><div><dt>Latest</dt><dd>${esc(fmtDate(dates[dates.length - 1]))}</dd></div>
       <div><dt>By year</dt><dd>${Object.entries(years).sort().map(([y, n]) => `${y}: ${n}`).join(" · ")}</dd></div></dl>
-      <button class="btn sm" type="button" data-sq="by:${esc(who.replace(/\s+/g, ""))}">All ${mine.length} of their calls</button>
+      <a class="btn sm red solid" href="#caller/${encodeURIComponent(Callers.key(who))}">Open their caller page</a> <button class="btn sm" type="button" data-sq="by:${esc(who.replace(/\s+/g, ""))}">All ${mine.length} of their calls</button>
       ${titled < mine.length ? `<p class="ext">${titled ? `${titled} of ${mine.length} ${titled === 1 ? "has a title" : "have titles"} so far.` : "No titles yet for these. The crew can add them on the Replay page."}</p>` : ""}</div>`;
   }
 
@@ -128,7 +128,7 @@ const Search = (() => {
   const when = r => r.d ? esc(fmtDate(r.d)) : "";
   function row(h, f) {
     const r = h.r, rec = r.ep && isRecent(r.ep);
-    if (r.type === "call") return `<li class="s-row call"><span class="s-k">Call</span><div class="s-main"><b>${mark(r.by, f)}</b>${r.title ? `<em>${mark(r.title, f)}${r.community ? ` <i class="cm">community</i>` : ""}</em>` : rec ? `<em class="s-untitled">No title yet. Heard it? ▶ Play, then tap 💡+ to name it.</em>` : ""}<small>${when(r)}${r.host ? ` · hosted by ${esc(r.host)}` : ""} · at ${hms(r.t, true)} · ${fmtLen(r.end - r.t)}</small></div>
+    if (r.type === "call") return `<li class="s-row call"><span class="s-k">Call</span><div class="s-main"><b><a class="who-link" href="#caller/${encodeURIComponent(Callers.key(r.by))}">${mark(r.by, f)}</a></b>${r.title ? `<em>${mark(r.title, f)}${r.community ? ` <i class="cm">community</i>` : ""}</em>` : rec ? `<em class="s-untitled">No title yet. Heard it? ▶ Play, then tap 💡+ to name it.</em>` : ""}<small>${when(r)}${r.host ? ` · hosted by ${esc(r.host)}` : ""} · at ${hms(r.t, true)} · ${fmtLen(r.end - r.t)}</small></div>
       <div class="s-acts">${rec ? `<button class="btn sm" type="button" data-play="${r.ep}" data-t="${r.t}">▶ Play</button><button class="btn sm ghost" type="button" data-clip="${r.ep}" data-t="${r.t}" data-end="${r.end}" data-name="${esc(callLabel(r))}">✂</button>` : `<a class="btn sm" href="${PC_POST}${r.ep}?t=${Math.round(r.t)}" target="_blank" rel="noopener" title="Opens on Prankcast at ${hms(r.t, true)}">▶ Prankcast ↗</a><a class="btn sm ghost" href="#show/${r.ep}">Show</a>`}</div></li>`;
     if (r.type === "show") return `<li class="s-row show"><span class="s-k">Show</span><div class="s-main"><b><a href="#show/${r.ep}">${mark(r.title, f)}</a></b>${r.desc ? `<em>${mark(r.desc, f)}</em>` : ""}<small>${when(r)}${r.host ? ` · hosted by ${mark(r.host, f)}` : ""}${r.n ? ` · ${r.n} calls` : ""}</small>${r.callers.length ? `<small class="s-callers">${r.callers.map(n => `<button type="button" data-sq="by:${esc(n.replace(/\s+/g, ""))}">${mark(n, f)}</button>`).join("")}</small>` : ""}</div>
       <div class="s-acts">${rec ? `<button class="btn sm" type="button" data-show="${r.ep}">▶ Play here</button>` : `<a class="btn sm ghost" href="${PC_POST}${r.ep}" target="_blank" rel="noopener">Prankcast ↗</a>`}</div></li>`;
