@@ -16,6 +16,7 @@
  *   POST /api/suggest/vote      {ep, t, id}    +1 an idea (one vote per person per call)
  *   POST /api/suggest/report    {ep, t, id}    3 reports hide it
  *   POST /api/mod/suggest       {ep, t, id}    crew hides one                    (ADMIN_TOKEN)
+ *   GET  /api/autocalls         call lists for shows newer than calls.json, built by the cron from the Discord queue bot (worker/autocalls.js)
  *   GET  /api/calls             crew fixes to the call lists (titles, callers, blurbs)
  *   GET  /api/fixes             community fixes to who made a call / when it starts, with votes
  *   POST /api/fix               {ep, t, k:"by"|"at", val} suggest one (t = the call's original start, the key)
@@ -53,9 +54,11 @@
  *
  * Storage: KV namespace DB (clip records, rate limits), R2 bucket CLIPS (clip audio).
  * Nothing here writes to Prankcast or Discord, except the optional DISCORD_WEBHOOK heads-up for new clips.
+ * (Discord is only read: the call lists for new shows, with the DISCORD_BOT_TOKEN secret.)
  */
 import { mp4Head } from "./mp4.js";
 import { screen } from "./screen.js";
+import { autoCallsStep, autoCallsGet } from "./autocalls.js";
 export { Hall } from "./hall.js";
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
@@ -77,6 +80,7 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil(mirrorStep(env).catch(e => console.log("mirror:", e && e.message)));
     ctx.waitUntil(mixSync(env, false).catch(e => console.log("mix:", e && e.message))); // the Suno playlist, about once an hour
+    ctx.waitUntil(autoCallsStep(env, autoCtx(env)).catch(e => console.log("autocalls:", e && e.message))); // call lists for new shows, from Discord (read-only)
   }
 };
 
@@ -111,6 +115,7 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/suggest(?:\/(vote|report))?$/)) && M === "POST") return sgPost(request, env, m[1] || "add");
       if (p === "/api/fixes" && M === "GET") return cached(request, ctx, 30, () => cfAll(env));
       if ((m = p.match(/^\/api\/fix(?:\/(up|down))?$/)) && M === "POST") return cfPost(request, env, m[1] || "add");
+      if (p === "/api/autocalls" && M === "GET") return json(await autoCallsGet(env), 200, 300);
       if (p === "/api/calls" && M === "GET") return json(env.DB ? JSON.parse(await env.DB.get("callfix") || "{}") : {}, 200, 30);
       if (p === "/api/guestbook" && M === "GET") return cached(request, ctx, 20, () => gbList(env, "g:"));
       if (p === "/api/guestbook" && M === "POST") return gbPost(request, env);
@@ -259,6 +264,12 @@ async function allEpisodes(env, ctx) {
   const have = new Set(base.map(e => e.id));
   return base.concat(extra.filter(e => !have.has(e.id))).filter(e => e.sec > 600);
 }
+// What the automatic call lists need from the rest of the worker.
+const autoCtx = env => ({
+  episodes: () => allEpisodes(env, { waitUntil() {} }),
+  info: id => episode(id),
+  staticIds: async () => new Set(Object.keys(await (await env.ASSETS.fetch(new Request("https://assets.local/data/calls.json"))).json()))
+});
 const newest = list => list.slice().sort((a, b) => b.id - a.id).slice(0, RADIO_SHOWS);
 async function radio(env, url, ctx) {
   const list = newest(await allEpisodes(env, ctx));

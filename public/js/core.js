@@ -147,7 +147,9 @@ function applyCallFixes(fix) { CALL_FIX = fix || {}; rebuildCalls(); }
 function applySuggestions(sg) { CALL_SG = sg || {}; rebuildCalls(); }
 async function loadCallFixes() {
   if (!C.api) return;
-  const [fix, sg, cf] = await Promise.all([getJSON(C.api + "/calls", 6000).catch(() => null), getJSON(C.api + "/suggest", 6000).catch(() => null), getJSON(C.api + "/fixes", 6000).catch(() => null)]);
+  const [fix, sg, cf, auto] = await Promise.all([getJSON(C.api + "/calls", 6000).catch(() => null), getJSON(C.api + "/suggest", 6000).catch(() => null), getJSON(C.api + "/fixes", 6000).catch(() => null), getJSON(C.api + "/autocalls", 6000).catch(() => null)]);
+  // Shows newer than calls.json get their lists automatically from the Discord queue bot (worker/autocalls.js).
+  if (auto) { if (!CALLS_BASE) CALLS_BASE = JSON.parse(JSON.stringify(C.calls)); for (const [ep, s] of Object.entries(auto)) if (!CALLS_BASE[ep]) CALLS_BASE[ep] = s; }
   if (fix) CALL_FIX = fix; if (sg) CALL_SG = sg; if (cf) CALL_CF = cf; rebuildCalls();
 }
 // A call's key (its original start) from where it starts now.
