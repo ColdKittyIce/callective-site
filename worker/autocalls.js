@@ -10,9 +10,9 @@
  *   - a turn under 20 seconds is marked skipped
  * Times line up with the Prankcast broadcast start (`st` from the episode).
  *
- * Gentle on Discord and on the free plan: it looks for a new show every 3 days. When it finds one, it reads it
+ * Gentle on Discord and on the free plan: it looks for a new show every 12 hours. When it finds one, it reads it
  * 8 pages of 100 messages per run (the cron runs every 15 minutes, so a show takes about half an hour), then any other
- * new show the same way, then goes quiet for another 3 days. Between checks it never calls Discord. Never posts, edits or deletes anything.
+ * new show the same way, then goes quiet for another 12 hours. Between checks it never calls Discord. Never posts, edits or deletes anything.
  * Needs the secret DISCORD_BOT_TOKEN (`npx wrangler secret put DISCORD_BOT_TOKEN`). Without it, this does nothing.
  *
  * KV "autocalls" = { shows: { <id>: { calls: [...], made } | { none: true, why } }, job: {...while a show is being read} }
@@ -21,7 +21,7 @@ import { NICK, KNOWN } from "./callnames.js";
 
 const CHANNEL = "1315742525775941642"; // #the-callective-saturdays-at-7pm-est
 const DAPI = "https://discord.com/api/v10";
-const CHECK_EVERY_MS = 3 * 864e5; // look for a new show every 3 days
+const CHECK_EVERY_MS = 12 * 36e5; // look for a new show every 12 hours
 const PAGES_PER_RUN = 8, SKIP_SEC = 20, LEAD_MS = 15 * 60e3, TAIL_MS = 20 * 60e3, MAX_TRIES = 12;
 const DISCORD_EPOCH = 1420070400000;
 const snow = ms => (BigInt(Math.max(0, ms - DISCORD_EPOCH)) << 22n).toString();
@@ -83,7 +83,7 @@ export async function autoCallsStep(env, ctx) {
     if (state.idleSince && Date.now() - state.idleSince < CHECK_EVERY_MS) return; // checked recently: leave Discord alone
     const staticIds = await ctx.staticIds(), floor = Math.max(0, ...[...staticIds].map(Number));
     const todo = (await ctx.episodes()).filter(e => e.id > floor && !staticIds.has(String(e.id)) && !state.shows[e.id]).sort((a, b) => a.id - b.id)[0];
-    if (!todo) { state.idleSince = Date.now(); await env.DB.put("autocalls", JSON.stringify(state)); return; } // nothing new: check again in 3 days
+    if (!todo) { state.idleSince = Date.now(); await env.DB.put("autocalls", JSON.stringify(state)); return; } // nothing new: check again in 12 hours
     const info = await ctx.info(todo.id);
     if (!info.st) return;
     const st = Date.parse(String(info.st).replace(" ", "T") + "Z"), sec = info.sec || todo.sec;
