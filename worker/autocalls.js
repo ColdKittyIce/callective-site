@@ -10,8 +10,9 @@
  *   - a turn under 20 seconds is marked skipped
  * Times line up with the Prankcast broadcast start (`st` from the episode).
  *
- * Gentle on Discord and on the free plan: one show at a time, at most 8 pages of 100 messages per run (runs every
- * 15 minutes), and nothing at all happens when there's no new show. Never posts, edits or deletes anything.
+ * Gentle on Discord and on the free plan: it looks for a new show every 3 days. When it finds one, it reads it
+ * 8 pages of 100 messages per run (the cron runs every 15 minutes, so a show takes about half an hour), then any other
+ * new show the same way, then goes quiet for another 3 days. Between checks it never calls Discord. Never posts, edits or deletes anything.
  * Needs the secret DISCORD_BOT_TOKEN (`npx wrangler secret put DISCORD_BOT_TOKEN`). Without it, this does nothing.
  *
  * KV "autocalls" = { shows: { <id>: { calls: [...], made } | { none: true, why } }, job: {...while a show is being read} }
@@ -20,6 +21,7 @@ import { NICK, KNOWN } from "./callnames.js";
 
 const CHANNEL = "1315742525775941642"; // #the-callective-saturdays-at-7pm-est
 const DAPI = "https://discord.com/api/v10";
+const CHECK_EVERY_MS = 3 * 864e5; // look for a new show every 3 days
 const PAGES_PER_RUN = 8, SKIP_SEC = 20, LEAD_MS = 15 * 60e3, TAIL_MS = 20 * 60e3, MAX_TRIES = 12;
 const DISCORD_EPOCH = 1420070400000;
 const snow = ms => (BigInt(Math.max(0, ms - DISCORD_EPOCH)) << 22n).toString();
@@ -78,12 +80,14 @@ export async function autoCallsStep(env, ctx) {
   const state = JSON.parse(await env.DB.get("autocalls") || "{}"); state.shows = state.shows || {};
   let job = state.job;
   if (!job) {
+    if (state.idleSince && Date.now() - state.idleSince < CHECK_EVERY_MS) return; // checked recently: leave Discord alone
     const staticIds = await ctx.staticIds(), floor = Math.max(0, ...[...staticIds].map(Number));
     const todo = (await ctx.episodes()).filter(e => e.id > floor && !staticIds.has(String(e.id)) && !state.shows[e.id]).sort((a, b) => a.id - b.id)[0];
-    if (!todo) return; // nothing new: no KV write, no Discord call
+    if (!todo) { state.idleSince = Date.now(); await env.DB.put("autocalls", JSON.stringify(state)); return; } // nothing new: check again in 3 days
     const info = await ctx.info(todo.id);
     if (!info.st) return;
     const st = Date.parse(String(info.st).replace(" ", "T") + "Z"), sec = info.sec || todo.sec;
+    delete state.idleSince;
     job = state.job = { id: todo.id, st, sec, end: st + sec * 1000, after: snow(st - LEAD_MS), H: [], tries: 0 };
   }
   try {
