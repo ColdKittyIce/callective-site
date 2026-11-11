@@ -123,3 +123,12 @@ export async function autoCallsGet(env) {
   for (const [id, v] of Object.entries(s.shows || {})) if (v.calls && v.calls.length) out[id] = { calls: v.calls, auto: true };
   return out;
 }
+
+// Health check for the crew: /api/autocalls?status=1. No token, no chat, no Discord ids; just where it's at.
+export async function autoCallsStatus(env) {
+  const s = env.DB ? JSON.parse(await env.DB.get("autocalls") || "{}") : {};
+  const j = s.job;
+  return { token: !!env.DISCORD_BOT_TOKEN, kv: !!env.DB, idleSince: s.idleSince || null,
+    job: j ? { id: j.id, handoffs: (j.H || []).length, tries: j.tries || 0, err: j.err || null, reachedMs: j.after ? Number(BigInt(j.after) >> 22n) + DISCORD_EPOCH : null, endMs: j.end } : null,
+    shows: Object.fromEntries(Object.entries(s.shows || {}).map(([id, v]) => [id, v.calls ? v.calls.length + " calls" : "none: " + v.why])) };
+}

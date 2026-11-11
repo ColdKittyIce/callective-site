@@ -58,7 +58,7 @@
  */
 import { mp4Head } from "./mp4.js";
 import { screen } from "./screen.js";
-import { autoCallsStep, autoCallsGet } from "./autocalls.js";
+import { autoCallsStep, autoCallsGet, autoCallsStatus } from "./autocalls.js";
 export { Hall } from "./hall.js";
 const PROFILE = "thecallective";
 const PC = "https://prankcast.com";
@@ -115,7 +115,7 @@ async function route(request, env, ctx, url) {
       if ((m = p.match(/^\/api\/suggest(?:\/(vote|report))?$/)) && M === "POST") return sgPost(request, env, m[1] || "add");
       if (p === "/api/fixes" && M === "GET") return cached(request, ctx, 30, () => cfAll(env));
       if ((m = p.match(/^\/api\/fix(?:\/(up|down))?$/)) && M === "POST") return cfPost(request, env, m[1] || "add");
-      if (p === "/api/autocalls" && M === "GET") return json(await autoCallsGet(env), 200, 300);
+      if (p === "/api/autocalls" && M === "GET") return url.searchParams.has("status") ? json(await autoCallsStatus(env)) : json(await autoCallsGet(env), 200, 300);
       if (p === "/api/calls" && M === "GET") return json(env.DB ? JSON.parse(await env.DB.get("callfix") || "{}") : {}, 200, 30);
       if (p === "/api/guestbook" && M === "GET") return cached(request, ctx, 20, () => gbList(env, "g:"));
       if (p === "/api/guestbook" && M === "POST") return gbPost(request, env);
